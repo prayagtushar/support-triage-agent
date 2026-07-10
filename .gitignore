@@ -1,0 +1,23 @@
+# Local working docs (build guide, notes). Intentionally not tracked.
+docs/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node / Next.js (ui/ has its own .gitignore; this catches strays)
+node_modules/
+.next/
+
+# OS and editors
+.DS_Store
+.idea/
+.vscode/
