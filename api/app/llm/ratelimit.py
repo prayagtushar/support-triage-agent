@@ -12,7 +12,8 @@ class RateLimiter:
         self._lock = asyncio.Lock()
         self._next_allowed = 0.0
 
-    async def acquire(self) -> None:
+    async def acquire(self, cost: int = 1) -> None:
+        """cost > 1 for batch endpoints that bill each item as a request."""
         if self._min_interval <= 0:
             return
         async with self._lock:
@@ -21,7 +22,7 @@ class RateLimiter:
             if wait > 0:
                 await asyncio.sleep(wait)
                 now = time.monotonic()
-            self._next_allowed = now + self._min_interval
+            self._next_allowed = now + self._min_interval * cost
 
 
 _limiters: dict[str, RateLimiter] = {}

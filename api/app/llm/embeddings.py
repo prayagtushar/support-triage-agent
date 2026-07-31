@@ -22,19 +22,19 @@ from app.llm.ratelimit import RateLimiter, limiter_for
 TaskType = Literal["RETRIEVAL_DOCUMENT", "RETRIEVAL_QUERY"]
 
 _BASE = "https://generativelanguage.googleapis.com/v1beta"
-_MAX_BATCH = 100
+_MAX_BATCH = 50
 _RETRYABLE_STATUS = frozenset({408, 429, 500, 502, 503, 504})
 
 
 async def embed_texts(
-    texts: list[str], *, task_type: TaskType, max_retries: int = 3
+    texts: list[str], *, task_type: TaskType, max_retries: int = 5
 ) -> list[list[float]]:
     if not texts:
         return []
     if not settings.gemini_api_key:
         raise EmbeddingFailed("gemini_api_key is not configured")
 
-    limiter = limiter_for("gemini-embeddings", settings.gemini_rpm)
+    limiter = limiter_for("gemini-embeddings", settings.gemini_embed_rpm)
     url = f"{_BASE}/models/{settings.embedding_model}:batchEmbedContents"
     vectors: list[list[float]] = []
 
@@ -52,7 +52,9 @@ async def embed_texts(
                     for text in chunk
                 ]
             }
-            vectors.extend(await _post_batch(client, limiter, url, payload, max_retries))
+            vectors.extend(
+                await _post_batch(client, limiter, url, payload, max_retries, cost=len(chunk))
+            )
 
     return vectors
 
@@ -63,9 +65,10 @@ async def _post_batch(
     url: str,
     payload: Mapping[str, Any],
     max_retries: int,
+    cost: int,
 ) -> list[list[float]]:
     for attempt in range(max_retries + 1):
-        await limiter.acquire()
+        await limiter.acquire(cost)
         response = await client.post(
             url, headers={"x-goog-api-key": settings.gemini_api_key}, json=payload
         )

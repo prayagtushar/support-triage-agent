@@ -57,6 +57,8 @@ class Settings(BaseSettings):
     llm_max_validation_retries: int = 1
 
     gemini_rpm: int = 15
+    # batchEmbedContents bills  item as a request, so this is items per minute
+    gemini_embed_rpm: int = 100
     groq_rpm: int = 30
     sarvam_rpm: int = 60
     openrouter_rpm: int = 20
