@@ -1,8 +1,9 @@
-"""Gemini embeddings over the native REST API.
+"""Embedding, with two providers behind one function.
 
-The OpenAI-compatibility endpoint rejects `task_type`, and asymmetric
-embedding (documents indexed one way, queries another) matters for retrieval
-quality, so this is the one model call that does not go through the unified
+Gemini goes over its native REST API rather than the OpenAI-compatible shim,
+because the shim rejects task_type and asymmetric embedding (documents indexed
+one way, queries another) matters for retrieval quality. OpenAI-family models
+are trained symmetric and need no equivalent, so they go through the normal
 client.
 """
 
@@ -17,11 +18,12 @@ import httpx
 
 from app.config import settings
 from app.errors import EmbeddingFailed
+from app.llm.providers import get_client
 from app.llm.ratelimit import RateLimiter, limiter_for
 
 TaskType = Literal["RETRIEVAL_DOCUMENT", "RETRIEVAL_QUERY"]
 
-_BASE = "https://generativelanguage.googleapis.com/v1beta"
+_GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta"
 _MAX_BATCH = 50
 _RETRYABLE_STATUS = frozenset({408, 429, 500, 502, 503, 504})
 
@@ -31,11 +33,41 @@ async def embed_texts(
 ) -> list[list[float]]:
     if not texts:
         return []
+    if settings.embedding_provider == "gemini":
+        return await _embed_gemini(texts, task_type=task_type, max_retries=max_retries)
+    return await _embed_openai_compatible(texts)
+
+
+async def embed_query(text: str) -> list[float]:
+    vectors = await embed_texts([text], task_type="RETRIEVAL_QUERY")
+    return vectors[0]
+
+
+async def _embed_openai_compatible(texts: list[str]) -> list[list[float]]:
+    client = get_client(settings.embedding_provider)
+    vectors: list[list[float]] = []
+    for start in range(0, len(texts), _MAX_BATCH):
+        chunk = texts[start : start + _MAX_BATCH]
+        response = await client.embeddings.create(
+            model=settings.embedding_model,
+            input=chunk,
+            dimensions=settings.embedding_dim,
+        )
+        ordered = sorted(response.data, key=lambda item: item.index)
+        vectors.extend(list(item.embedding) for item in ordered)
+    if len(vectors) != len(texts):
+        raise EmbeddingFailed(f"expected {len(texts)} vectors, got {len(vectors)}")
+    return vectors
+
+
+async def _embed_gemini(
+    texts: list[str], *, task_type: TaskType, max_retries: int
+) -> list[list[float]]:
     if not settings.gemini_api_key:
         raise EmbeddingFailed("gemini_api_key is not configured")
 
     limiter = limiter_for("gemini-embeddings", settings.gemini_embed_rpm)
-    url = f"{_BASE}/models/{settings.embedding_model}:batchEmbedContents"
+    url = f"{_GEMINI_BASE}/models/{settings.embedding_model}:batchEmbedContents"
     vectors: list[list[float]] = []
 
     async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as client:
@@ -84,8 +116,3 @@ async def _post_batch(
         await asyncio.sleep(min(2.0**attempt, 8.0) + random.uniform(0, 0.5))  # noqa: S311
 
     raise EmbeddingFailed("exhausted retries")
-
-
-async def embed_query(text: str) -> list[float]:
-    vectors = await embed_texts([text], task_type="RETRIEVAL_QUERY")
-    return vectors[0]

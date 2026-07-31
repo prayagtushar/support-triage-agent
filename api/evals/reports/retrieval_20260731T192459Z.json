@@ -1,0 +1,578 @@
+{
+  "timestamp": "2026-07-31T19:24:59.673329+00:00",
+  "golden": "v0",
+  "embedding_model": "openai/text-embedding-3-small",
+  "current_floor": 0.45,
+  "recommended_floor": 0.4,
+  "highest_negative": 0.3801,
+  "lowest_positive": 0.3732,
+  "sweep": {
+    "0.3": {
+      "false_weak": [],
+      "missed": [
+        "g058",
+        "g056",
+        "g040"
+      ]
+    },
+    "0.35": {
+      "false_weak": [],
+      "missed": [
+        "g056",
+        "g040"
+      ]
+    },
+    "0.38": {
+      "false_weak": [
+        "g043"
+      ],
+      "missed": [
+        "g040"
+      ]
+    },
+    "0.4": {
+      "false_weak": [
+        "g043",
+        "g036"
+      ],
+      "missed": []
+    },
+    "0.42": {
+      "false_weak": [
+        "g043",
+        "g036",
+        "g025",
+        "g026",
+        "g002"
+      ],
+      "missed": []
+    },
+    "0.45": {
+      "false_weak": [
+        "g043",
+        "g036",
+        "g025",
+        "g026",
+        "g002",
+        "g031",
+        "g039",
+        "g047",
+        "g022",
+        "g005",
+        "g051"
+      ],
+      "missed": []
+    },
+    "0.5": {
+      "false_weak": [
+        "g043",
+        "g036",
+        "g025",
+        "g026",
+        "g002",
+        "g031",
+        "g039",
+        "g047",
+        "g022",
+        "g005",
+        "g051",
+        "g049",
+        "g053",
+        "g001",
+        "g048",
+        "g024",
+        "g012",
+        "g021",
+        "g050",
+        "g029",
+        "g035",
+        "g011",
+        "g009",
+        "g044"
+      ],
+      "missed": []
+    }
+  },
+  "probes": [
+    {
+      "id": "g057",
+      "language": "hi",
+      "intent": "account_access",
+      "best_similarity": 0.2513,
+      "returned": 5,
+      "expected_weak": true
+    },
+    {
+      "id": "g058",
+      "language": "en",
+      "intent": "bug_report",
+      "best_similarity": 0.3243,
+      "returned": 5,
+      "expected_weak": true
+    },
+    {
+      "id": "g056",
+      "language": "en",
+      "intent": "other",
+      "best_similarity": 0.3683,
+      "returned": 5,
+      "expected_weak": true
+    },
+    {
+      "id": "g043",
+      "language": "hi-en",
+      "intent": "how_to",
+      "best_similarity": 0.3732,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g040",
+      "language": "en",
+      "intent": "other",
+      "best_similarity": 0.3801,
+      "returned": 5,
+      "expected_weak": true
+    },
+    {
+      "id": "g036",
+      "language": "en",
+      "intent": "other",
+      "best_similarity": 0.3928,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g025",
+      "language": "en",
+      "intent": "how_to",
+      "best_similarity": 0.4068,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g026",
+      "language": "en",
+      "intent": "shipping",
+      "best_similarity": 0.4115,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g002",
+      "language": "en",
+      "intent": "billing",
+      "best_similarity": 0.4126,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g031",
+      "language": "en",
+      "intent": "feature_request",
+      "best_similarity": 0.4268,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g039",
+      "language": "en",
+      "intent": "other",
+      "best_similarity": 0.4268,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g047",
+      "language": "hi-en",
+      "intent": "feature_request",
+      "best_similarity": 0.4278,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g022",
+      "language": "en",
+      "intent": "how_to",
+      "best_similarity": 0.4298,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g005",
+      "language": "en",
+      "intent": "billing",
+      "best_similarity": 0.4312,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g051",
+      "language": "hi-en",
+      "intent": "shipping",
+      "best_similarity": 0.4495,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g049",
+      "language": "hi-en",
+      "intent": "how_to",
+      "best_similarity": 0.4509,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g053",
+      "language": "hi-en",
+      "intent": "how_to",
+      "best_similarity": 0.4527,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g001",
+      "language": "en",
+      "intent": "billing",
+      "best_similarity": 0.4706,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g048",
+      "language": "hi-en",
+      "intent": "billing",
+      "best_similarity": 0.4831,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g024",
+      "language": "en",
+      "intent": "how_to",
+      "best_similarity": 0.4847,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g012",
+      "language": "en",
+      "intent": "account_access",
+      "best_similarity": 0.4865,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g021",
+      "language": "en",
+      "intent": "how_to",
+      "best_similarity": 0.4886,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g050",
+      "language": "hi-en",
+      "intent": "account_access",
+      "best_similarity": 0.4889,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g029",
+      "language": "en",
+      "intent": "shipping",
+      "best_similarity": 0.4923,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g035",
+      "language": "en",
+      "intent": "feature_request",
+      "best_similarity": 0.4939,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g011",
+      "language": "en",
+      "intent": "account_access",
+      "best_similarity": 0.494,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g009",
+      "language": "en",
+      "intent": "refund",
+      "best_similarity": 0.4965,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g044",
+      "language": "hi-en",
+      "intent": "account_access",
+      "best_similarity": 0.4974,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g013",
+      "language": "en",
+      "intent": "account_access",
+      "best_similarity": 0.505,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g059",
+      "language": "en",
+      "intent": "account_access",
+      "best_similarity": 0.5123,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g027",
+      "language": "en",
+      "intent": "shipping",
+      "best_similarity": 0.514,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g046",
+      "language": "hi-en",
+      "intent": "bug_report",
+      "best_similarity": 0.5158,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g008",
+      "language": "en",
+      "intent": "refund",
+      "best_similarity": 0.5191,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g045",
+      "language": "hi-en",
+      "intent": "shipping",
+      "best_similarity": 0.533,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g007",
+      "language": "en",
+      "intent": "refund",
+      "best_similarity": 0.5463,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g010",
+      "language": "en",
+      "intent": "refund",
+      "best_similarity": 0.5491,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g060",
+      "language": "en",
+      "intent": "refund",
+      "best_similarity": 0.5501,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g042",
+      "language": "hi-en",
+      "intent": "refund",
+      "best_similarity": 0.5584,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g014",
+      "language": "en",
+      "intent": "account_access",
+      "best_similarity": 0.5665,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g055",
+      "language": "hi-en",
+      "intent": "billing",
+      "best_similarity": 0.5697,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g023",
+      "language": "en",
+      "intent": "how_to",
+      "best_similarity": 0.5734,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g054",
+      "language": "hi-en",
+      "intent": "other",
+      "best_similarity": 0.5756,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g006",
+      "language": "en",
+      "intent": "refund",
+      "best_similarity": 0.578,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g015",
+      "language": "en",
+      "intent": "account_access",
+      "best_similarity": 0.5854,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g041",
+      "language": "hi-en",
+      "intent": "billing",
+      "best_similarity": 0.5917,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g030",
+      "language": "en",
+      "intent": "shipping",
+      "best_similarity": 0.6193,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g052",
+      "language": "hi-en",
+      "intent": "bug_report",
+      "best_similarity": 0.6296,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g019",
+      "language": "en",
+      "intent": "bug_report",
+      "best_similarity": 0.6465,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g037",
+      "language": "en",
+      "intent": "other",
+      "best_similarity": 0.661,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g028",
+      "language": "en",
+      "intent": "shipping",
+      "best_similarity": 0.6642,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g032",
+      "language": "en",
+      "intent": "feature_request",
+      "best_similarity": 0.6715,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g020",
+      "language": "en",
+      "intent": "bug_report",
+      "best_similarity": 0.678,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g018",
+      "language": "en",
+      "intent": "bug_report",
+      "best_similarity": 0.7062,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g004",
+      "language": "en",
+      "intent": "billing",
+      "best_similarity": 0.7069,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g003",
+      "language": "en",
+      "intent": "billing",
+      "best_similarity": 0.7085,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g017",
+      "language": "en",
+      "intent": "bug_report",
+      "best_similarity": 0.7138,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g016",
+      "language": "en",
+      "intent": "bug_report",
+      "best_similarity": 0.7405,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g038",
+      "language": "en",
+      "intent": "other",
+      "best_similarity": 0.7509,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g034",
+      "language": "en",
+      "intent": "feature_request",
+      "best_similarity": 0.763,
+      "returned": 5,
+      "expected_weak": false
+    },
+    {
+      "id": "g033",
+      "language": "en",
+      "intent": "feature_request",
+      "best_similarity": 0.7735,
+      "returned": 5,
+      "expected_weak": false
+    }
+  ]
+}

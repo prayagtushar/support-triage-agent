@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     retrieval_candidates: int = 20
     retrieval_top_k: int = 5
     rrf_k: int = 60
-    weak_retrieval_floor: float = Field(default=0.45, ge=0.0, le=1.0)
+    weak_retrieval_floor: float = Field(default=0.40, ge=0.0, le=1.0)
 
     route_auto_reply_threshold: float = Field(default=0.85, ge=0.0, le=1.0)
     route_review_threshold: float = Field(default=0.55, ge=0.0, le=1.0)
