@@ -35,14 +35,18 @@ class Settings(BaseSettings):
     classifier_provider: Provider = "groq"
     classifier_model: str = "llama-3.3-70b-versatile"
     classifier_temperature: float = 0.0
+    classifier_max_tokens: int = 1024
 
     drafter_provider: Provider = "sarvam"
     drafter_model: str = "sarvam-105b"
     drafter_temperature: float = 0.3
+    # sarvam-105b reasons before answering and bills it as completion tokens
+    drafter_max_tokens: int = 4096
 
     judge_provider: Provider = "gemini"
-    judge_model: str = "gemini-3.6-flash"
+    judge_model: str = "gemini-3.5-flash-lite"
     judge_temperature: float = 0.0
+    judge_max_tokens: int = 2048
 
     embedding_provider: Provider = "gemini"
     embedding_model: str = "gemini-embedding-001"
