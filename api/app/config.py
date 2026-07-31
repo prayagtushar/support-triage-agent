@@ -32,8 +32,8 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
 
-    classifier_provider: Provider = "groq"
-    classifier_model: str = "llama-3.3-70b-versatile"
+    classifier_provider: Provider = "openrouter"
+    classifier_model: str = "meta-llama/llama-3.3-70b-instruct"
     classifier_temperature: float = 0.0
     classifier_max_tokens: int = 1024
 
@@ -55,13 +55,20 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 60.0
     llm_max_transport_retries: int = 2
     llm_max_validation_retries: int = 1
+    # a provider may ask us to wait minutes; honour it, but never silently
+    llm_max_backoff_seconds: float = 30.0
 
     gemini_rpm: int = 15
+    gemini_tpm: int = 250_000
     # batchEmbedContents bills  item as a request, so this is items per minute
     gemini_embed_rpm: int = 100
     groq_rpm: int = 30
+    # the binding constraint on Groq's free tier, not rpm
+    groq_tpm: int = 12_000
     sarvam_rpm: int = 60
+    sarvam_tpm: int = 0
     openrouter_rpm: int = 20
+    openrouter_tpm: int = 0
 
     retrieval_candidates: int = 20
     retrieval_top_k: int = 5

@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-from openai import APIConnectionError, APIStatusError, APITimeoutError, RateLimitError
+from openai import APIConnectionError, APIStatusError, APITimeoutError
 from pydantic import BaseModel, ValidationError
 
 from app.config import Provider, settings
@@ -42,9 +42,10 @@ class CallStats:
 
 
 def _backoff(attempt: int, retry_after: float | None) -> float:
-    if retry_after is not None:
-        return retry_after
-    return min(2.0**attempt, 8.0) + random.uniform(0, 0.5)  # noqa: S311 - jitter, not secrets
+    base = retry_after if retry_after is not None else min(2.0**attempt, 8.0)
+    # A provider can ask for minutes. Capping keeps a throttle from looking
+    # like a hang; the retry budget then fails the call visibly instead.
+    return min(base, settings.llm_max_backoff_seconds) + random.uniform(0, 0.5)  # noqa: S311
 
 
 def _retry_after_seconds(exc: APIStatusError) -> float | None:
@@ -66,7 +67,11 @@ async def _call(
 ) -> tuple[str, int, int, int]:
     config = get_provider(provider)
     client = get_client(provider)
-    limiter = limiter_for(provider, config.rpm)
+    limiter = limiter_for(provider, config.rpm, config.tpm)
+
+    # Rough, and deliberately so: pacing needs an estimate before the call,
+    # and four characters per token is close enough to keep us under a cap.
+    estimated_tokens = sum(len(m["content"]) for m in messages) // 4 + (max_tokens or 0)
 
     kwargs: dict[str, Any] = {"model": model, "messages": messages, "temperature": temperature}
     if max_tokens is not None:
@@ -76,7 +81,7 @@ async def _call(
 
     last_error: Exception | None = None
     for attempt in range(settings.llm_max_transport_retries + 1):
-        await limiter.acquire()
+        await limiter.acquire(tokens=estimated_tokens)
         try:
             response = await client.chat.completions.create(**kwargs)
         except APIStatusError as exc:
@@ -91,7 +96,7 @@ async def _call(
                 raise ProviderUnavailable(f"{provider}/{model} returned {exc.status_code}") from exc
             last_error = exc
             await asyncio.sleep(_backoff(attempt, _retry_after_seconds(exc)))
-        except (APIConnectionError, APITimeoutError, RateLimitError) as exc:
+        except (APIConnectionError, APITimeoutError) as exc:
             last_error = exc
             await asyncio.sleep(_backoff(attempt, None))
         else:
@@ -111,7 +116,8 @@ async def _call(
             )
 
     raise ProviderUnavailable(
-        f"{provider}/{model} unreachable after {settings.llm_max_transport_retries + 1} attempts"
+        f"{provider}/{model} failed after {settings.llm_max_transport_retries + 1} attempts: "
+        f"{type(last_error).__name__}: {last_error}"
     ) from last_error
 
 

@@ -14,21 +14,34 @@ class ProviderConfig:
     base_url: str
     api_key: str
     rpm: int
+    tpm: int
 
 
 def get_provider(name: Provider) -> ProviderConfig:
     match name:
         case "sarvam":
             return ProviderConfig(
-                name, settings.sarvam_base_url, settings.sarvam_api_key, settings.sarvam_rpm
+                name,
+                settings.sarvam_base_url,
+                settings.sarvam_api_key,
+                settings.sarvam_rpm,
+                settings.sarvam_tpm,
             )
         case "gemini":
             return ProviderConfig(
-                name, settings.gemini_base_url, settings.gemini_api_key, settings.gemini_rpm
+                name,
+                settings.gemini_base_url,
+                settings.gemini_api_key,
+                settings.gemini_rpm,
+                settings.gemini_tpm,
             )
         case "groq":
             return ProviderConfig(
-                name, settings.groq_base_url, settings.groq_api_key, settings.groq_rpm
+                name,
+                settings.groq_base_url,
+                settings.groq_api_key,
+                settings.groq_rpm,
+                settings.groq_tpm,
             )
         case "openrouter":
             return ProviderConfig(
@@ -36,6 +49,7 @@ def get_provider(name: Provider) -> ProviderConfig:
                 settings.openrouter_base_url,
                 settings.openrouter_api_key,
                 settings.openrouter_rpm,
+                settings.openrouter_tpm,
             )
 
 

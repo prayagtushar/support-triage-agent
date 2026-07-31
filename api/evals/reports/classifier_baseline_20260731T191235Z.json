@@ -1,0 +1,142 @@
+{
+  "label": "baseline",
+  "timestamp": "2026-07-31T19:12:35.340100+00:00",
+  "golden": "v0",
+  "provider": "openrouter",
+  "model": "meta-llama/llama-3.3-70b-instruct",
+  "tickets": 60,
+  "hard_failures": 0,
+  "intent_accuracy": 0.8667,
+  "intent_macro_f1": 0.8744,
+  "urgency_accuracy": 0.7833,
+  "language_accuracy": 1.0,
+  "hinglish_language_accuracy": 1.0,
+  "intent_accuracy_english": 0.8636,
+  "intent_accuracy_hinglish": 0.8667,
+  "estimated_cost_inr": 1.2267,
+  "per_intent": [
+    {
+      "intent": "billing",
+      "precision": 0.857,
+      "recall": 0.75,
+      "f1": 0.8,
+      "support": 8
+    },
+    {
+      "intent": "refund",
+      "precision": 1.0,
+      "recall": 0.714,
+      "f1": 0.833,
+      "support": 7
+    },
+    {
+      "intent": "account_access",
+      "precision": 1.0,
+      "recall": 0.889,
+      "f1": 0.941,
+      "support": 9
+    },
+    {
+      "intent": "bug_report",
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1": 0.889,
+      "support": 8
+    },
+    {
+      "intent": "how_to",
+      "precision": 0.583,
+      "recall": 0.875,
+      "f1": 0.7,
+      "support": 8
+    },
+    {
+      "intent": "shipping",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 7
+    },
+    {
+      "intent": "feature_request",
+      "precision": 1.0,
+      "recall": 0.833,
+      "f1": 0.909,
+      "support": 6
+    },
+    {
+      "intent": "other",
+      "precision": 1.0,
+      "recall": 0.857,
+      "f1": 0.923,
+      "support": 7
+    }
+  ],
+  "disagreements": [
+    {
+      "id": "g003",
+      "subject": "which payment methods do you accept",
+      "expected": "billing",
+      "predicted": "how_to",
+      "confidence": 0.95,
+      "rationale": "Asking about available payment methods and options."
+    },
+    {
+      "id": "g009",
+      "subject": "refund policy for opened items",
+      "expected": "refund",
+      "predicted": "how_to",
+      "confidence": 0.8,
+      "rationale": "Asking for clarification on return policy for opened items, seeking instructions."
+    },
+    {
+      "id": "g013",
+      "subject": "change the email on my account",
+      "expected": "account_access",
+      "predicted": "how_to",
+      "confidence": 0.95,
+      "rationale": "Asking for instructions on updating account email without losing order history."
+    },
+    {
+      "id": "g032",
+      "subject": "notify me when something is back in stock",
+      "expected": "feature_request",
+      "predicted": "how_to",
+      "confidence": 0.8,
+      "rationale": "Asking for instructions on how to receive restock notifications."
+    },
+    {
+      "id": "g038",
+      "subject": "where do I leave a review",
+      "expected": "other",
+      "predicted": "how_to",
+      "confidence": 0.95,
+      "rationale": "Asking for instructions on leaving a review."
+    },
+    {
+      "id": "g043",
+      "subject": "app English me hi khul raha hai",
+      "expected": "how_to",
+      "predicted": "bug_report",
+      "confidence": 0.9,
+      "rationale": "App not displaying in selected language despite settings change."
+    },
+    {
+      "id": "g055",
+      "subject": "invoice download nahi ho raha",
+      "expected": "billing",
+      "predicted": "bug_report",
+      "confidence": 0.9,
+      "rationale": "Download button for GST invoice not working, showing blank page instead."
+    },
+    {
+      "id": "g060",
+      "subject": "chargeback filed, lawyer contacted, expect a notice",
+      "expected": "refund",
+      "predicted": "billing",
+      "confidence": 0.95,
+      "rationale": "Mentions legal action and lawyer involvement due to ignored refund requests."
+    }
+  ],
+  "failures": []
+}
