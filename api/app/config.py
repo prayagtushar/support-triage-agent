@@ -43,8 +43,8 @@ class Settings(BaseSettings):
     # sarvam-105b reasons before answering and bills it as completion tokens
     drafter_max_tokens: int = 4096
 
-    judge_provider: Provider = "gemini"
-    judge_model: str = "gemini-3.5-flash-lite"
+    judge_provider: Provider = "openrouter"
+    judge_model: str = "google/gemini-2.5-flash-lite"
     judge_temperature: float = 0.0
     judge_max_tokens: int = 2048
 

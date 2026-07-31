@@ -10,6 +10,7 @@ dependencies = [
     "httpx>=0.28.1",
     "pyarrow>=18.0.0",
     "openai>=2.52.0",
+    "langgraph>=1.2.10",
 ]
 
 [build-system]
@@ -72,3 +73,10 @@ warn_unreachable = true
 [[tool.mypy.overrides]]
 module = ["pyarrow.*"]
 ignore_missing_imports = true
+
+# LangGraph's add_node is heavily overloaded over protocol types that a plain
+# `async (State) -> dict` does not structurally match. The node functions
+# themselves are fully typed and checked; only the registration calls are not.
+[[tool.mypy.overrides]]
+module = ["app.agent.graph"]
+disable_error_code = ["call-overload"]

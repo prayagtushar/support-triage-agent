@@ -19,6 +19,7 @@ RATES: dict[str, Rate] = {
     "llama-3.3-70b-versatile": Rate(0.59, 0.79, "USD"),
     "meta-llama/llama-3.3-70b-instruct": Rate(0.13, 0.40, "USD"),
     "gemini-3.5-flash-lite": Rate(0.30, 2.50, "USD"),
+    "google/gemini-2.5-flash-lite": Rate(0.10, 0.40, "USD"),
     "gemini-3.6-flash": Rate(1.50, 7.50, "USD"),
     "gemini-embedding-001": Rate(0.15, 0.0, "USD"),
     "openai/text-embedding-3-small": Rate(0.02, 0.0, "USD"),
