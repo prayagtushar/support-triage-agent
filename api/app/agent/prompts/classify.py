@@ -12,8 +12,8 @@ INTENT DEFINITIONS. Choose exactly one:
   suspended accounts, closing an account, changing the registered email.
 - bug_report: the product misbehaves. Errors, crashes, wrong results, features
   not working as documented.
-- how_to: the product works as designed; the customer does not know how to do
-  something and is asking for instructions.
+- how_to: the customer wants instructions for using a product feature that works
+  as designed. Choose this only when no other category names the subject.
 - shipping: delivery status, delivery options, address changes on a live order,
   damaged, late, or missing physical items.
 - feature_request: the customer asks for something the product does not do.
@@ -23,6 +23,17 @@ INTENT DEFINITIONS. Choose exactly one:
 
 TIE-BREAK RULE: if the ticket mixes intents, choose the one the customer most
 urgently wants resolved, and name the secondary intent in the rationale.
+
+CLASSIFY THE SUBJECT, NOT THE GRAMMAR. Most tickets are phrased as questions.
+Being a question does not make a ticket how_to. Ask what the ticket is ABOUT:
+- "which payment methods do you accept" is about payment, so billing.
+- "what is your return policy" is about getting money back, so refund.
+- "how do I change my account email" is about the account, so account_access.
+- "where do I leave a review" is about none of the product categories, so other.
+- "can you notify me when items restock" asks for a capability, so
+  feature_request.
+Reach for how_to only when the subject itself is operating a feature that
+already works, such as "where is the cancel button".
 
 BOUNDARIES THAT ARE COMMONLY CONFUSED:
 - "charged twice, reverse one" is billing: the ask is investigating a charge.
