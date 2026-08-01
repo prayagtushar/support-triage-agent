@@ -66,6 +66,8 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Scripts are operator tools: printing is their interface.
 "scripts/*" = ["T20"]
+# The eval summary is a markdown template; its table rows are output, not code.
+"scripts/run_evals.py" = ["T20", "E501"]
 "tests/*" = ["S105", "S106"]
 
 [tool.mypy]

@@ -16,5 +16,21 @@ services:
       timeout: 3s
       retries: 20
 
+  api:
+    build:
+      context: ../api
+    container_name: triage-api
+    env_file:
+      - ../api/.env
+    environment:
+      # Inside the network the database is a service name, not localhost.
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/triage
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles: ["full"]
+
 volumes:
   pgdata:
