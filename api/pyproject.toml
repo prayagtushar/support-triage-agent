@@ -11,6 +11,9 @@ dependencies = [
     "pyarrow>=18.0.0",
     "openai>=2.52.0",
     "langgraph>=1.2.10",
+    "structlog>=26.1.0",
+    "langfuse>=4.14.2",
+    "langgraph-checkpoint-postgres>=3.1.1",
 ]
 
 [build-system]
