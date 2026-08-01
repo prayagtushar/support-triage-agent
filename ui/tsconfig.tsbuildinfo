@@ -1,0 +1,1 @@
+{"root":["./src/main.tsx","./src/vite-env.d.ts","./src/components/badges.tsx","./src/lib/api.ts","./src/lib/format.ts","./src/lib/types.ts","./src/routes/audit.tsx","./src/routes/queues.tsx","./src/routes/ticketreview.tsx"],"version":"5.9.3"}

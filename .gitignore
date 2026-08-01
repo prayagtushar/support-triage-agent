@@ -24,3 +24,6 @@ node_modules/
 
 # Downloaded corpus data
 api/data/
+
+# Playwright MCP scratch
+.playwright-mcp/
