@@ -1,0 +1,19 @@
+{
+  "auto_reply_precision": 0.5,
+  "review_recall": 0.8214,
+  "routing_accuracy": 0.4167,
+  "intent_accuracy": 0.95,
+  "blessed_from": "2026-08-01T06:15:53.048317+00:00",
+  "golden": "v0",
+  "models": {
+    "classifier": "openrouter/meta-llama/llama-3.3-70b-instruct",
+    "drafter": "sarvam/sarvam-105b",
+    "judge": "openrouter/google/gemini-2.5-flash-lite",
+    "embedding": "openrouter/openai/text-embedding-3-small"
+  },
+  "thresholds": {
+    "auto_reply": 0.9,
+    "review": 0.55,
+    "weak_retrieval_floor": 0.4
+  }
+}

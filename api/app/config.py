@@ -75,7 +75,7 @@ class Settings(BaseSettings):
     rrf_k: int = 60
     weak_retrieval_floor: float = Field(default=0.40, ge=0.0, le=1.0)
 
-    route_auto_reply_threshold: float = Field(default=0.85, ge=0.0, le=1.0)
+    route_auto_reply_threshold: float = Field(default=0.90, ge=0.0, le=1.0)
     route_review_threshold: float = Field(default=0.55, ge=0.0, le=1.0)
 
     composite_weight_judge: float = Field(default=0.5, ge=0.0, le=1.0)
