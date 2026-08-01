@@ -1,0 +1,3146 @@
+{
+  "label": "v1",
+  "timestamp": "2026-07-31T19:46:37.255561+00:00",
+  "golden": "v0",
+  "elapsed_seconds": 368.6,
+  "tickets": 60,
+  "route_agreement": 0.5167,
+  "tickets_with_errors": 1,
+  "total_cost_inr": 2.7807,
+  "models": {
+    "classifier": "openrouter/meta-llama/llama-3.3-70b-instruct",
+    "drafter": "sarvam/sarvam-105b",
+    "judge": "openrouter/google/gemini-2.5-flash-lite",
+    "embedding": "openrouter/openai/text-embedding-3-small"
+  },
+  "rows": [
+    {
+      "id": "g001",
+      "language": "en",
+      "expected_intent": "billing",
+      "expected_urgency": "P3",
+      "expected_route": "auto_reply",
+      "intent": "billing",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4706,
+      "draft": "I'm sorry to hear about the double charge. I understand how frustrating that must be.\n\nTo help investigate this, could you please tell me which payment method you used for the Rs 499 charge? For example, was it a credit card, debit card, or UPI?",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies the customer's issue and asks for necessary clarifying information. It does not make any unsupported claims. The tone is appropriate for a frustrated customer."
+      },
+      "composite_confidence": 0.8458,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 5416
+        },
+        {
+          "node": "retrieve",
+          "ms": 475
+        },
+        {
+          "node": "draft",
+          "ms": 1694
+        },
+        {
+          "node": "score",
+          "ms": 8335
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.039464
+    },
+    {
+      "id": "g002",
+      "language": "en",
+      "expected_intent": "billing",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "billing",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4126,
+      "draft": "I'm sorry you're still being charged after cancelling. Let's get this sorted for you right away.\n\nI've noted the charges from July 1st and today. To stop these and process a refund, I'll need to look into why the cancellation didn't take effect as expected. Could you please share the confirmation email you received from us on June 12th? This will help me verify the cancellation details and move forward with stopping the charges and getting your money back.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8675,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 5058
+        },
+        {
+          "node": "retrieve",
+          "ms": 483
+        },
+        {
+          "node": "draft",
+          "ms": 1143
+        },
+        {
+          "node": "score",
+          "ms": 6348
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.038406
+    },
+    {
+      "id": "g003",
+      "language": "en",
+      "expected_intent": "billing",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "billing",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7085,
+      "draft": "Hi there, thanks for reaching out. We accept a variety of payment methods to make things convenient for you. This includes major credit/debit cards (Visa, Mastercard, Amex), PayPal, Apple Pay, and Google Pay. We also support bank transfers and UPI, depending on your location. Unfortunately, we don't currently offer Cash on Delivery. I hope this helps!",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 3,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft mentions UPI as an accepted payment method, but this is not supported by any of the evidence cases. The draft also correctly identifies that Cash on Delivery is not an option, which is implied by the absence of this option in the evidence cases."
+      },
+      "composite_confidence": 0.8267,
+      "route": "human_review",
+      "route_reason": "composite 0.83 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 7488
+        },
+        {
+          "node": "retrieve",
+          "ms": 534
+        },
+        {
+          "node": "draft",
+          "ms": 1274
+        },
+        {
+          "node": "score",
+          "ms": 9787
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.044641
+    },
+    {
+      "id": "g004",
+      "language": "en",
+      "expected_intent": "billing",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "billing",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7069,
+      "draft": "I understand you need the invoice for your June order for reimbursement purposes. You can download invoices from your account by logging in and navigating to the billing section. If you're having trouble locating the specific June invoice, could you provide either your invoice number or the email address associated with your account? This will help me locate it more efficiently.",
+      "citations": [
+        1,
+        4
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9264,
+      "route": "auto_reply",
+      "route_reason": "composite 0.93 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 11578
+        },
+        {
+          "node": "retrieve",
+          "ms": 443
+        },
+        {
+          "node": "draft",
+          "ms": 2400
+        },
+        {
+          "node": "score",
+          "ms": 10163
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.039929
+    },
+    {
+      "id": "g005",
+      "language": "en",
+      "expected_intent": "billing",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "billing",
+      "urgency": "P3",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4312,
+      "draft": "I understand your concern about being charged in USD despite the order showing in INR. This can definitely be frustrating when you see unexpected foreign transaction fees.\n\nTo help you with this, could you please share the exact amount in USD that appeared on your statement and the date of the transaction? Also, it would be helpful to know which country setting you changed to and when.\n\nThis information will allow us to investigate why the charge was processed in a different currency and determine the best way to resolve this for you.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8562,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 10352
+        },
+        {
+          "node": "retrieve",
+          "ms": 415
+        },
+        {
+          "node": "draft",
+          "ms": 1160
+        },
+        {
+          "node": "score",
+          "ms": 11655
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.038155
+    },
+    {
+      "id": "g006",
+      "language": "en",
+      "expected_intent": "refund",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "refund",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.578,
+      "draft": "I'm sorry to hear your refund is taking longer than expected. I understand how frustrating this must be, especially with the timeline we provided. I'm escalating this to our payments team to get a clear update for you. To help them, could you please share your order number?",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9006,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 14904
+        },
+        {
+          "node": "retrieve",
+          "ms": 420
+        },
+        {
+          "node": "draft",
+          "ms": 12635
+        },
+        {
+          "node": "score",
+          "ms": 7162
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.073976
+    },
+    {
+      "id": "g007",
+      "language": "en",
+      "expected_intent": "refund",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "refund",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5462,
+      "draft": "I completely understand you're waiting for your refund after the pickup. Once the item is received and the refund is approved by the seller, it typically takes about 5-10 business days for the money to appear on your card, depending on your bank's processing times. Since your pickup was just yesterday, you should see it within that window. If you don't see the refund after 10 business days, please let me know and I can look into it for you.",
+      "citations": [
+        1,
+        3
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 4,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "The draft correctly identifies the typical refund timeframe from the evidence cases. It makes a reasonable assumption about the refund approval process, which is not explicitly stated in the evidence but is a logical next step. No significant issues."
+      },
+      "composite_confidence": 0.8459,
+      "route": "human_review",
+      "route_reason": "composite 0.85 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 29736
+        },
+        {
+          "node": "retrieve",
+          "ms": 487
+        },
+        {
+          "node": "draft",
+          "ms": 993
+        },
+        {
+          "node": "score",
+          "ms": 4517
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.046538
+    },
+    {
+      "id": "g008",
+      "language": "en",
+      "expected_intent": "refund",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "refund",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5191,
+      "draft": "I'm sorry to hear your blender arrived damaged. I understand you'd prefer a full refund rather than a replacement.\n\nTo process your refund for order 4471822, I'll need to verify the issue. Could you please upload a photo of the cracked jar? This will help us confirm the damage and move forward with the refund request.\n\nOnce we have the photo, I can guide you through the next steps.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8888,
+      "route": "auto_reply",
+      "route_reason": "composite 0.89 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 9974
+        },
+        {
+          "node": "retrieve",
+          "ms": 420
+        },
+        {
+          "node": "draft",
+          "ms": 1009
+        },
+        {
+          "node": "score",
+          "ms": 3697
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.039598
+    },
+    {
+      "id": "g009",
+      "language": "en",
+      "expected_intent": "refund",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "refund",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.8,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4965,
+      "draft": "Yes, you can usually return opened items as long as they haven't been used. Our policy allows returns for opened packaging if the product is in its original condition and you have the receipt. Since policies can vary by vendor, I recommend checking the specific terms for your item or contacting the seller directly for confirmation.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 3,
+        "completeness": 3,
+        "tone": 5,
+        "notes": "The draft makes a specific claim about returning opened items that is not directly supported by the evidence cases. The evidence cases provide general refund policies but do not address the nuance of opened packaging."
+      },
+      "composite_confidence": 0.706,
+      "route": "human_review",
+      "route_reason": "composite 0.71 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 6328
+        },
+        {
+          "node": "retrieve",
+          "ms": 447
+        },
+        {
+          "node": "draft",
+          "ms": 1375
+        },
+        {
+          "node": "score",
+          "ms": 7109
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.052883
+    },
+    {
+      "id": "g010",
+      "language": "en",
+      "expected_intent": "refund",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "refund",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5491,
+      "draft": "I'm sorry to hear about this issue with your refund. It can be frustrating when funds go to the wrong place.\n\nTo help track where the money is and get it to your new card, I'll need some additional details. Could you please provide the order number or the original transaction ID for this refund?\n\nOnce I have that information, I can look into the status for you and guide you on the next steps.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "No significant issues."
+      },
+      "composite_confidence": 0.8615,
+      "route": "auto_reply",
+      "route_reason": "composite 0.86 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 11596
+        },
+        {
+          "node": "retrieve",
+          "ms": 468
+        },
+        {
+          "node": "draft",
+          "ms": 8238
+        },
+        {
+          "node": "score",
+          "ms": 7106
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.061976
+    },
+    {
+      "id": "g011",
+      "language": "en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P2",
+      "expected_route": "auto_reply",
+      "intent": "account_access",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.494,
+      "draft": "I understand you're not receiving password reset emails and need access urgently for a client presentation. Let's get this sorted for you.\n\nFirst, please double-check that you're using the exact email address associated with your account. Sometimes a small typo can cause issues. Also, check your spam/junk folder one more time, including any subfolders.\n\nIf you're still not seeing the email after 10-15 minutes, it's possible the email is being blocked by your email provider's security settings. You can try adding our domain to your contacts or safe sender list.\n\nIf the problem persists, I can manually trigger a new password reset for you. Could you please confirm the email address you're using to log in?",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 4,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies the customer's issue and urgency. It offers troubleshooting steps and a path to resolution, but it implies it can manually trigger a reset without evidence of this capability in the provided cases."
+      },
+      "composite_confidence": 0.8171,
+      "route": "human_review",
+      "route_reason": "composite 0.82 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 10224
+        },
+        {
+          "node": "retrieve",
+          "ms": 420
+        },
+        {
+          "node": "draft",
+          "ms": 1187
+        },
+        {
+          "node": "score",
+          "ms": 7511
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.042249
+    },
+    {
+      "id": "g012",
+      "language": "en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P2",
+      "expected_route": "auto_reply",
+      "intent": "account_access",
+      "urgency": "P3",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4865,
+      "draft": "I understand how frustrating it is to be locked out of your account. Let's get you back in.\n\nWhen you enter the wrong password too many times, the account locks automatically as a security measure. You don't need to wait for a specific time; you can unlock it right away.\n\nGo to the login page and look for the 'Forgot Password' option. Click on it, and we'll send you an email with a link to reset your password and unlock your account. Please check your spam folder if you don't see the email in your inbox.\n\nIf you run into any trouble, just let me know.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 4,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies the customer's issue and provides a relevant solution based on the evidence. However, it makes an unsupported claim that the account can be unlocked 'right away' without a specific waiting period, which is not explicitly stated in the provided cases."
+      },
+      "composite_confidence": 0.8156,
+      "route": "human_review",
+      "route_reason": "composite 0.82 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 14588
+        },
+        {
+          "node": "retrieve",
+          "ms": 454
+        },
+        {
+          "node": "draft",
+          "ms": 1237
+        },
+        {
+          "node": "score",
+          "ms": 9282
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.048354
+    },
+    {
+      "id": "g013",
+      "language": "en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P3",
+      "expected_route": "auto_reply",
+      "intent": "account_access",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.505,
+      "draft": "You can update your email address directly in your account settings. This process is designed to keep your order history linked to the account.\n\nTo do this, log into your account on our website or app, then navigate to the account settings section. From there, you can edit your email address.\n\nIf you run into any issues or can't find the option, please let me know.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies that the customer can update their email in account settings and that order history will be preserved. However, it does not explicitly address the customer's concern about losing order history, only stating it will be linked. A more direct reassurance would improve completeness."
+      },
+      "composite_confidence": 0.8527,
+      "route": "auto_reply",
+      "route_reason": "composite 0.85 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 12068
+        },
+        {
+          "node": "retrieve",
+          "ms": 466
+        },
+        {
+          "node": "draft",
+          "ms": 10058
+        },
+        {
+          "node": "score",
+          "ms": 7572
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.067337
+    },
+    {
+      "id": "g014",
+      "language": "en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "account_access",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5665,
+      "draft": "I'm sorry to hear about your phone and the loss of your 2FA codes. I understand this is urgent. Let's get you back into your account.\n\nSince you don't have backup codes, the standard recovery process is blocked. I can't complete the account recovery myself, but I can connect you with a specialist who has the tools to handle this security situation. They will guide you through the next steps to verify your identity and regain access.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8983,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 29178
+        },
+        {
+          "node": "retrieve",
+          "ms": 445
+        },
+        {
+          "node": "draft",
+          "ms": 1159
+        },
+        {
+          "node": "score",
+          "ms": 4822
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.045342
+    },
+    {
+      "id": "g015",
+      "language": "en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "account_access",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5854,
+      "draft": "I understand you'd like to close your account and stop receiving emails. To process your account closure, I'll need to verify your identity first. Could you please provide the email address or username associated with your account? Once we have that, we can proceed with the closure.",
+      "citations": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies the customer's request and asks for necessary information to proceed. It does not make any unsupported claims. The draft could be improved by explicitly confirming that emails will also stop, as requested by the customer."
+      },
+      "composite_confidence": 0.8687,
+      "route": "auto_reply",
+      "route_reason": "composite 0.87 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 27398
+        },
+        {
+          "node": "retrieve",
+          "ms": 469
+        },
+        {
+          "node": "draft",
+          "ms": 6321
+        },
+        {
+          "node": "score",
+          "ms": 7357
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.056209
+    },
+    {
+      "id": "g016",
+      "language": "en",
+      "expected_intent": "bug_report",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "bug_report",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7405,
+      "draft": "I'm sorry the app is crashing when you try to view your order history. I've noted that you're on Android 14 and have already tried reinstalling the app twice. Can you please try clearing the app's cache and then see if the issue persists? If it does, we'll look into it further.",
+      "citations": [
+        2
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9331,
+      "route": "auto_reply",
+      "route_reason": "composite 0.93 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 8071
+        },
+        {
+          "node": "retrieve",
+          "ms": 468
+        },
+        {
+          "node": "draft",
+          "ms": 989
+        },
+        {
+          "node": "score",
+          "ms": 3667
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.037836
+    },
+    {
+      "id": "g017",
+      "language": "en",
+      "expected_intent": "bug_report",
+      "expected_urgency": "P1",
+      "expected_route": "escalate",
+      "intent": "bug_report",
+      "urgency": "P1",
+      "detected_language": "en",
+      "sentiment": "angry",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7138,
+      "draft": "I apologize for this serious mix-up with the tracking link. This is definitely not the correct order information, and I understand your concern about privacy.\n\nI've reported this issue to our technical team immediately. We are working to resolve the tracking link problem and will send you a new, correct link as soon as it's fixed. In the meantime, I can confirm that your order is secure and being processed for delivery to the correct address.\n\nWe take these issues very seriously and appreciate you bringing this to our attention.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9278,
+      "route": "escalate",
+      "route_reason": "P1 never auto-replies regardless of confidence",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 4219
+        },
+        {
+          "node": "retrieve",
+          "ms": 478
+        },
+        {
+          "node": "draft",
+          "ms": 1110
+        },
+        {
+          "node": "score",
+          "ms": 5877
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.039844
+    },
+    {
+      "id": "g018",
+      "language": "en",
+      "expected_intent": "bug_report",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "bug_report",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7062,
+      "draft": "I'm sorry the discount isn't applying correctly. Let's try a quick fix: please remove the code and re-enter it carefully. If it still doesn't work, I can look into it further for you.",
+      "citations": [
+        1
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "No significant issues."
+      },
+      "composite_confidence": 0.8779,
+      "route": "auto_reply",
+      "route_reason": "composite 0.88 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 9262
+        },
+        {
+          "node": "retrieve",
+          "ms": 470
+        },
+        {
+          "node": "draft",
+          "ms": 806
+        },
+        {
+          "node": "score",
+          "ms": 4459
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.036344
+    },
+    {
+      "id": "g019",
+      "language": "en",
+      "expected_intent": "bug_report",
+      "expected_urgency": "P3",
+      "expected_route": "auto_reply",
+      "intent": "bug_report",
+      "urgency": "P3",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6465,
+      "draft": "I apologize for the issue with product images not loading on category pages. Since it works on your phone but not your laptop, could you please tell me what browser and version you're using on your laptop? I'll also escalate this to our technical team to investigate further.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "No significant issues."
+      },
+      "composite_confidence": 0.9143,
+      "route": "auto_reply",
+      "route_reason": "composite 0.91 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 4318
+        },
+        {
+          "node": "retrieve",
+          "ms": 1150
+        },
+        {
+          "node": "draft",
+          "ms": 2917
+        },
+        {
+          "node": "score",
+          "ms": 9540
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.042734
+    },
+    {
+      "id": "g020",
+      "language": "en",
+      "expected_intent": "bug_report",
+      "expected_urgency": "P3",
+      "expected_route": "auto_reply",
+      "intent": "bug_report",
+      "urgency": "P3",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.678,
+      "draft": "I'm sorry to hear you're not receiving delivery notifications. It sounds frustrating when you're expecting updates for your orders. I've logged this issue so our team can look into why the push alerts have stopped working for your recent orders. In the meantime, you can always check the status of your orders directly in the app or on our website. If you have any other questions, please let me know.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9056,
+      "route": "auto_reply",
+      "route_reason": "composite 0.91 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 6376
+        },
+        {
+          "node": "retrieve",
+          "ms": 413
+        },
+        {
+          "node": "draft",
+          "ms": 817
+        },
+        {
+          "node": "score",
+          "ms": 10540
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.03917
+    },
+    {
+      "id": "g021",
+      "language": "en",
+      "expected_intent": "how_to",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "how_to",
+      "urgency": "P3",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4886,
+      "draft": "I understand you need to cancel your recent order. Since you placed it less than an hour ago, you can cancel it directly from your order history. Please check the 'My Orders' section and look for the option to cancel the specific order. If you still can't find it, let me know and I can help you further.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 1,
+        "completeness": 1,
+        "tone": 5,
+        "notes": "The draft makes a specific claim about how to cancel an order, but there is no evidence to support this claim. The available evidence cases are all related to how to place an order, not how to cancel one. The draft also implies that the agent looked up the customer's order history, which is not supported by the evidence."
+      },
+      "composite_confidence": 0.6161,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 18347
+        },
+        {
+          "node": "retrieve",
+          "ms": 434
+        },
+        {
+          "node": "draft",
+          "ms": 958
+        },
+        {
+          "node": "score",
+          "ms": 7492
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.039349
+    },
+    {
+      "id": "g022",
+      "language": "en",
+      "expected_intent": "how_to",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "how_to",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4298,
+      "draft": "I understand you'd like to save both your office and home addresses for future checkouts. This is a great feature to have. I'll need to connect you with a specialist who can check the availability of this feature for your account and guide you through the setup process. Could you please provide the email address associated with your account?",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 1,
+        "completeness": 2,
+        "tone": 5,
+        "notes": "The draft makes a factual claim about needing to connect the customer with a specialist to check feature availability, but there is no evidence to support this. The draft does not directly answer the customer's question about whether it's possible to add a second address."
+      },
+      "composite_confidence": 0.6226,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 12812
+        },
+        {
+          "node": "retrieve",
+          "ms": 442
+        },
+        {
+          "node": "draft",
+          "ms": 6987
+        },
+        {
+          "node": "score",
+          "ms": 9840
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.054813
+    },
+    {
+      "id": "g023",
+      "language": "en",
+      "expected_intent": "how_to",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "how_to",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5734,
+      "draft": "I understand you'd like to stop receiving marketing emails while keeping order updates. You can manage your email preferences by clicking the 'Unsubscribe' link at the bottom of our marketing emails, which will take you to your account settings where you can select which types of emails you receive. Alternatively, you can reply to any marketing email with 'Unsubscribe' in the subject line, and we'll remove you from those specific campaigns while keeping your order notifications active.",
+      "citations": [
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8847,
+      "route": "auto_reply",
+      "route_reason": "composite 0.88 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 13207
+        },
+        {
+          "node": "retrieve",
+          "ms": 543
+        },
+        {
+          "node": "draft",
+          "ms": 2116
+        },
+        {
+          "node": "score",
+          "ms": 5429
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.042044
+    },
+    {
+      "id": "g024",
+      "language": "en",
+      "expected_intent": "how_to",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "how_to",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4847,
+      "draft": "Hi there! To track your order, you can check the confirmation email you received when you placed it. It should have a tracking link and your order number. If you can't find it, let me know and I can help you locate it.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 1,
+        "completeness": 1,
+        "tone": 5,
+        "notes": "The draft incorrectly assumes the customer wants to track an order, when the customer explicitly asked how to place an order. The provided evidence cases are all related to placing an order, not tracking one."
+      },
+      "composite_confidence": 0.6153,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 9439
+        },
+        {
+          "node": "retrieve",
+          "ms": 453
+        },
+        {
+          "node": "draft",
+          "ms": 829
+        },
+        {
+          "node": "score",
+          "ms": 7293
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.038347
+    },
+    {
+      "id": "g025",
+      "language": "en",
+      "expected_intent": "how_to",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "how_to",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4068,
+      "draft": "You'll enter the gift card code in the 'Gift Card' box, which is usually located near the payment method selection. It's separate from the promo code field. After applying the gift card, you can use a promo code for any remaining balance if you have one.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 1,
+        "completeness": 1,
+        "tone": 5,
+        "notes": "The draft provides specific instructions on how to use a gift card, but there is no evidence to support these instructions. The provided evidence cases are all related to general how-to questions about shopping or making a purchase, not specifically about gift cards."
+      },
+      "composite_confidence": 0.5997,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 15791
+        },
+        {
+          "node": "retrieve",
+          "ms": 432
+        },
+        {
+          "node": "draft",
+          "ms": 863
+        },
+        {
+          "node": "score",
+          "ms": 6924
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.040118
+    },
+    {
+      "id": "g026",
+      "language": "en",
+      "expected_intent": "shipping",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "shipping",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4115,
+      "draft": "I'm sorry to hear about the issues with your order - arriving late and with a cracked screen is definitely not the experience we want you to have. I understand your frustration with both the delay and the damaged item.\n\nTo help you with a replacement and address your concerns about the shipping fee, I'll need a few details. Could you please share your order number and when you received the package? Also, do you have any photos of the cracked screen that you could share?\n\nOnce I have this information, I can look into getting a replacement shipped to you right away and discuss the shipping fee refund.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8673,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 14825
+        },
+        {
+          "node": "retrieve",
+          "ms": 451
+        },
+        {
+          "node": "draft",
+          "ms": 2820
+        },
+        {
+          "node": "score",
+          "ms": 5880
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.04382
+    },
+    {
+      "id": "g027",
+      "language": "en",
+      "expected_intent": "shipping",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "shipping",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.514,
+      "draft": "I'm sorry to hear your order was marked as delivered but hasn't arrived. I understand this is frustrating. I'm flagging this for our specialist team to investigate the delivery discrepancy. To help them, could you please provide the tracking number for your shipment?",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies the customer's issue and offers a relevant next step. It does not address the customer's specific request for investigation into the delivery discrepancy, but asks for information to facilitate that. No significant issues."
+      },
+      "composite_confidence": 0.8545,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 15595
+        },
+        {
+          "node": "retrieve",
+          "ms": 426
+        },
+        {
+          "node": "draft",
+          "ms": 9599
+        },
+        {
+          "node": "score",
+          "ms": 7569
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.067807
+    },
+    {
+      "id": "g028",
+      "language": "en",
+      "expected_intent": "shipping",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "shipping",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6642,
+      "draft": "I understand this is urgent since your order is already on its way. Unfortunately, once an order is dispatched, we can't change the delivery address directly. However, you can contact the courier company using the tracking number to request a redirection. They might be able to help you. If the courier can't assist, please let us know, and we can discuss other options for you.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9178,
+      "route": "auto_reply",
+      "route_reason": "composite 0.92 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 13562
+        },
+        {
+          "node": "retrieve",
+          "ms": 468
+        },
+        {
+          "node": "draft",
+          "ms": 1058
+        },
+        {
+          "node": "score",
+          "ms": 8816
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.036292
+    },
+    {
+      "id": "g029",
+      "language": "en",
+      "expected_intent": "shipping",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "shipping",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4923,
+      "draft": "I understand your concern about the pincode not being serviceable for Gangtok, Sikkim. Unfortunately, we are currently unable to deliver to that area. This restriction is permanent due to shipping limitations in the region.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 1,
+        "completeness": 1,
+        "tone": 5,
+        "notes": "The draft incorrectly states that the delivery restriction is permanent. None of the evidence cases mention permanent restrictions or delivery limitations to Sikkim. The draft also fails to address the customer's question about whether the restriction is temporary or permanent."
+      },
+      "composite_confidence": 0.6018,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 7609
+        },
+        {
+          "node": "retrieve",
+          "ms": 467
+        },
+        {
+          "node": "draft",
+          "ms": 556
+        },
+        {
+          "node": "score",
+          "ms": 9429
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.040416
+    },
+    {
+      "id": "g030",
+      "language": "en",
+      "expected_intent": "shipping",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "shipping",
+      "urgency": "P3",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6193,
+      "draft": "Yes, we do have an express shipping option that can get your order to you by Friday. This option typically costs extra, but the exact price depends on your location and the items in your order. You can see the specific cost for your address during checkout on our website. If you have any other questions, just let me know!",
+      "citations": [
+        2,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 4,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies that express shipping is available and that it costs extra, which is supported by the evidence. However, it cannot guarantee delivery by Friday as it does not have access to the customer's location or order details. The draft addresses the customer's question about express shipping and cost, but does not fully address the urgency of needing it by Friday."
+      },
+      "composite_confidence": 0.8272,
+      "route": "human_review",
+      "route_reason": "composite 0.83 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 9237
+        },
+        {
+          "node": "retrieve",
+          "ms": 478
+        },
+        {
+          "node": "draft",
+          "ms": 959
+        },
+        {
+          "node": "score",
+          "ms": 10697
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.044136
+    },
+    {
+      "id": "g031",
+      "language": "en",
+      "expected_intent": "feature_request",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "feature_request",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "positive",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4268,
+      "draft": "Thanks for your feedback about the app! We understand how a dark theme would help with night-time use and reduce eye strain. We've logged your request for dark mode and will consider it as we plan future updates to improve your experience.",
+      "citations": [
+        1
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8704,
+      "route": "auto_reply",
+      "route_reason": "composite 0.87 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 12846
+        },
+        {
+          "node": "retrieve",
+          "ms": 464
+        },
+        {
+          "node": "draft",
+          "ms": 5192
+        },
+        {
+          "node": "score",
+          "ms": 8657
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.042761
+    },
+    {
+      "id": "g032",
+      "language": "en",
+      "expected_intent": "feature_request",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": null,
+      "urgency": null,
+      "detected_language": null,
+      "sentiment": null,
+      "classifier_confidence": null,
+      "retrieval_weak": null,
+      "retrieval_similarity": null,
+      "draft": null,
+      "citations": [],
+      "is_safe_fallback": null,
+      "judge_scores": null,
+      "composite_confidence": 0.0,
+      "route": "human_review",
+      "route_reason": "pipeline failure upstream, nothing to auto-send",
+      "errors": [
+        "classify: meta-llama/llama-3.3-70b-instruct produced invalid output after 2 attempts: 1 validation error for Classification\n  Invalid JSON: expected value at line 1 column 1 [type=json_invalid, input_value='\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\\\\\\\\\\\\...\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\\\\\\\\\\\\\\\\', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/json_invalid"
+      ],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 56016
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0
+    },
+    {
+      "id": "g033",
+      "language": "en",
+      "expected_intent": "feature_request",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "feature_request",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7735,
+      "draft": "I understand you need your order history in a spreadsheet for your accountant. Unfortunately, we don't have a direct export feature for order history at this time. I've logged your request, and we'll consider it for future development.\n\nAs a workaround, you can try copying and pasting the information from your account dashboard into a spreadsheet. If you need help with a specific order, I can assist with that.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9397,
+      "route": "auto_reply",
+      "route_reason": "composite 0.94 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 12498
+        },
+        {
+          "node": "retrieve",
+          "ms": 448
+        },
+        {
+          "node": "draft",
+          "ms": 861
+        },
+        {
+          "node": "score",
+          "ms": 10151
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.037883
+    },
+    {
+      "id": "g034",
+      "language": "en",
+      "expected_intent": "feature_request",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "feature_request",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "positive",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.763,
+      "draft": "Thank you for your feedback. We understand that having Hindi voice search would make the app much easier to use for your mother and many others. We have logged your request and will pass it on to our development team for consideration in future updates.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9226,
+      "route": "auto_reply",
+      "route_reason": "composite 0.92 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 10996
+        },
+        {
+          "node": "retrieve",
+          "ms": 440
+        },
+        {
+          "node": "draft",
+          "ms": 6110
+        },
+        {
+          "node": "score",
+          "ms": 6576
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.048679
+    },
+    {
+      "id": "g035",
+      "language": "en",
+      "expected_intent": "feature_request",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "feature_request",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4939,
+      "draft": "We don't currently support splitting a single order payment across multiple cards. This is a feature we don't have available at the moment.\n\nWe've logged your request for split payments and will keep it in mind for future updates. We appreciate you sharing this idea with us.",
+      "citations": [
+        1,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8688,
+      "route": "auto_reply",
+      "route_reason": "composite 0.87 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 25414
+        },
+        {
+          "node": "retrieve",
+          "ms": 454
+        },
+        {
+          "node": "draft",
+          "ms": 851
+        },
+        {
+          "node": "score",
+          "ms": 991
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.035604
+    },
+    {
+      "id": "g036",
+      "language": "en",
+      "expected_intent": "other",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "other",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "positive",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": true,
+      "retrieval_similarity": 0.3928,
+      "draft": "That's wonderful to hear, Ravi did a great job! We're so glad we could get your sync issue sorted out quickly. We'll be sure to pass your kind words along to him.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8636,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 10406
+        },
+        {
+          "node": "retrieve",
+          "ms": 519
+        },
+        {
+          "node": "draft",
+          "ms": 696
+        },
+        {
+          "node": "score",
+          "ms": 3950
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.035908
+    },
+    {
+      "id": "g037",
+      "language": "en",
+      "expected_intent": "other",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "other",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.661,
+      "draft": "I apologize for the frustration you've experienced. I understand you need to speak with a live agent, and I'm here to help connect you.\n\nTo get you to the right person, could you please provide the phone number you'd like us to call?",
+      "citations": [
+        1,
+        3,
+        4
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 3,
+        "tone": 5,
+        "notes": "No significant issues."
+      },
+      "composite_confidence": 0.8355,
+      "route": "human_review",
+      "route_reason": "composite 0.84 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 13323
+        },
+        {
+          "node": "retrieve",
+          "ms": 413
+        },
+        {
+          "node": "draft",
+          "ms": 9719
+        },
+        {
+          "node": "score",
+          "ms": 8306
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.061809
+    },
+    {
+      "id": "g038",
+      "language": "en",
+      "expected_intent": "other",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "other",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.8,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7509,
+      "draft": "Yes, you can definitely leave a review for your product.\n\nYou can visit our website and navigate to the specific product's page. There is usually a section there where you can share your experience and submit your review.\n\nSometimes, you might also receive an email invitation to leave a review after a purchase. If you can't find it on the product page, you can also check our 'Feedback' or 'Contact Us' section for a general feedback form.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8902,
+      "route": "auto_reply",
+      "route_reason": "composite 0.89 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 11880
+        },
+        {
+          "node": "retrieve",
+          "ms": 953
+        },
+        {
+          "node": "draft",
+          "ms": 7970
+        },
+        {
+          "node": "score",
+          "ms": 6818
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.058889
+    },
+    {
+      "id": "g039",
+      "language": "en",
+      "expected_intent": "other",
+      "expected_urgency": "P2",
+      "expected_route": "escalate",
+      "intent": "other",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "angry",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4268,
+      "draft": "I understand your frustration, and I'm sorry you've had to wait so long for a response. I'm here now and ready to help. To get started, could you please tell me what your original issue was about? I'll make sure we get this resolved for you.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 3,
+        "completeness": 2,
+        "tone": 4,
+        "notes": "The draft does not address the customer's explicit request to speak to someone, instead asking for the original issue. This is a significant failure in completeness. The draft does not make any unsupported factual claims."
+      },
+      "composite_confidence": 0.6704,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 4486
+        },
+        {
+          "node": "retrieve",
+          "ms": 428
+        },
+        {
+          "node": "draft",
+          "ms": 790
+        },
+        {
+          "node": "score",
+          "ms": 1132
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.037517
+    },
+    {
+      "id": "g040",
+      "language": "en",
+      "expected_intent": "other",
+      "expected_urgency": "P4",
+      "expected_route": "human_review",
+      "intent": "other",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.8,
+      "retrieval_weak": true,
+      "retrieval_similarity": 0.3801,
+      "draft": "We can definitely help you set up a business account for your office supplies. For volume pricing and account setup, you'll need to speak with our business sales team. They can provide a custom quote based on your monthly needs for 40 people. Could you share your company name and location so I can connect you with the right person?",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 1,
+        "completeness": 2,
+        "tone": 5,
+        "notes": "The draft makes specific claims about setting up a business account and volume pricing, but none of the evidence cases support these claims. The draft also asks for information to connect the customer, which is not supported by the evidence."
+      },
+      "composite_confidence": 0.5827,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 3150
+        },
+        {
+          "node": "retrieve",
+          "ms": 512
+        },
+        {
+          "node": "draft",
+          "ms": 814
+        },
+        {
+          "node": "score",
+          "ms": 7298
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.038383
+    },
+    {
+      "id": "g041",
+      "language": "hi-en",
+      "expected_intent": "billing",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "billing",
+      "urgency": "P2",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5917,
+      "draft": "I understand this is frustrating, especially when the payment has gone through but the order is still pending. I'm sorry you're dealing with this. I have your transaction ID, SBIN4432, and will forward this to our payments team right away. They will investigate the delay and get back to you. We'll prioritize this for you.",
+      "citations": [
+        1,
+        3,
+        4
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 2,
+        "completeness": 3,
+        "tone": 5,
+        "notes": "Groundedness is capped at 2 because the draft implies the agent looked up the customer's account and transaction ID, which is not supported by the evidence. The draft addresses the customer's core issue but does not offer a resolution."
+      },
+      "composite_confidence": 0.7367,
+      "route": "human_review",
+      "route_reason": "composite 0.74 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 8326
+        },
+        {
+          "node": "retrieve",
+          "ms": 409
+        },
+        {
+          "node": "draft",
+          "ms": 12495
+        },
+        {
+          "node": "score",
+          "ms": 7897
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.072512
+    },
+    {
+      "id": "g042",
+      "language": "hi-en",
+      "expected_intent": "refund",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "refund",
+      "urgency": "P2",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5584,
+      "draft": "Samjha bhai, tension mat le. 8 din ho gaye hain toh lagta hai refund process abhi stuck hai. Main isko priority pe rakhta hoon.\n\nEk baar check karte hain ki order cancel hote waqt refund policy kya thi. Kya aap order number share kar sakte ho? Isse mujhe exact details mil jaayenge.\n\nShaadi ke liye paise chahiye, main samajh sakta hoon. Jaise hi mujhe order number milega, main aapko exact status bata dunga aur jald se jald refund karvaunga.",
+      "citations": [
+        1,
+        4
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 3,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft makes an assumption about the refund being stuck without evidence. It correctly identifies the need for an order number to proceed. The tone is appropriate for the customer's sentiment and language."
+      },
+      "composite_confidence": 0.7967,
+      "route": "human_review",
+      "route_reason": "composite 0.80 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 10049
+        },
+        {
+          "node": "retrieve",
+          "ms": 436
+        },
+        {
+          "node": "draft",
+          "ms": 1238
+        },
+        {
+          "node": "score",
+          "ms": 5316
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.047175
+    },
+    {
+      "id": "g043",
+      "language": "hi-en",
+      "expected_intent": "how_to",
+      "expected_urgency": "P3",
+      "expected_route": "auto_reply",
+      "intent": "bug_report",
+      "urgency": "P3",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.85,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4618,
+      "draft": "Aapki pareshani ke liye maafi. Maine issue aur aapka phone restart karne ke baare mein note kar liya hai. Main aapka order #9012 bhi check kar chuka hun. Agar aap chahein, to main aapko us order ka status bata sakta hun jab tak humara team app wala issue fix kar raha hai.",
+      "citations": [
+        1
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 1,
+        "completeness": 1,
+        "tone": 5,
+        "notes": "The draft is not grounded in the provided evidence, as it references an order number that is not relevant to the customer's issue. The draft also fails to address the customer's actual problem, which is a language setting issue in the app."
+      },
+      "composite_confidence": 0.5807,
+      "route": "human_review",
+      "route_reason": "composite 0.58 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 15804
+        },
+        {
+          "node": "retrieve",
+          "ms": 431
+        },
+        {
+          "node": "draft",
+          "ms": 965
+        },
+        {
+          "node": "score",
+          "ms": 7184
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.040352
+    },
+    {
+      "id": "g044",
+      "language": "hi-en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P2",
+      "expected_route": "auto_reply",
+      "intent": "account_access",
+      "urgency": "P2",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4974,
+      "draft": "Main samajh raha hoon ye urgent hai aur aapko reset email nahi mil raha. Sorry for the trouble.\n\nAapki help karne ke liye, please batayein ki aap kaunsa email address use kar rahe hain aur reset link request karne ke baad kya dikhta hai screen par? Kya koi error message aata hai?\n\nJab aap ye details denge, main check kar sakta hoon ki problem kya hai.",
+      "citations": [
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8695,
+      "route": "auto_reply",
+      "route_reason": "composite 0.87 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 9693
+        },
+        {
+          "node": "retrieve",
+          "ms": 444
+        },
+        {
+          "node": "draft",
+          "ms": 9741
+        },
+        {
+          "node": "score",
+          "ms": 7119
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.064531
+    },
+    {
+      "id": "g045",
+      "language": "hi-en",
+      "expected_intent": "shipping",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "shipping",
+      "urgency": "P3",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.8,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.533,
+      "draft": "Hi, I understand your frustration about the tracking updates for order 7729341. It's completely normal to want to know where your package is after a few days. Let me check the current status for you right away.",
+      "citations": [
+        1
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 2,
+        "completeness": 3,
+        "tone": 4,
+        "notes": "The draft implies the agent looked up the order status, which is not supported by the evidence. The draft correctly identifies the customer's issue and provides a relevant response."
+      },
+      "composite_confidence": 0.6466,
+      "route": "human_review",
+      "route_reason": "composite 0.65 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 8752
+        },
+        {
+          "node": "retrieve",
+          "ms": 493
+        },
+        {
+          "node": "draft",
+          "ms": 686
+        },
+        {
+          "node": "score",
+          "ms": 11061
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.039819
+    },
+    {
+      "id": "g046",
+      "language": "hi-en",
+      "expected_intent": "bug_report",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "bug_report",
+      "urgency": "P2",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5158,
+      "draft": "Sorry, I understand how frustrating it must be when the app crashes right when you need it. I've noted the issue with the export button and have reported it to our team for a fix. In the meantime, is there any other way I can help you with your order information?",
+      "citations": [
+        1
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "No significant issues."
+      },
+      "composite_confidence": 0.8398,
+      "route": "human_review",
+      "route_reason": "composite 0.84 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 9259
+        },
+        {
+          "node": "retrieve",
+          "ms": 537
+        },
+        {
+          "node": "draft",
+          "ms": 661
+        },
+        {
+          "node": "score",
+          "ms": 10510
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.037797
+    },
+    {
+      "id": "g047",
+      "language": "hi-en",
+      "expected_intent": "feature_request",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "feature_request",
+      "urgency": "P4",
+      "detected_language": "hi-en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4278,
+      "draft": "Aapki request ke liye thank you. Humne dark mode feature ko apni development team ke liye log kar liya hai aur woh isse review karenge. Jab iska koi update milega, toh hum aapko zaroor batayenge.\n\nAbhi ke liye, aap apne phone ke settings mein 'Night Mode' ya 'Reading Mode' use kar sakte hain, jo screen ke rang ko dark kar deta hai. Isse aapki aankhon ko bhi thoda rest milega.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8556,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 23388
+        },
+        {
+          "node": "retrieve",
+          "ms": 473
+        },
+        {
+          "node": "draft",
+          "ms": 1212
+        },
+        {
+          "node": "score",
+          "ms": 4428
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.057308
+    },
+    {
+      "id": "g048",
+      "language": "hi-en",
+      "expected_intent": "billing",
+      "expected_urgency": "P3",
+      "expected_route": "auto_reply",
+      "intent": "billing",
+      "urgency": "P2",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4831,
+      "draft": "Aapki yeh pareshani samajh gaya. Ek hi order ke liye do baar charge hona bilkul galat hai, aur iske liye hum maafi chahte hain. Main aapke liye is issue ko investigate kar raha hoon. Aap please thoda wait kijiye, main jaldi hi aapko update dunga.",
+      "citations": [
+        1,
+        2,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 3,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies the customer's issue and apologizes. However, it implies the agent is investigating the issue, which is not supported by the evidence cases. The draft could be improved by asking for more details to facilitate the investigation."
+      },
+      "composite_confidence": 0.7666,
+      "route": "human_review",
+      "route_reason": "composite 0.77 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 27449
+        },
+        {
+          "node": "retrieve",
+          "ms": 440
+        },
+        {
+          "node": "draft",
+          "ms": 809
+        },
+        {
+          "node": "score",
+          "ms": 7628
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.060094
+    },
+    {
+      "id": "g049",
+      "language": "hi-en",
+      "expected_intent": "how_to",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "how_to",
+      "urgency": "P4",
+      "detected_language": "hi-en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4509,
+      "draft": "Koi baat nahi, address change karna bahut simple hai. Aap humare app ya website mein login kariye aur 'My Account' section mein jaayiye. Wahan aapko 'Address Book' ya 'Manage Addresses' ka option milega. Purane address ko edit ya delete kar sakte hain aur naya address add kar sakte hain. Agar koi dikkat aaye toh please bataiye.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 1,
+        "completeness": 1,
+        "tone": 5,
+        "notes": "The draft provides instructions on how to change an address, but none of the evidence cases contain information about changing delivery addresses. The draft also implies the agent looked up account information, which is not supported by the evidence."
+      },
+      "composite_confidence": 0.5935,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 16531
+        },
+        {
+          "node": "retrieve",
+          "ms": 428
+        },
+        {
+          "node": "draft",
+          "ms": 906
+        },
+        {
+          "node": "score",
+          "ms": 6215
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.040542
+    },
+    {
+      "id": "g050",
+      "language": "hi-en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "account_access",
+      "urgency": "P2",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4889,
+      "draft": "Aapke account suspend hone se mujhe bahut afsos hai. Main samajh sakta hun ki yeh kitna frustrating hoga. Isko theek karne ke liye mujhe ek specialist ko involve karna padega. Kya aap please apna account email ID share kar sakte hain?",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies the customer's issue and sentiment. It appropriately asks for more information to proceed, as the provided evidence does not contain specific steps for account suspension resolution."
+      },
+      "composite_confidence": 0.8494,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 19824
+        },
+        {
+          "node": "retrieve",
+          "ms": 411
+        },
+        {
+          "node": "draft",
+          "ms": 8304
+        },
+        {
+          "node": "score",
+          "ms": 7810
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.06282
+    },
+    {
+      "id": "g051",
+      "language": "hi-en",
+      "expected_intent": "shipping",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "shipping",
+      "urgency": "P2",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4495,
+      "draft": "मुझे खेद है कि आपको damaged product मिला है। यह सुनकर बुरा लगा। मैं आपके लिए specialist को alert कर रहा हूं जो इस issue को priority basis पर handle करेगा। Replacement process start करने के लिए मुझे कुछ details चाहिए - आपका order number और damaged item का photo। Please ये details share करें ताकि हम जल्द से जल्द आपका replacement process कर सकें।",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "No significant issues."
+      },
+      "composite_confidence": 0.8599,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 13362
+        },
+        {
+          "node": "retrieve",
+          "ms": 461
+        },
+        {
+          "node": "draft",
+          "ms": 1885
+        },
+        {
+          "node": "score",
+          "ms": 8292
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.04765
+    },
+    {
+      "id": "g052",
+      "language": "hi-en",
+      "expected_intent": "bug_report",
+      "expected_urgency": "P3",
+      "expected_route": "auto_reply",
+      "intent": "bug_report",
+      "urgency": "P3",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6296,
+      "draft": "Sorry ki aapko order update ke notifications nahi mil rahe. Maine aapke notification settings reset kar diye hain. Isse shayad problem solve ho jaaye. Main is issue ko hamari team ke liye bhi log kar raha hun taaki aage se aisa na ho. Aap chahein toh app ya website mein login karke bhi apna order status check kar sakte hain. Agar kuch aur chahiye toh bataiye.",
+      "citations": [
+        4
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 4,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies the issue and offers a relevant solution based on the evidence. It could be improved by explicitly stating that the agent cannot check the customer's specific account settings, as this is implied but not stated."
+      },
+      "composite_confidence": 0.8293,
+      "route": "human_review",
+      "route_reason": "composite 0.83 in the review band",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 9674
+        },
+        {
+          "node": "retrieve",
+          "ms": 420
+        },
+        {
+          "node": "draft",
+          "ms": 9671
+        },
+        {
+          "node": "score",
+          "ms": 10221
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.066339
+    },
+    {
+      "id": "g053",
+      "language": "hi-en",
+      "expected_intent": "how_to",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "how_to",
+      "urgency": "P2",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4527,
+      "draft": "Koi baat nahi, galti se order ho jaata hai. Main aapki help kar sakta hun. Kya aap bata sakte hain ki aapne kaunsa app use kiya aur order kis time pe kiya? Isse main check kar sakta hun ki cancel karne ka option abhi bhi available hai ya nahi.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 3,
+        "completeness": 3,
+        "tone": 5,
+        "notes": "The draft does not make any specific promises or claims that are not supported by the evidence. However, it does not provide a direct solution or confirm if cancellation is possible, which limits its completeness. The tone is appropriate for the customer's sentiment."
+      },
+      "composite_confidence": 0.7272,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 9522
+        },
+        {
+          "node": "retrieve",
+          "ms": 805
+        },
+        {
+          "node": "draft",
+          "ms": 1104
+        },
+        {
+          "node": "score",
+          "ms": 6969
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.040186
+    },
+    {
+      "id": "g054",
+      "language": "hi-en",
+      "expected_intent": "other",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "other",
+      "urgency": "P4",
+      "detected_language": "hi-en",
+      "sentiment": "positive",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5756,
+      "draft": "Aap se baat karke bahut khushi hui! Hum khush hain ki hum aapki problem jaldi solve kar paye. Agar aapko aage koi madad chahiye, to hum hamesha yahan hain. Dhanyawaad aapke feedback ke liye!",
+      "citations": [],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8851,
+      "route": "auto_reply",
+      "route_reason": "composite 0.89 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 9436
+        },
+        {
+          "node": "retrieve",
+          "ms": 414
+        },
+        {
+          "node": "draft",
+          "ms": 916
+        },
+        {
+          "node": "score",
+          "ms": 9869
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.036069
+    },
+    {
+      "id": "g055",
+      "language": "hi-en",
+      "expected_intent": "billing",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "bug_report",
+      "urgency": "P3",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.8,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.674,
+      "draft": "Sorry for the trouble with the invoice download. Blank page aane se bohot pareshani hoti hai, I understand.\n\nMaine is issue ka note le liya hai aur humari team check kar rahi hai ki PDF kyun sahi se generate nahi ho raha.\n\nAs a quick solution, main aapko invoice ka text-based summary bhej sakta hoon, ya phir main manually prepare karke email kar dunga. Aapko kaunsa option better lagega?",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8748,
+      "route": "auto_reply",
+      "route_reason": "composite 0.87 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 14369
+        },
+        {
+          "node": "retrieve",
+          "ms": 412
+        },
+        {
+          "node": "draft",
+          "ms": 9562
+        },
+        {
+          "node": "score",
+          "ms": 5606
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.0657
+    },
+    {
+      "id": "g056",
+      "language": "en",
+      "expected_intent": "other",
+      "expected_urgency": "P4",
+      "expected_route": "human_review",
+      "intent": "other",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.2,
+      "retrieval_weak": true,
+      "retrieval_similarity": 0.3683,
+      "draft": "I understand it's not working for you. Could you please tell me what specific feature or page you're trying to use? A little more detail will help me figure out the next steps.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 2,
+        "tone": 5,
+        "notes": "The draft does not address the customer's request at all. The customer stated 'it doesn't work' and the draft asks for more details about what feature or page the customer is trying to use, which is not what the customer asked."
+      },
+      "composite_confidence": 0.5337,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 8858
+        },
+        {
+          "node": "retrieve",
+          "ms": 442
+        },
+        {
+          "node": "draft",
+          "ms": 727
+        },
+        {
+          "node": "score",
+          "ms": 7830
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.042383
+    },
+    {
+      "id": "g057",
+      "language": "hi",
+      "expected_intent": "account_access",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "account_access",
+      "urgency": "P2",
+      "detected_language": "hi",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": true,
+      "retrieval_similarity": 0.2513,
+      "draft": "मैं समझ सकता हूँ कि आपका खाता निलंबित कर दिया गया है। मैं देख रहा हूँ कि यह एक गंभीर मुद्दा है, और मैं इसे प्राथमिकता दे रहा हूँ।\n\nखाता निलंबन आमतौर पर नियमों के उल्लंघन के कारण होता है, लेकिन मैं देखूँगा कि आपके मामले में क्या कारण था। क्या आप मुझे बता सकते हैं कि आपको क्या लगता है कि आपने क्या गलत किया होगा, या क्या आपको कोई सूचना मिली थी?\n\nएक बार मुझे विवरण मिल जाए, तो मैं इसे जल्द से जल्द हल करने में आपकी मदद कर सकता हूँ।",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 3,
+        "completeness": 3,
+        "tone": 5,
+        "notes": "The draft correctly identifies the customer's issue and asks clarifying questions. However, it makes an unsupported claim that it will investigate the reason for suspension, which is not supported by the provided evidence cases. The tone is appropriate for the customer's frustration."
+      },
+      "composite_confidence": 0.7019,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 12421
+        },
+        {
+          "node": "retrieve",
+          "ms": 475
+        },
+        {
+          "node": "draft",
+          "ms": 1050
+        },
+        {
+          "node": "score",
+          "ms": 10653
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.045078
+    },
+    {
+      "id": "g058",
+      "language": "en",
+      "expected_intent": "bug_report",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "bug_report",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": true,
+      "retrieval_similarity": 0.3243,
+      "draft": "I apologize for the issue you're experiencing with the 429 errors on the bulk endpoint. It sounds like there's a discrepancy between your plan's rate limit and the actual limit being enforced. I've documented this and will escalate it to our technical team for investigation. Could you please share the exact error response you're seeing, including any headers, so we can better understand what's happening?",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "No significant issues."
+      },
+      "composite_confidence": 0.8165,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 9846
+        },
+        {
+          "node": "retrieve",
+          "ms": 454
+        },
+        {
+          "node": "draft",
+          "ms": 820
+        },
+        {
+          "node": "score",
+          "ms": 9885
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.038435
+    },
+    {
+      "id": "g059",
+      "language": "en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P3",
+      "expected_route": "escalate",
+      "intent": "account_access",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.9,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5123,
+      "draft": "I understand you want to export your data before account deletion. I can help with that process, but I'll need your account username or email address to locate your data for export. For the data protection compliance details and confirmation about permanent deletion, I don't have that specific information readily available. Once you provide your account details, I can guide you through the export process and connect you with someone who can address the compliance questions.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 3,
+        "completeness": 3,
+        "tone": 5,
+        "notes": "The draft correctly identifies the need for account information to proceed with the export. However, it fails to provide any information regarding data deletion compliance, which was a specific customer request."
+      },
+      "composite_confidence": 0.7391,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 10652
+        },
+        {
+          "node": "retrieve",
+          "ms": 427
+        },
+        {
+          "node": "draft",
+          "ms": 1959
+        },
+        {
+          "node": "score",
+          "ms": 9322
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.043021
+    },
+    {
+      "id": "g060",
+      "language": "en",
+      "expected_intent": "refund",
+      "expected_urgency": "P1",
+      "expected_route": "escalate",
+      "intent": "billing",
+      "urgency": "P1",
+      "detected_language": "en",
+      "sentiment": "angry",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4523,
+      "draft": "I understand you're taking further action after three refund requests were not addressed. We need to resolve this directly. Please provide the date of the original purchase and the amount charged. We can then review your case and work towards a resolution.",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 1,
+        "completeness": 1,
+        "tone": 1,
+        "notes": "The draft completely misunderstands the customer's issue and urgency. The customer has filed a chargeback and contacted a lawyer, not a simple payment problem. The tone is inappropriate for an angry customer facing legal action. The evidence cases are irrelevant as they deal with basic payment issue notifications, not chargebacks or legal threats."
+      },
+      "composite_confidence": 0.4755,
+      "route": "escalate",
+      "route_reason": "P1 never auto-replies regardless of confidence",
+      "errors": [],
+      "timings_ms": [
+        {
+          "node": "classify",
+          "ms": 12977
+        },
+        {
+          "node": "retrieve",
+          "ms": 426
+        },
+        {
+          "node": "draft",
+          "ms": 742
+        },
+        {
+          "node": "score",
+          "ms": 7087
+        },
+        {
+          "node": "route",
+          "ms": 0
+        }
+      ],
+      "cost_inr": 0.057334
+    }
+  ]
+}
