@@ -4,6 +4,14 @@ An LLM agent that triages inbound customer support tickets end to end. Each tick
 
 Ticket triage is one of the most widely deployed production uses of LLM agents, because the agent does not need to resolve every ticket. It needs to understand each ticket well enough to classify it, draft a response when the evidence supports one, and know when to hand off. This project treats that handoff as the feature: a deterministic routing policy, a human review queue, an audit trail, and an eval suite that measures whether the handoff decision is any good.
 
+![Review screen](assets/review.png)
+
+A real ticket from the review queue. The drafter promised to reverse a double charge and attached a 3–5 day timeline; the judge scored it 2/5 on groundedness because no retrieved case supports either the action or the timeline. The composite fell to 0.78, below the 0.90 auto-reply threshold, so the router sent it to a human with the draft, the judge's reasoning, and the five cases it retrieved all attached.
+
+![Queues](assets/queues.png)
+
+The review queue. The row with no intent and no confidence is a ticket that failed classification — it skipped retrieval and drafting entirely and was routed straight to a human.
+
 ## Architecture
 
 ```
