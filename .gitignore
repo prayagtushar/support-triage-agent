@@ -1,5 +1,6 @@
 # Local working docs (build guide, notes). Intentionally not tracked.
-docs/
+docs/*
+!docs/failure_analysis.md
 
 # Environment files
 .env
