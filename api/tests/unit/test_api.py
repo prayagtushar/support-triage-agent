@@ -5,12 +5,26 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from app import repo
+from app import main, repo
 from app.main import app
 from app.routers import tickets as tickets_router
 
 TICKET_ID = "11111111-1111-1111-1111-111111111111"
 RUN_ID = "22222222-2222-2222-2222-222222222222"
+
+
+@pytest.fixture(autouse=True)
+def offline_lifespan(monkeypatch):
+    """Faking the repo functions is not enough: entering TestClient runs the
+    lifespan, which opens a real pool and checkpointer before any route is hit."""
+
+    async def noop() -> None:
+        return None
+
+    monkeypatch.setattr(repo, "open_pool", noop)
+    monkeypatch.setattr(repo, "close_pool", noop)
+    monkeypatch.setattr(main, "get_checkpointer", noop)
+    monkeypatch.setattr(main, "close_checkpointer", noop)
 
 
 @pytest.fixture
