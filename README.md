@@ -91,7 +91,7 @@ Measured on golden v0 (60 hand-written tickets, 27% non-English, 5 adversarial),
 
 The weights (0.5 judge, 0.3 classifier, 0.2 retrieval) were a guess, and two of the three inputs are optimistic by construction. Fitting them against outcomes is the obvious next step.
 
-The root cause under most of this is the corpus. Bitext's "resolutions" are largely templates — *"please provide your account details and I'll look it up"* — so retrieval finds topically similar cases that contain no answer to ground on. 25 of 60 drafts declared themselves unable to answer while only 5 had weak retrieval, and the drafter was not wrong to. Full diagnosis in `docs/failure_analysis.md`.
+The root cause under most of this is the corpus. Bitext's "resolutions" are largely templates — *"please provide your account details and I'll look it up"* — so retrieval finds topically similar cases that contain no answer to ground on. 25 of 60 drafts declared themselves unable to answer while only 5 had weak retrieval, and the drafter was not wrong to.
 
 ## What works well
 
@@ -135,7 +135,7 @@ make calibrate   # reliability diagram
 make gate        # fail if the latest run regressed against the baseline
 ```
 
-The default test suite is offline: anything needing a database, a network call, or an API key is behind the `integration` marker. Full evals stay out of CI deliberately — they need provider keys and minutes of runtime, so CI runs the offline half and the eval gate is a pre-merge make target.
+The default test suite is offline: anything needing a database, a network call, or an API key is behind the `integration` marker, so `make check` runs clean with nothing else started. Full evals are a pre-merge make target rather than part of that suite — they need provider keys and minutes of runtime.
 
 ## Repository layout
 

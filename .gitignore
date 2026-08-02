@@ -1,6 +1,6 @@
-# Local working docs (build guide, notes). Intentionally not tracked.
-docs/*
-!docs/failure_analysis.md
+# Local working docs and CI config. Intentionally not tracked.
+docs/
+.github/
 
 # Environment files
 .env
