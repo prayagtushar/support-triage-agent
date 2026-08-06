@@ -2,13 +2,53 @@ import type { AuditRow, QueueRow, ReviewPayload, TicketDetail, TicketStatus } fr
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
+const DEMO_KEY_STORAGE = "triage-demo-key";
+
+/**
+ * The key for the two endpoints that cost money: submitting a ticket and
+ * recording a review. Reads need nothing.
+ *
+ * It lives in localStorage rather than being baked into the bundle, because a
+ * key compiled into a static SPA is readable by anyone who opens devtools and
+ * would not be a gate at all. The server-side daily cap is the real ceiling.
+ */
+export function getDemoKey(): string {
+  return localStorage.getItem(DEMO_KEY_STORAGE) ?? "";
+}
+
+export function setDemoKey(key: string): void {
+  if (key) localStorage.setItem(DEMO_KEY_STORAGE, key);
+  else localStorage.removeItem(DEMO_KEY_STORAGE);
+}
+
+export class WriteKeyError extends Error {}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...init,
-  });
+  // Spreading init last would drop these headers entirely the moment a caller
+  // passes its own, so merge rather than overwrite.
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...((init?.headers as Record<string, string>) ?? {}),
+  };
+
+  const key = getDemoKey();
+  if (key) headers["X-Demo-Key"] = key;
+
+  const response = await fetch(`${BASE}${path}`, { ...init, headers });
+
   if (!response.ok) {
     const detail = await response.text();
+    if (response.status === 401) {
+      throw new WriteKeyError(
+        "This action needs a demo key. Reading the queues is open to everyone; " +
+          "submitting tickets and recording reviews is not.",
+      );
+    }
+    if (response.status === 429) {
+      throw new Error(
+        "The daily demo limit has been reached. It resets on a rolling 24-hour window.",
+      );
+    }
     throw new Error(`${response.status} ${response.statusText}: ${detail.slice(0, 200)}`);
   }
   return response.json() as Promise<T>;
