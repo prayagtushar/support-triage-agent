@@ -1,5 +1,7 @@
 # Support Triage Agent
 
+**[Live review queue →](https://support-triage-sigma.vercel.app)** — the queues, drafts, judge scores, retrieved cases and audit log are open, no signup. Submitting a ticket or recording a review needs a key, because those spend a pipeline run and write to the audit trail.
+
 An LLM agent that triages inbound customer support tickets end to end. Each ticket is classified by intent and urgency, matched against similar resolved cases, answered with a grounded draft reply, scored by a second model, and then routed by deterministic code: confident, well-grounded drafts go to an auto-reply queue, everything else lands in a human review queue with the full context attached.
 
 Ticket triage is one of the most widely deployed production uses of LLM agents, because the agent does not need to resolve every ticket. It needs to understand each ticket well enough to classify it, draft a response when the evidence supports one, and know when to hand off. This project treats that handoff as the feature: a deterministic routing policy, a human review queue, an audit trail, and an eval suite that measures whether the handoff decision is any good.
@@ -51,7 +53,7 @@ Key design decisions:
 | Orchestration | LangGraph, Postgres checkpointer |
 | API | FastAPI, Pydantic v2, psycopg3 |
 | Storage and retrieval | PostgreSQL + pgvector, hybrid vector + full-text with reciprocal rank fusion |
-| Models | Llama 3.3 70B (classify), Sarvam-105B (draft), Gemini 2.5 Flash Lite (judge), text-embedding-3-small — all behind one OpenAI-compatible client |
+| Models | Llama 3.3 70B (classify), Sarvam-105B (draft), Gemini 2.5 Flash Lite (judge) — all behind one OpenAI-compatible client; embeddings are `gemini-embedding-001` at 1536 dims, which needs Gemini's own batch endpoint rather than that client |
 | Observability | Langfuse traces, structlog JSON logs |
 | Evaluation | 60-ticket golden set, threshold sweep, reliability diagram, regression gate |
 | Dashboard | Vite, React 19, TanStack Query, Tailwind |
@@ -129,7 +131,7 @@ make seed        # fill the queues
 Quality gates and evals:
 
 ```bash
-make check       # ruff, mypy, offline tests (78 tests, under 2s)
+make check       # ruff, mypy, offline tests (93 tests, under 2s)
 make eval        # full pipeline over the golden set, needs API keys
 make calibrate   # reliability diagram
 make gate        # fail if the latest run regressed against the baseline
@@ -137,12 +139,31 @@ make gate        # fail if the latest run regressed against the baseline
 
 The default test suite is offline: anything needing a database, a network call, or an API key is behind the `integration` marker, so `make check` runs clean with nothing else started. Full evals are a pre-merge make target rather than part of that suite — they need provider keys and minutes of runtime.
 
+## Deployment
+
+The API runs on Cloud Run, the dashboard on Vercel, and Postgres on Supabase, all inside the free tiers.
+
+**Reading is public.** The queues, each ticket's draft, the judge's reasoning and scores, the retrieved cases and the audit log are all browsable without an account, because that is the part worth looking at.
+
+**Writing needs a key.** Submitting a ticket spends a pipeline run, and recording a review mutates the audit trail, so both require an `X-Demo-Key` header. The dashboard prompts for it and keeps it in `localStorage` rather than baking it into the build — a key compiled into a static SPA is readable by anyone who opens devtools, so it would not be a gate at all.
+
+The key is a speed bump, not authentication. The real ceiling is a server-side cap of 50 tickets per rolling 24 hours, which applies whether or not a key is configured: a cap that only bound authenticated callers would bound nothing, given the key is meant to be handed out.
+
+Two deployment details are load-bearing rather than incidental:
+
+- **`--no-cpu-throttling`.** `POST /tickets` returns 202 and runs the 39–48s pipeline in a background task, after the response is sent. Cloud Run's default throttling would cut CPU at that exact moment and strand every ticket at status `received`. The failure is silent — no error, just a queue that never moves — so `scripts/check_stuck.py` reports tickets that have sat in `received` too long.
+- **`--max-instances 1`.** The provider rate limiters are per-process and set to free-tier ceilings. A second instance doubles the real request rate and earns 429s. This is a correctness constraint that happens to also be cheap.
+
+Spend is capped rather than merely watched: a ₹150/month budget publishes to Pub/Sub, and a Cloud Function detaches the billing account if it is ever actually reached. The runbook, including the two IAM grants that make the kill switch work and how to recover from a trip, is in `docs/DEPLOY.md`.
+
+The deployed corpus was regenerated during deployment rather than copied, and generation is not deterministic: it holds 3,472 cases (3,000 Bitext, 399 synthetic, 73 Hinglish) against the 3,400 described above, with 7 Hinglish cases lost to provider timeouts. The eval numbers in this README were measured on the original corpus and have not been re-run against the deployed one.
+
 ## Repository layout
 
 ```
 api/    FastAPI service, the LangGraph agent, eval suite (Python, uv)
 ui/     Review dashboard (Vite + React, bun)
-infra/  Docker Compose
+infra/  Docker Compose, Cloud Run deploy script, billing kill switch
 ```
 
 ## Licence
