@@ -1,0 +1,17 @@
+# gcloud builds submit does NOT read .dockerignore. Without this file it
+# uploads the whole directory as the build context - 388 MB, of which 381 MB is
+# the local virtualenv and type-checker caches - and the upload alone takes
+# longer than the build.
+#
+# Keep in sync with .dockerignore.
+
+.venv
+.pytest_cache
+.ruff_cache
+.mypy_cache
+__pycache__
+*.pyc
+.env
+data
+evals/reports
+tests
