@@ -55,6 +55,12 @@ def client(monkeypatch):
     async def fake_actions(limit: int, offset: int) -> list[dict[str, Any]]:
         return []
 
+    # The daily cap runs as a dependency on POST /tickets, so it hits the
+    # repository before any handler body does. The cap itself is covered in
+    # test_write_gate.py; here it just has to stay out of the way.
+    async def fake_count_today() -> int:
+        return 0
+
     monkeypatch.setattr(repo, "insert_ticket", fake_insert_ticket)
     monkeypatch.setattr(repo, "update_ticket_status", fake_update_status)
     monkeypatch.setattr(repo, "get_ticket_detail", fake_detail)
@@ -62,6 +68,7 @@ def client(monkeypatch):
     monkeypatch.setattr(repo, "list_tickets_by_status", fake_list)
     monkeypatch.setattr(repo, "get_run", fake_run)
     monkeypatch.setattr(repo, "list_review_actions", fake_actions)
+    monkeypatch.setattr(repo, "count_tickets_last_24h", fake_count_today)
 
     # The pipeline is exercised in its own tests; here it must not run.
     async def fake_process(ticket_id: str, payload: Any) -> None:

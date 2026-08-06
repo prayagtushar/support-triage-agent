@@ -4,16 +4,49 @@ import uuid
 from typing import Any, Literal
 
 import structlog
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app import repo
 from app.agent.checkpoint import get_checkpointer
 from app.agent.graph import build_graph
+from app.config import settings
 from app.observability import flush, trace_run
 
 log = structlog.get_logger()
 router = APIRouter(tags=["tickets"])
+
+
+async def require_write_key(x_demo_key: str | None = Header(default=None)) -> None:
+    """Gates the endpoints that cost something. Reads stay open.
+
+    An unconfigured key disables the gate rather than locking everyone out, so
+    a missing environment variable degrades to local-dev behaviour instead of a
+    demo that 401s on every request.
+    """
+    expected = settings.demo_write_key
+    if not expected:
+        return
+    if x_demo_key != expected:
+        raise HTTPException(status_code=401, detail="a demo key is required for this action")
+
+
+async def enforce_daily_cap() -> None:
+    """The actual spend ceiling.
+
+    Deliberately independent of the write key: the key can leak, and a cap that
+    applied only to unauthenticated callers would bound nothing. Applies to
+    ticket creation alone, because that is what starts a pipeline run. Reviews
+    are free, and clearing the queue must never be rate limited.
+    """
+    used = await repo.count_tickets_last_24h()
+    if used >= settings.max_tickets_per_day:
+        log.warning("daily_cap_reached", used=used, cap=settings.max_tickets_per_day)
+        raise HTTPException(
+            status_code=429,
+            detail=f"daily demo limit of {settings.max_tickets_per_day} tickets reached",
+        )
+
 
 ROUTE_TO_STATUS = {
     "auto_reply": "auto_replied",
@@ -80,7 +113,12 @@ async def process_ticket(ticket_id: str, payload: TicketIn) -> None:
         structlog.contextvars.clear_contextvars()
 
 
-@router.post("/tickets", status_code=202, response_model=TicketAccepted)
+@router.post(
+    "/tickets",
+    status_code=202,
+    response_model=TicketAccepted,
+    dependencies=[Depends(require_write_key), Depends(enforce_daily_cap)],
+)
 async def create_ticket(payload: TicketIn, background: BackgroundTasks) -> TicketAccepted:
     ticket_id = await repo.insert_ticket(
         subject=payload.subject,
@@ -112,7 +150,11 @@ async def get_ticket(ticket_id: str) -> dict[str, Any]:
     return detail
 
 
-@router.post("/tickets/{ticket_id}/review", status_code=201)
+@router.post(
+    "/tickets/{ticket_id}/review",
+    status_code=201,
+    dependencies=[Depends(require_write_key)],
+)
 async def review_ticket(ticket_id: str, payload: ReviewIn) -> dict[str, Any]:
     _validate_uuid(ticket_id)
     detail = await repo.get_ticket_detail(ticket_id)
