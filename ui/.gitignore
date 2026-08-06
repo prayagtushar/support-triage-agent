@@ -2,3 +2,7 @@ node_modules
 dist
 .env
 *.local
+.vercel
+
+# TypeScript incremental build state, regenerated on every typecheck.
+tsconfig.tsbuildinfo

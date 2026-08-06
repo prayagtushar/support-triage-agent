@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 
 import "./index.css";
+import DemoKey from "./components/DemoKey";
 import Audit from "./routes/Audit";
 import Queues from "./routes/Queues";
 import TicketReview from "./routes/TicketReview";
@@ -28,6 +29,9 @@ function Shell({ children }: { children: React.ReactNode }) {
             <NavLink to="/" end className={navClass}>Queues</NavLink>
             <NavLink to="/audit" className={navClass}>Audit</NavLink>
           </nav>
+          <span className="ml-auto">
+            <DemoKey />
+          </span>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
