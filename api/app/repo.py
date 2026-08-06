@@ -88,6 +88,18 @@ async def update_ticket_status(ticket_id: str, status: str) -> None:
     )
 
 
+async def count_tickets_last_24h() -> int:
+    """Backs the daily spend cap.
+
+    A rolling 24h window rather than a calendar day, so the ceiling cannot be
+    doubled by submitting either side of midnight.
+    """
+    row = await _fetch_one(
+        "SELECT count(*) AS n FROM tickets WHERE created_at > now() - interval '24 hours'"
+    )
+    return int(row["n"]) if row else 0
+
+
 async def insert_run(ticket_id: str, state: dict[str, Any], trace_id: str | None) -> str:
     timings = {t["node"]: t["ms"] for t in state.get("node_timings_ms", [])}
     tokens = {s["node"]: s for s in state.get("call_stats", [])}

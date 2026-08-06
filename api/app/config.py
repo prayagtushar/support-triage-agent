@@ -18,6 +18,17 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     cors_origins: list[str] = ["http://localhost:5173"]
 
+    # Writes cost money: a ticket spends a pipeline run, a review mutates the
+    # audit trail. Reads stay open so the queues can be browsed without signing
+    # up. An empty key disables the gate, which is what local dev and the
+    # offline suite run with.
+    #
+    # This is a demo key, not authentication. It stops crawlers, not a person
+    # who wants in. The cap below is the real ceiling, because a key handed to
+    # interviewers is a key that leaks.
+    demo_write_key: str = ""
+    max_tickets_per_day: int = 50
+
     database_url: str = "postgresql://postgres:postgres@localhost:5432/triage"
 
     sarvam_api_key: str = ""
