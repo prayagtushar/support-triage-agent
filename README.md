@@ -81,7 +81,9 @@ Measured on golden v0 (60 hand-written tickets, 27% non-English, 5 adversarial),
 
 **1. Auto-reply precision does not meet the bar this system was designed against.** The target was 0.95. Across the full threshold sweep the system reaches 0.727 at 0.85 and 0.778 at 0.90; at 0.95 it auto-replies to nothing. The threshold was raised from 0.85 to 0.90 to trade coverage for safety, and the bar was not lowered to make the number look met. On this corpus, auto-reply is not safe to enable at the intended standard.
 
-**2. The ranges are ranges because the metric is unstable at this sample size.** Two runs with identical configuration produced auto-reply precision of 0.778 and 0.500. At a 0.90 threshold only ~10 tickets are auto-replied, so one flip moves precision ten points. Intent accuracy, measured across all 60 tickets, was stable to three decimals across both runs. Growing the golden set to 100+ is a precondition for the headline number to mean anything, not polish.
+**2. The ranges are ranges because the metric is unstable at this sample size.** Two runs with identical configuration produced auto-reply precision of 0.778 and 0.500. At a 0.90 threshold only ~10 tickets are auto-replied, so one flip moves precision ten points. Intent accuracy, measured across all 60 tickets, was stable to three decimals across both runs. Growing the golden set is a precondition for the headline number to mean anything, not polish.
+
+`make coverage` works out the size instead of guessing at a round one. The precision denominator is not how many tickets are labelled `auto_reply` — it is how many the system chooses to send, which at this threshold is 17% of the set. Resolving precision to ±0.05 therefore needs a denominator of 20, so **~120 tickets, not 100**. Note the direction of that interaction: raising the threshold for safety shrinks the denominator, so the headline metric gets noisier exactly as the policy gets more conservative.
 
 **3. The composite confidence is overconfident in every bucket.**
 
@@ -101,7 +103,7 @@ Every failure above is written up per-component — what happened, which part ow
 
 ## What works well
 
-Classification is strong and language-independent: 0.950 intent accuracy and perfect language detection across English, Hinglish and Devanagari. One measured prompt change took intent accuracy from 0.867 to 0.967 on the classifier eval by fixing a single systematic error — the model was treating "phrased as a question" as meaning `how_to`.
+Classification is strong: 0.950 intent accuracy, stable to three decimals across repeated runs, and language detection correct on all 60 tickets. That last figure needs one qualifier the table cannot carry — the set is 44 English and 15 Hinglish against a single Devanagari ticket, so "correct on Devanagari" rests on n=1 and should not be read as a claim about the script. `make coverage` reports that gap rather than leaving it to be discovered. One measured prompt change took intent accuracy from 0.867 to 0.967 on the classifier eval by fixing a single systematic error — the model was treating "phrased as a question" as meaning `how_to`.
 
 The judge earns its place. Three times during development the drafter invented something and the judge caught it precisely: an invented cancellation-link location, a claim to have checked a transaction the agent has no access to, and a refund timeline supported by nothing. Each time the composite fell and the router sent the ticket to a human instead of a customer.
 

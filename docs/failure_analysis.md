@@ -174,11 +174,34 @@ tickets are auto-replied, so precision is a fraction over a denominator of ten.
 One ticket flipping moves it by ten points. The metric I most want to quote is
 the one measured on the fewest samples, which is exactly backwards.
 
-**What this changes.** Growing the golden set to 100+ is not polish, it is a
+**What this changes.** Growing the golden set is not polish, it is a
 precondition for the headline number to mean anything, and the same is true of
 reporting a spread across repeated runs rather than a single figure. Intent
 accuracy, measured across all 60 tickets, was stable to three decimal places
 across both runs; that contrast is the whole lesson.
+
+**Sized, 2026-08-08.** `scripts/golden_coverage.py` computes the target rather
+than rounding to 100. The denominator that matters is not the count of tickets
+labelled `auto_reply` (32 of 60) — it is the count the system *sends*, which at
+threshold 0.90 is 10, or 17% of the set. Resolving precision to ±0.05 needs a
+denominator of 20, so the target is **~120 tickets**, roughly double.
+
+The interaction worth naming: raising the threshold to buy safety shrinks the
+denominator, so the headline metric becomes less trustworthy exactly as the
+policy becomes more conservative. At 0.95 it auto-replies to nothing and
+precision stops existing. Any threshold decision made on this corpus is being
+made on a metric that the decision itself degrades.
+
+The same script found two thin slices that undercut claims made elsewhere:
+
+- **Devanagari is one ticket.** Language accuracy of 1.000 is real but says
+  almost nothing about the script. The README now carries that qualifier.
+- **P1 is two tickets.** "P1 beats a perfect composite" has 17 router unit
+  tests and almost no end-to-end coverage, which is backwards for a rule whose
+  whole purpose is overriding the happy path.
+
+Intent is already well balanced at 6–9 per label, so this is a size and
+edge-case problem, not a rebalancing one.
 
 **What I chose not to do.** I did not pick the better of the two runs. Both are
 in `evals/reports/`, and the README quotes the range rather than the flattering
