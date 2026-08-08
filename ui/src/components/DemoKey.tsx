@@ -27,7 +27,11 @@ export default function DemoKey() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="text-xs text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-300"
+        className={`rounded-[2px] border px-2 py-1 text-[11px] transition-colors ${
+          active
+            ? "border-teal/40 bg-teal-bg text-teal"
+            : "border-rule text-ink-3 hover:border-rule-2 hover:text-ink"
+        }`}
         title={
           active
             ? "A demo key is set. Reviews will be accepted."
@@ -48,14 +52,14 @@ export default function DemoKey() {
         onKeyDown={(e) => e.key === "Enter" && save()}
         placeholder="demo key"
         aria-label="Demo key"
-        className="w-40 rounded border border-neutral-300 bg-transparent px-2 py-1 text-xs dark:border-neutral-700"
+        className="w-36 rounded-[2px] border border-rule bg-paper-2 px-2 py-1 text-[11px]"
       />
-      <button onClick={save} className="text-xs text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100">
+      <button onClick={save} className="text-[11px] text-ink-2 hover:text-ink">
         {saved ? "saved" : "save"}
       </button>
       <button
         onClick={() => setOpen(false)}
-        className="text-xs text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
+        className="text-[11px] text-ink-3 hover:text-ink"
         aria-label="Close key entry"
       >
         ×

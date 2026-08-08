@@ -10,11 +10,11 @@ Ticket triage is one of the most widely deployed production uses of LLM agents, 
 
 ![Review screen](assets/review.png)
 
-A real ticket from the review queue. The drafter promised to reverse a double charge and attached a 3–5 day timeline; the judge scored it 2/5 on groundedness because no retrieved case supports either the action or the timeline. The composite fell to 0.78, below the 0.90 auto-reply threshold, so the router sent it to a human with the draft, the judge's reasoning, and the five cases it retrieved all attached.
+A real ticket from the review queue, and the handoff working exactly as designed. A customer lost the phone holding their 2FA codes. The drafter cited five cases and claimed the only route back in is identity verification by support — but every case it cited is about recovering a *PIN*, not a lost second factor, so the judge scored groundedness 1/5 and said why. Note what the composite breakdown exposes: the classifier's self-reported 0.95 contributes **more** (0.285) than the judge's actual assessment of the draft (0.233). That is the weighting problem `make ablate` measures, visible on a single ticket.
 
 ![Queues](assets/queues.png)
 
-The review queue. The row with no intent and no confidence is a ticket that failed classification — it skipped retrieval and drafting entirely and was routed straight to a human.
+The review queue. The notch on every confidence bar is the 0.90 auto-reply threshold, so each row shows not just a score but its distance from the decision that score drove — which is the only part of the number that changed the outcome.
 
 ## Architecture
 
@@ -55,11 +55,26 @@ Key design decisions:
 | Orchestration | LangGraph, Postgres checkpointer |
 | API | FastAPI, Pydantic v2, psycopg3 |
 | Storage and retrieval | PostgreSQL + pgvector, hybrid vector + full-text with reciprocal rank fusion |
-| Models | Llama 3.3 70B (classify), Sarvam-105B (draft), Gemini 2.5 Flash Lite (judge) — all behind one OpenAI-compatible client; embeddings are `gemini-embedding-001` at 1536 dims, which needs Gemini's own batch endpoint rather than that client |
+| Models | Llama 3.3 70B (classify), Sarvam-105B (draft), Gemini 2.5 Flash Lite (judge) — all behind one OpenAI-compatible client. Embeddings are `text-embedding-3-small` at 1536 dims via OpenRouter; the corpus was originally embedded with `gemini-embedding-001`, and moving between them means re-embedding every row, because vectors from different models are not comparable |
 | Observability | Langfuse traces, structlog JSON logs |
 | Evaluation | 60-ticket golden set, threshold sweep, reliability diagram, regression gate |
-| Dashboard | Vite, React 19, TanStack Query, Tailwind |
+| Dashboard | Vite, React 19, TanStack Query, Tailwind v4, Geist Mono |
 | Packaging | uv, bun, Docker Compose |
+
+## Dashboard
+
+Four surfaces, all of them reading data the pipeline already recorded rather than anything computed for display.
+
+- **Queues** — the three lanes, with the confidence meter described above.
+- **Review** — the draft, the judge's three sub-scores and reasoning, the retrieved cases with citation markers and similarity, the classifier's own rationale, and the composite broken into its weighted parts. Below that, the pipeline as it actually ran: five nodes, real per-node latency drawn in proportion, and the model, provider and rupee cost of each. A ticket that failed classification shows retrieve, draft and score as *skipped*, because declining to spend drafter tokens on an unclassifiable ticket is a design decision worth seeing.
+- **Evals** — the measurement page, leading with the metric that misses its target rather than burying it. Threshold sweep, reliability buckets, and the judge ablation.
+- **Submit** — send a ticket as a customer would and watch the stages land. Progress is read back from the LangGraph checkpointer, so the stages are the ones that actually completed rather than a timer pretending.
+
+Two things the dashboard does deliberately:
+
+**It never hardcodes the policy.** Thresholds and composite weights come from `GET /policy`, so the notch on every meter and the arithmetic in every breakdown track the config actually in force. A dashboard that drew its threshold from a constant would start lying the first time the policy was retuned — which, given the ablation result above, is the next thing that should happen.
+
+**It says when the system is serving but not working.** `GET /status` reports the empty-retrieval rate over recent runs, and a banner appears when retrieval has stopped producing evidence. That check exists because of a real outage: the embedding key ran out of credit, every retrieval returned nothing, every ticket was correctly routed to a human by hard rule, and no conventional signal moved. Nothing failed. The system just quietly stopped knowing anything.
 
 ## Evaluation
 
@@ -133,16 +148,21 @@ uv run python scripts/embed_corpus.py
 
 make api         # http://localhost:8000
 make ui          # http://localhost:5173
-make seed        # fill the queues
+make seed-local  # run the golden set through the pipeline into the queues
 ```
+
+`make seed-local` drives the graph directly rather than going through the API, because `POST /tickets` enforces a public-demo daily cap that a local database has no reason to be bound by. Sixty tickets costs about ₹3 and a few minutes.
 
 Quality gates and evals:
 
 ```bash
-make check       # ruff, mypy, offline tests (106 tests, under 2s)
+make check       # ruff, mypy, 120 api tests + 27 dashboard tests, under 5s
 make eval        # full pipeline over the golden set, needs API keys
 make calibrate   # reliability diagram
 make ablate      # does the judge earn its weight? offline, free
+make coverage    # where the golden set is too thin to support its claims
+make degraded    # runs that finished but did not work
+make ui-evals    # regenerate the dashboard's eval data from the latest report
 make gate        # fail if the latest run regressed against the baseline
 ```
 

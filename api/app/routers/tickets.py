@@ -150,6 +150,72 @@ async def get_ticket(ticket_id: str) -> dict[str, Any]:
     return detail
 
 
+PIPELINE_NODES = ("classify", "retrieve", "draft", "score", "route")
+
+
+@router.get("/tickets/{ticket_id}/progress")
+async def ticket_progress(ticket_id: str) -> dict[str, Any]:
+    """How far a running pipeline has got. Public, like the other reads.
+
+    POST /tickets returns 202 and works in the background, so for 40-odd seconds
+    a ticket exists with no run attached: agent_runs is written once, after the
+    graph finishes. Polling GET /tickets/{id} during that window shows only
+    status 'received' and a row of nulls.
+
+    The per-node truth is already durable. LangGraph checkpoints state after
+    every node, and each node appends its own name to node_timings_ms via the
+    @timed decorator, so the checkpoint carries an ordered list of exactly which
+    nodes have completed. This reads that back rather than inferring progress
+    from elapsed time.
+    """
+    _validate_uuid(ticket_id)
+
+    detail = await repo.get_ticket_detail(ticket_id)
+    if detail is None:
+        raise HTTPException(status_code=404, detail="ticket not found")
+
+    status = str(detail["status"])
+    checkpointer = await get_checkpointer()
+
+    # Without a checkpointer the graph falls back to a per-run in-memory saver
+    # that this request cannot see. Say so rather than reporting no progress,
+    # which would look like a stalled pipeline.
+    if checkpointer is None:
+        return {
+            "status": status,
+            "progress_available": False,
+            "completed": [],
+            "skipped": [],
+        }
+
+    try:
+        snapshot = await checkpointer.aget_tuple({"configurable": {"thread_id": ticket_id}})
+    except Exception as exc:  # a checkpoint read must never fail a poll
+        log.warning("progress_read_failed", error=str(exc))
+        return {"status": status, "progress_available": False, "completed": [], "skipped": []}
+
+    values: dict[str, Any] = (snapshot.checkpoint.get("channel_values") or {}) if snapshot else {}
+    completed = [t["node"] for t in values.get("node_timings_ms", []) if t.get("node")]
+    classification = values.get("classification")
+
+    # A ticket that could not be classified skips retrieve, draft and score by
+    # design. Reporting them as skipped stops a client from waiting on nodes
+    # that are never going to run.
+    skipped: list[str] = []
+    if "classify" in completed and classification is None:
+        skipped = [n for n in ("retrieve", "draft", "score") if n not in completed]
+
+    return {
+        "status": status,
+        "progress_available": True,
+        "completed": completed,
+        "skipped": skipped,
+        "classification": classification,
+        "retrieved_count": len(values.get("retrieved_cases") or []),
+        "errors": values.get("errors", []),
+    }
+
+
 @router.post(
     "/tickets/{ticket_id}/review",
     status_code=201,

@@ -100,6 +100,44 @@ async def count_tickets_last_24h() -> int:
     return int(row["n"]) if row else 0
 
 
+async def recent_run_health(last: int) -> dict[str, Any]:
+    """Aggregate over the most recent runs, for /status.
+
+    Counts empty retrieval separately from recorded errors. A run can retrieve
+    nothing without any node raising -- a provider returning an empty list is
+    not an error -- and that case still means the drafter had nothing to ground
+    on, so it is the number worth alerting on.
+    """
+    row = await _fetch_one(
+        """
+        WITH recent AS (
+            SELECT errors,
+                   coalesce(jsonb_array_length(retrieval -> 'cases'), 0) AS cases,
+                   route
+            FROM agent_runs
+            ORDER BY created_at DESC
+            LIMIT %(limit)s
+        ),
+        totals AS (
+            SELECT count(*) AS total,
+                   count(*) FILTER (WHERE jsonb_array_length(errors) > 0) AS with_errors,
+                   count(*) FILTER (WHERE cases = 0) AS empty_retrieval
+            FROM recent
+        ),
+        route_counts AS (
+            SELECT coalesce(jsonb_object_agg(route, n), '{}'::jsonb) AS routes
+            FROM (
+                SELECT route, count(*) AS n
+                FROM recent WHERE route IS NOT NULL GROUP BY route
+            ) grouped
+        )
+        SELECT total, with_errors, empty_retrieval, routes FROM totals, route_counts
+        """,
+        {"limit": last},
+    )
+    return dict(row) if row else {"total": 0, "with_errors": 0, "empty_retrieval": 0, "routes": {}}
+
+
 async def insert_run(ticket_id: str, state: dict[str, Any], trace_id: str | None) -> str:
     timings = {t["node"]: t["ms"] for t in state.get("node_timings_ms", [])}
     tokens = {s["node"]: s for s in state.get("call_stats", [])}

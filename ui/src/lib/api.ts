@@ -1,4 +1,13 @@
-import type { AuditRow, QueueRow, ReviewPayload, TicketDetail, TicketStatus } from "./types";
+import type {
+  AuditRow,
+  Policy,
+  QueueRow,
+  ReviewPayload,
+  SystemStatus,
+  TicketDetail,
+  TicketProgress,
+  TicketStatus,
+} from "./types";
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
@@ -79,4 +88,16 @@ export function createTicket(subject: string, body: string) {
     method: "POST",
     body: JSON.stringify({ subject, body }),
   });
+}
+
+export function getPolicy() {
+  return request<Policy>("/policy");
+}
+
+export function getStatus() {
+  return request<SystemStatus>("/status");
+}
+
+export function getProgress(id: string) {
+  return request<TicketProgress>(`/tickets/${id}/progress`);
 }

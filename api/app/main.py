@@ -12,6 +12,7 @@ from app import repo
 from app.agent.checkpoint import close_checkpointer, get_checkpointer
 from app.config import settings
 from app.logging import configure_logging
+from app.routers.meta import router as meta_router
 from app.routers.tickets import router as tickets_router
 
 log = structlog.get_logger()
@@ -41,6 +42,7 @@ app.add_middleware(
 )
 
 app.include_router(tickets_router)
+app.include_router(meta_router)
 
 
 # Liveness is served at /livez, not /healthz, because Google Frontend swallows

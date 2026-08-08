@@ -1,0 +1,634 @@
+{
+  "source": "report_v2-threshold-090_20260801T060943Z.json",
+  "report": {
+    "label": "v2-threshold-090",
+    "timestamp": "2026-08-01T06:15:53.048317+00:00",
+    "golden": "v0",
+    "tickets": 60,
+    "fatal": 0,
+    "tickets_with_errors": 0,
+    "models": {
+      "classifier": "openrouter/meta-llama/llama-3.3-70b-instruct",
+      "drafter": "sarvam/sarvam-105b",
+      "judge": "openrouter/google/gemini-2.5-flash-lite",
+      "embedding": "openrouter/openai/text-embedding-3-small"
+    },
+    "thresholds": {
+      "auto_reply": 0.9,
+      "review": 0.55,
+      "weak_retrieval_floor": 0.4
+    },
+    "auto_reply_precision": 0.5,
+    "auto_reply_precision_detail": "5/10",
+    "review_recall": 0.8214,
+    "review_recall_detail": "23/28",
+    "routing_accuracy": 0.4167,
+    "intent_accuracy": 0.95,
+    "intent_macro_f1": 0.9533,
+    "urgency_accuracy": 0.7667,
+    "language_accuracy": 1.0,
+    "intent_accuracy_english": 0.9773,
+    "intent_accuracy_hinglish": 0.8667,
+    "safe_fallback_rate": 0.2333,
+    "weak_retrieval_rate": 0.1,
+    "latency": {
+      "mean_ms": 24224.0,
+      "p50_ms": 21785.5,
+      "p95_ms": 48100.0
+    },
+    "cost_inr_per_ticket": 0.049858,
+    "reliability": [
+      {
+        "lower": 0.5,
+        "upper": 0.6,
+        "n": 5,
+        "mean_confidence": 0.5798,
+        "observed_correct": 0.4
+      },
+      {
+        "lower": 0.6,
+        "upper": 0.7,
+        "n": 6,
+        "mean_confidence": 0.6373,
+        "observed_correct": 0.5
+      },
+      {
+        "lower": 0.7,
+        "upper": 0.8,
+        "n": 13,
+        "mean_confidence": 0.7574,
+        "observed_correct": 0.3846
+      },
+      {
+        "lower": 0.8,
+        "upper": 0.9,
+        "n": 25,
+        "mean_confidence": 0.8559,
+        "observed_correct": 0.36
+      },
+      {
+        "lower": 0.9,
+        "upper": 1.0,
+        "n": 11,
+        "mean_confidence": 0.9159,
+        "observed_correct": 0.5455
+      }
+    ],
+    "threshold_sweep": [
+      {
+        "threshold": 0.6,
+        "auto_reply_precision": 0.55,
+        "auto_replied": 40,
+        "review_recall": 0.3571,
+        "needed_review": 28,
+        "routing_accuracy": 0.5167
+      },
+      {
+        "threshold": 0.65,
+        "auto_reply_precision": 0.5789,
+        "auto_replied": 38,
+        "review_recall": 0.4286,
+        "needed_review": 28,
+        "routing_accuracy": 0.55
+      },
+      {
+        "threshold": 0.7,
+        "auto_reply_precision": 0.5833,
+        "auto_replied": 36,
+        "review_recall": 0.4643,
+        "needed_review": 28,
+        "routing_accuracy": 0.55
+      },
+      {
+        "threshold": 0.75,
+        "auto_reply_precision": 0.625,
+        "auto_replied": 32,
+        "review_recall": 0.5714,
+        "needed_review": 28,
+        "routing_accuracy": 0.5833
+      },
+      {
+        "threshold": 0.8,
+        "auto_reply_precision": 0.6154,
+        "auto_replied": 26,
+        "review_recall": 0.6429,
+        "needed_review": 28,
+        "routing_accuracy": 0.55
+      },
+      {
+        "threshold": 0.85,
+        "auto_reply_precision": 0.6316,
+        "auto_replied": 19,
+        "review_recall": 0.75,
+        "needed_review": 28,
+        "routing_accuracy": 0.5
+      },
+      {
+        "threshold": 0.9,
+        "auto_reply_precision": 0.5,
+        "auto_replied": 10,
+        "review_recall": 0.8214,
+        "needed_review": 28,
+        "routing_accuracy": 0.4167
+      },
+      {
+        "threshold": 0.95,
+        "auto_reply_precision": 0.0,
+        "auto_replied": 0,
+        "review_recall": 1.0,
+        "needed_review": 28,
+        "routing_accuracy": 0.4167
+      }
+    ],
+    "per_intent": [
+      {
+        "intent": "billing",
+        "precision": 1.0,
+        "recall": 0.875,
+        "f1": 0.933,
+        "support": 8
+      },
+      {
+        "intent": "refund",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 7
+      },
+      {
+        "intent": "account_access",
+        "precision": 0.9,
+        "recall": 1.0,
+        "f1": 0.947,
+        "support": 9
+      },
+      {
+        "intent": "bug_report",
+        "precision": 0.8,
+        "recall": 1.0,
+        "f1": 0.889,
+        "support": 8
+      },
+      {
+        "intent": "how_to",
+        "precision": 1.0,
+        "recall": 0.75,
+        "f1": 0.857,
+        "support": 8
+      },
+      {
+        "intent": "shipping",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 7
+      },
+      {
+        "intent": "feature_request",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 6
+      },
+      {
+        "intent": "other",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 7
+      }
+    ],
+    "elapsed_seconds": 369.5
+  },
+  "runs": [
+    {
+      "label": "v1",
+      "source": "report_v1_20260801T060228Z.json",
+      "threshold": 0.85,
+      "auto_reply_precision": 0.7273,
+      "auto_reply_precision_detail": "16/22",
+      "review_recall": 0.7857,
+      "routing_accuracy": 0.6,
+      "intent_accuracy": 0.95,
+      "sweep": [
+        {
+          "threshold": 0.6,
+          "auto_reply_precision": 0.6098,
+          "auto_replied": 41,
+          "review_recall": 0.4286,
+          "needed_review": 28,
+          "routing_accuracy": 0.6167
+        },
+        {
+          "threshold": 0.65,
+          "auto_reply_precision": 0.6053,
+          "auto_replied": 38,
+          "review_recall": 0.4643,
+          "needed_review": 28,
+          "routing_accuracy": 0.6
+        },
+        {
+          "threshold": 0.7,
+          "auto_reply_precision": 0.6176,
+          "auto_replied": 34,
+          "review_recall": 0.5357,
+          "needed_review": 28,
+          "routing_accuracy": 0.5833
+        },
+        {
+          "threshold": 0.75,
+          "auto_reply_precision": 0.6562,
+          "auto_replied": 32,
+          "review_recall": 0.6071,
+          "needed_review": 28,
+          "routing_accuracy": 0.6
+        },
+        {
+          "threshold": 0.8,
+          "auto_reply_precision": 0.6333,
+          "auto_replied": 30,
+          "review_recall": 0.6071,
+          "needed_review": 28,
+          "routing_accuracy": 0.5667
+        },
+        {
+          "threshold": 0.85,
+          "auto_reply_precision": 0.7273,
+          "auto_replied": 22,
+          "review_recall": 0.7857,
+          "needed_review": 28,
+          "routing_accuracy": 0.6
+        },
+        {
+          "threshold": 0.9,
+          "auto_reply_precision": 0.7778,
+          "auto_replied": 9,
+          "review_recall": 0.9286,
+          "needed_review": 28,
+          "routing_accuracy": 0.5167
+        },
+        {
+          "threshold": 0.95,
+          "auto_reply_precision": 0.0,
+          "auto_replied": 0,
+          "review_recall": 1.0,
+          "needed_review": 28,
+          "routing_accuracy": 0.4333
+        }
+      ]
+    },
+    {
+      "label": "v2-threshold-090",
+      "source": "report_v2-threshold-090_20260801T060943Z.json",
+      "threshold": 0.9,
+      "auto_reply_precision": 0.5,
+      "auto_reply_precision_detail": "5/10",
+      "review_recall": 0.8214,
+      "routing_accuracy": 0.4167,
+      "intent_accuracy": 0.95,
+      "sweep": [
+        {
+          "threshold": 0.6,
+          "auto_reply_precision": 0.55,
+          "auto_replied": 40,
+          "review_recall": 0.3571,
+          "needed_review": 28,
+          "routing_accuracy": 0.5167
+        },
+        {
+          "threshold": 0.65,
+          "auto_reply_precision": 0.5789,
+          "auto_replied": 38,
+          "review_recall": 0.4286,
+          "needed_review": 28,
+          "routing_accuracy": 0.55
+        },
+        {
+          "threshold": 0.7,
+          "auto_reply_precision": 0.5833,
+          "auto_replied": 36,
+          "review_recall": 0.4643,
+          "needed_review": 28,
+          "routing_accuracy": 0.55
+        },
+        {
+          "threshold": 0.75,
+          "auto_reply_precision": 0.625,
+          "auto_replied": 32,
+          "review_recall": 0.5714,
+          "needed_review": 28,
+          "routing_accuracy": 0.5833
+        },
+        {
+          "threshold": 0.8,
+          "auto_reply_precision": 0.6154,
+          "auto_replied": 26,
+          "review_recall": 0.6429,
+          "needed_review": 28,
+          "routing_accuracy": 0.55
+        },
+        {
+          "threshold": 0.85,
+          "auto_reply_precision": 0.6316,
+          "auto_replied": 19,
+          "review_recall": 0.75,
+          "needed_review": 28,
+          "routing_accuracy": 0.5
+        },
+        {
+          "threshold": 0.9,
+          "auto_reply_precision": 0.5,
+          "auto_replied": 10,
+          "review_recall": 0.8214,
+          "needed_review": 28,
+          "routing_accuracy": 0.4167
+        },
+        {
+          "threshold": 0.95,
+          "auto_reply_precision": 0.0,
+          "auto_replied": 0,
+          "review_recall": 1.0,
+          "needed_review": 28,
+          "routing_accuracy": 0.4167
+        }
+      ]
+    }
+  ],
+  "ablation": {
+    "source": "ablation_judge_report_v2-threshold-090_20260801T060943Z.json",
+    "tickets": 60,
+    "composite_decided": 43,
+    "arms": {
+      "full": {
+        "weights": {
+          "judge": 0.5,
+          "classifier": 0.3,
+          "retrieval": 0.2
+        },
+        "best": {
+          "threshold": 0.85,
+          "auto_reply_precision": 0.6316,
+          "auto_reply_detail": "12/19",
+          "auto_replied": 19,
+          "review_recall": 0.75,
+          "review_recall_detail": "21/28",
+          "routing_accuracy": 0.5
+        },
+        "sweep": [
+          {
+            "threshold": 0.6,
+            "auto_reply_precision": 0.55,
+            "auto_reply_detail": "22/40",
+            "auto_replied": 40,
+            "review_recall": 0.3571,
+            "review_recall_detail": "10/28",
+            "routing_accuracy": 0.5167
+          },
+          {
+            "threshold": 0.65,
+            "auto_reply_precision": 0.5789,
+            "auto_reply_detail": "22/38",
+            "auto_replied": 38,
+            "review_recall": 0.4286,
+            "review_recall_detail": "12/28",
+            "routing_accuracy": 0.55
+          },
+          {
+            "threshold": 0.7,
+            "auto_reply_precision": 0.5833,
+            "auto_reply_detail": "21/36",
+            "auto_replied": 36,
+            "review_recall": 0.4643,
+            "review_recall_detail": "13/28",
+            "routing_accuracy": 0.55
+          },
+          {
+            "threshold": 0.75,
+            "auto_reply_precision": 0.625,
+            "auto_reply_detail": "20/32",
+            "auto_replied": 32,
+            "review_recall": 0.5714,
+            "review_recall_detail": "16/28",
+            "routing_accuracy": 0.5833
+          },
+          {
+            "threshold": 0.8,
+            "auto_reply_precision": 0.6154,
+            "auto_reply_detail": "16/26",
+            "auto_replied": 26,
+            "review_recall": 0.6429,
+            "review_recall_detail": "18/28",
+            "routing_accuracy": 0.55
+          },
+          {
+            "threshold": 0.85,
+            "auto_reply_precision": 0.6316,
+            "auto_reply_detail": "12/19",
+            "auto_replied": 19,
+            "review_recall": 0.75,
+            "review_recall_detail": "21/28",
+            "routing_accuracy": 0.5
+          },
+          {
+            "threshold": 0.9,
+            "auto_reply_precision": 0.5,
+            "auto_reply_detail": "5/10",
+            "auto_replied": 10,
+            "review_recall": 0.8214,
+            "review_recall_detail": "23/28",
+            "routing_accuracy": 0.4167
+          },
+          {
+            "threshold": 0.95,
+            "auto_reply_precision": 0.0,
+            "auto_reply_detail": "0/0",
+            "auto_replied": 0,
+            "review_recall": 1.0,
+            "review_recall_detail": "28/28",
+            "routing_accuracy": 0.4167
+          }
+        ]
+      },
+      "no_judge": {
+        "weights": {
+          "judge": 0.0,
+          "classifier": 0.6,
+          "retrieval": 0.4
+        },
+        "best": {
+          "threshold": 0.7,
+          "auto_reply_precision": 0.5854,
+          "auto_reply_detail": "24/41",
+          "auto_replied": 41,
+          "review_recall": 0.3929,
+          "review_recall_detail": "11/28",
+          "routing_accuracy": 0.55
+        },
+        "sweep": [
+          {
+            "threshold": 0.6,
+            "auto_reply_precision": 0.5814,
+            "auto_reply_detail": "25/43",
+            "auto_replied": 43,
+            "review_recall": 0.3571,
+            "review_recall_detail": "10/28",
+            "routing_accuracy": 0.5667
+          },
+          {
+            "threshold": 0.65,
+            "auto_reply_precision": 0.5814,
+            "auto_reply_detail": "25/43",
+            "auto_replied": 43,
+            "review_recall": 0.3571,
+            "review_recall_detail": "10/28",
+            "routing_accuracy": 0.5667
+          },
+          {
+            "threshold": 0.7,
+            "auto_reply_precision": 0.5854,
+            "auto_reply_detail": "24/41",
+            "auto_replied": 41,
+            "review_recall": 0.3929,
+            "review_recall_detail": "11/28",
+            "routing_accuracy": 0.55
+          },
+          {
+            "threshold": 0.75,
+            "auto_reply_precision": 0.5333,
+            "auto_reply_detail": "16/30",
+            "auto_replied": 30,
+            "review_recall": 0.5,
+            "review_recall_detail": "14/28",
+            "routing_accuracy": 0.4667
+          },
+          {
+            "threshold": 0.8,
+            "auto_reply_precision": 0.4667,
+            "auto_reply_detail": "7/15",
+            "auto_replied": 15,
+            "review_recall": 0.7143,
+            "review_recall_detail": "20/28",
+            "routing_accuracy": 0.4
+          },
+          {
+            "threshold": 0.85,
+            "auto_reply_precision": 0.75,
+            "auto_reply_detail": "3/4",
+            "auto_replied": 4,
+            "review_recall": 0.9643,
+            "review_recall_detail": "27/28",
+            "routing_accuracy": 0.45
+          },
+          {
+            "threshold": 0.9,
+            "auto_reply_precision": 0.0,
+            "auto_reply_detail": "0/0",
+            "auto_replied": 0,
+            "review_recall": 1.0,
+            "review_recall_detail": "28/28",
+            "routing_accuracy": 0.4167
+          },
+          {
+            "threshold": 0.95,
+            "auto_reply_precision": 0.0,
+            "auto_reply_detail": "0/0",
+            "auto_replied": 0,
+            "review_recall": 1.0,
+            "review_recall_detail": "28/28",
+            "routing_accuracy": 0.4167
+          }
+        ]
+      },
+      "judge_only": {
+        "weights": {
+          "judge": 1.0,
+          "classifier": 0.0,
+          "retrieval": 0.0
+        },
+        "best": {
+          "threshold": 0.95,
+          "auto_reply_precision": 0.6667,
+          "auto_reply_detail": "12/18",
+          "auto_replied": 18,
+          "review_recall": 0.7857,
+          "review_recall_detail": "22/28",
+          "routing_accuracy": 0.4833
+        },
+        "sweep": [
+          {
+            "threshold": 0.6,
+            "auto_reply_precision": 0.5946,
+            "auto_reply_detail": "22/37",
+            "auto_replied": 37,
+            "review_recall": 0.4643,
+            "review_recall_detail": "13/28",
+            "routing_accuracy": 0.5167
+          },
+          {
+            "threshold": 0.65,
+            "auto_reply_precision": 0.5946,
+            "auto_reply_detail": "22/37",
+            "auto_replied": 37,
+            "review_recall": 0.4643,
+            "review_recall_detail": "13/28",
+            "routing_accuracy": 0.5167
+          },
+          {
+            "threshold": 0.7,
+            "auto_reply_precision": 0.6364,
+            "auto_reply_detail": "21/33",
+            "auto_replied": 33,
+            "review_recall": 0.5714,
+            "review_recall_detail": "16/28",
+            "routing_accuracy": 0.55
+          },
+          {
+            "threshold": 0.75,
+            "auto_reply_precision": 0.6333,
+            "auto_reply_detail": "19/30",
+            "auto_replied": 30,
+            "review_recall": 0.6071,
+            "review_recall_detail": "17/28",
+            "routing_accuracy": 0.5333
+          },
+          {
+            "threshold": 0.8,
+            "auto_reply_precision": 0.6333,
+            "auto_reply_detail": "19/30",
+            "auto_replied": 30,
+            "review_recall": 0.6071,
+            "review_recall_detail": "17/28",
+            "routing_accuracy": 0.5333
+          },
+          {
+            "threshold": 0.85,
+            "auto_reply_precision": 0.6154,
+            "auto_reply_detail": "16/26",
+            "auto_replied": 26,
+            "review_recall": 0.6429,
+            "review_recall_detail": "18/28",
+            "routing_accuracy": 0.5
+          },
+          {
+            "threshold": 0.9,
+            "auto_reply_precision": 0.619,
+            "auto_reply_detail": "13/21",
+            "auto_replied": 21,
+            "review_recall": 0.7143,
+            "review_recall_detail": "20/28",
+            "routing_accuracy": 0.4667
+          },
+          {
+            "threshold": 0.95,
+            "auto_reply_precision": 0.6667,
+            "auto_reply_detail": "12/18",
+            "auto_replied": 18,
+            "review_recall": 0.7857,
+            "review_recall_detail": "22/28",
+            "routing_accuracy": 0.4833
+          }
+        ]
+      }
+    }
+  }
+}
