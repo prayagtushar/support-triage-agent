@@ -105,6 +105,8 @@ Classification is strong and language-independent: 0.950 intent accuracy and per
 
 The judge earns its place. Three times during development the drafter invented something and the judge caught it precisely: an invented cancellation-link location, a claim to have checked a transaction the agent has no access to, and a refund timeline supported by nothing. Each time the composite fell and the router sent the ticket to a human instead of a customer.
 
+`make ablate` puts a number on that. It re-routes the stored eval runs under reweighted composites offline — no API keys, no cost — and refuses to report anything until it has replayed all 60 recorded routes from the stored signals. The stable finding across both runs is one I did not expect: **weighting the judge at 1.0 and dropping the other two inputs beats the shipped 0.5/0.3/0.2 composite** (0.800 vs 0.778, and 0.667 vs 0.632). The classifier and retrieval terms are diluting the judge rather than supplementing it, which makes the "the weights were a guess" caveat above concrete rather than modest. Whether the judge is strictly *necessary* is still unsettled at n=60 — that arm flips sign between runs.
+
 ## Data
 
 3,400 resolved cases: 3,000 from the [Bitext customer support dataset](https://huggingface.co/datasets/bitext/Bitext-customer-support-llm-chatbot-training-dataset) mapped from 27 intents onto 8, plus 400 generated. Bitext contains no `bug_report` or `feature_request` cases at all, so those two intents are synthetic; 80 Hinglish cases are also generated, and are marked `source='synthetic'` in the schema. Rows containing Bitext's `{{Order Number}}`-style template placeholders were dropped rather than filled with invented values.
@@ -135,9 +137,10 @@ make seed        # fill the queues
 Quality gates and evals:
 
 ```bash
-make check       # ruff, mypy, offline tests (95 tests, under 2s)
+make check       # ruff, mypy, offline tests (106 tests, under 2s)
 make eval        # full pipeline over the golden set, needs API keys
 make calibrate   # reliability diagram
+make ablate      # does the judge earn its weight? offline, free
 make gate        # fail if the latest run regressed against the baseline
 ```
 

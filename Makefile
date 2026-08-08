@@ -1,4 +1,4 @@
-.PHONY: help up down db-shell migrate seed api ui test lint types check eval calibrate gate clean-state
+.PHONY: help up down db-shell migrate seed api ui test lint types check eval calibrate ablate gate clean-state
 
 COMPOSE := docker compose -f infra/docker-compose.yml
 
@@ -42,6 +42,9 @@ eval:  ## full eval suite, needs API keys and minutes
 
 calibrate:  ## reliability diagram from the latest report
 	cd api && uv run python scripts/plot_calibration.py
+
+ablate:  ## does the judge earn its weight? offline, no keys, no cost
+	cd api && uv run python scripts/ablate_judge.py
 
 gate:  ## fail if the latest eval regressed against the baseline
 	cd api && uv run python scripts/check_regression.py

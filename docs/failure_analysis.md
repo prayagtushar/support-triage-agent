@@ -73,6 +73,40 @@ and to replace classifier self-confidence with something calibrated. The 0.7–0
 bucket is the one to attack first: a −0.62 gap on 7 tickets is not noise, it is
 a band where the system is systematically wrong about itself.
 
+**Measured, 2026-08-08.** `scripts/ablate_judge.py` re-routes both stored eval
+runs under reweighted composites — offline, no API calls, and gated by a
+fidelity check that replays the shipped weights and requires all 60 recorded
+routes back before reporting anything.
+
+Best achievable auto-reply precision, per arm, across the threshold sweep:
+
+| Arm | judge / clf / retr | run v1 | run v2 |
+|---|---|---|---|
+| full (as shipped) | 0.5 / 0.3 / 0.2 | 0.778 | 0.632 |
+| no judge | 0.0 / 0.6 / 0.4 | 0.800 (n=5) | 0.585 |
+| judge only | 1.0 / 0.0 / 0.0 | **0.800** | **0.667** |
+
+**The judge-only arm beats the shipped composite in both runs.** That is the one
+result stable across the pair, and it says the guess was worse than not
+guessing: the classifier and retrieval terms dilute the judge rather than
+supplement it. Both weaker inputs are optimistic by construction, so averaging
+them into a better signal drags it toward their bias. Fitting the weights is
+still the right fix, but the immediate finding is that 1.0 on the judge is a
+better starting point than 0.5.
+
+**What this does not settle: whether the judge is necessary.** The no-judge arm
+looks *better* than shipped in v1 and clearly worse in v2, and its v1 figure
+rests on 5 auto-replies. The same n=60 instability described in failure 7
+swamps this comparison too, so "removing the judge costs precision" is not yet
+supported by the numbers — only by the three interceptions in failure 4. The
+ablation is free to re-run, so it should be the first thing re-measured once the
+golden set passes 100.
+
+One caveat on what was measured: the no-judge arm zeroes the judge's *weight*
+while leaving the pipeline intact. It does not set `judge=None`, which would
+trip the upstream-failure guard in `decide_route` and route everything to a
+human — measuring the guard rather than the judge.
+
 ---
 
 ## 4. The judge is the strongest component and repeatedly saved the system
