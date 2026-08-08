@@ -1,4 +1,4 @@
-.PHONY: help up down db-shell migrate seed api ui test lint types check eval calibrate ablate coverage gate clean-state
+.PHONY: help up down db-shell migrate seed api ui test lint types check eval calibrate ablate coverage degraded gate clean-state
 
 COMPOSE := docker compose -f infra/docker-compose.yml
 
@@ -48,6 +48,9 @@ coverage:  ## where the golden set is too thin to support its claims
 
 ablate:  ## does the judge earn its weight? offline, no keys, no cost
 	cd api && uv run python scripts/ablate_judge.py
+
+degraded:  ## report runs that finished but did not work
+	cd api && uv run python scripts/check_degraded.py
 
 gate:  ## fail if the latest eval regressed against the baseline
 	cd api && uv run python scripts/check_regression.py

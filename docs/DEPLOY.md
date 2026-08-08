@@ -111,6 +111,62 @@ The corpus is embedded at 1536 dimensions. `_embed_openai_compatible` in
 means re-embedding every row, since vectors from different models are not
 comparable.
 
+### This already happened, on 2026-08-06
+
+The deployed Gemini key ran out of prepaid credits. Every retrieve node since
+has returned HTTP 429, recorded the error into state, and handed the router an
+empty case list. Confirmed on both production tickets:
+
+```json
+"retrieval": {"weak": true, "cases": [], "best_similarity": 0.0}
+"errors": ["retrieve: HTTP 429: ... Your prepayment credits are depleted ..."]
+```
+
+**Nothing looked wrong.** `/readyz` was fine, no request 500'd, no ticket was
+stuck, the dashboard rendered without a console error, and the router behaved
+correctly — `retrieval_weak` is a hard rule, so every ticket went to a human.
+The only outward symptom was that the auto-reply and escalate lanes stayed
+empty, which reads as "quiet demo" rather than "retrieval is down".
+
+`scripts/check_stuck.py` cannot see this: those tickets finished.
+**`scripts/check_degraded.py` (`make degraded`) is the check that can** — it
+reports node-error rate, empty-retrieval rate, and route distribution over
+recent runs, and exits non-zero when a rate is above threshold.
+
+### Local and production disagree about the embedding provider
+
+Local `.env` has drifted to `openrouter` / `openai/text-embedding-3-small`,
+while `infra/deploy-api.sh` still deploys `EMBEDDING_PROVIDER=gemini` and
+`EMBEDDING_MODEL=gemini-embedding-001`. Each side is internally consistent —
+its corpus and its queries use the same model — so retrieval works locally and
+is merely out of credit in production.
+
+**The order of operations in fixing this is load-bearing.** Changing the
+deployed `EMBEDDING_*` variables without re-embedding first is worse than the
+current outage: query vectors from one model against corpus vectors from
+another produce no error at all, just silently meaningless neighbours. A loud
+429 is recoverable; quiet nonsense is not.
+
+Two ways out:
+
+1. **Top up the Gemini balance.** Nothing else changes, retrieval resumes on the
+   next request, and the divergence above stays. Cheapest, and leaves the single
+   shared-key dependency that caused this in place.
+2. **Migrate production to the provider local already uses.** Re-embed the
+   deployed corpus *first*, then update the env vars, then redeploy:
+
+   ```bash
+   export DATABASE_URL="<supabase session pooler URL>"
+   export EMBEDDING_PROVIDER=openrouter
+   export EMBEDDING_MODEL=openai/text-embedding-3-small
+   uv run python scripts/embed_corpus.py        # ~3,472 rows
+   # only after that completes, update the --set-env-vars in deploy-api.sh
+   infra/deploy-api.sh
+   ```
+
+   This also removes the coupling that caused the outage: embedding the corpus
+   and serving live queries no longer share a quota with a hard prepaid ceiling.
+
 ## Access model
 
 Reads are public — queues, ticket detail, drafts, judge reasoning, citations
