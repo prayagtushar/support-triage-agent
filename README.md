@@ -1,5 +1,7 @@
 # Support Triage Agent
 
+[![ci](https://github.com/prayagtushar/support-triage-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/prayagtushar/support-triage-agent/actions/workflows/ci.yml)
+
 **[Live review queue →](https://support-triage-sigma.vercel.app)** — the queues, drafts, judge scores, retrieved cases and audit log are open, no signup. Submitting a ticket or recording a review needs a key, because those spend a pipeline run and write to the audit trail.
 
 An LLM agent that triages inbound customer support tickets end to end. Each ticket is classified by intent and urgency, matched against similar resolved cases, answered with a grounded draft reply, scored by a second model, and then routed by deterministic code: confident, well-grounded drafts go to an auto-reply queue, everything else lands in a human review queue with the full context attached.
@@ -95,6 +97,8 @@ The weights (0.5 judge, 0.3 classifier, 0.2 retrieval) were a guess, and two of 
 
 The root cause under most of this is the corpus. Bitext's "resolutions" are largely templates — *"please provide your account details and I'll look it up"* — so retrieval finds topically similar cases that contain no answer to ground on. 25 of 60 drafts declared themselves unable to answer while only 5 had weak retrieval, and the drafter was not wrong to.
 
+Every failure above is written up per-component — what happened, which part owns it, what I changed, and what I deliberately did not change — in [`docs/failure_analysis.md`](docs/failure_analysis.md).
+
 ## What works well
 
 Classification is strong and language-independent: 0.950 intent accuracy and perfect language detection across English, Hinglish and Devanagari. One measured prompt change took intent accuracy from 0.867 to 0.967 on the classifier eval by fixing a single systematic error — the model was treating "phrased as a question" as meaning `how_to`.
@@ -131,13 +135,13 @@ make seed        # fill the queues
 Quality gates and evals:
 
 ```bash
-make check       # ruff, mypy, offline tests (93 tests, under 2s)
+make check       # ruff, mypy, offline tests (95 tests, under 2s)
 make eval        # full pipeline over the golden set, needs API keys
 make calibrate   # reliability diagram
 make gate        # fail if the latest run regressed against the baseline
 ```
 
-The default test suite is offline: anything needing a database, a network call, or an API key is behind the `integration` marker, so `make check` runs clean with nothing else started. Full evals are a pre-merge make target rather than part of that suite — they need provider keys and minutes of runtime.
+The default test suite is offline: anything needing a database, a network call, or an API key is behind the `integration` marker, so `make check` runs clean with nothing else started. CI runs exactly that — `make check` plus the dashboard's typecheck and build — on every push and pull request; the workflow is in [`.github/workflows/ci.yml`](.github/workflows/ci.yml). Full evals are a pre-merge make target rather than part of that suite, because they need provider keys and minutes of runtime.
 
 ## Deployment
 
@@ -154,7 +158,7 @@ Two deployment details are load-bearing rather than incidental:
 - **`--no-cpu-throttling`.** `POST /tickets` returns 202 and runs the 39–48s pipeline in a background task, after the response is sent. Cloud Run's default throttling would cut CPU at that exact moment and strand every ticket at status `received`. The failure is silent — no error, just a queue that never moves — so `scripts/check_stuck.py` reports tickets that have sat in `received` too long.
 - **`--max-instances 1`.** The provider rate limiters are per-process and set to free-tier ceilings. A second instance doubles the real request rate and earns 429s. This is a correctness constraint that happens to also be cheap.
 
-Spend is capped rather than merely watched: a ₹150/month budget publishes to Pub/Sub, and a Cloud Function detaches the billing account if it is ever actually reached. The runbook, including the two IAM grants that make the kill switch work and how to recover from a trip, is in `docs/DEPLOY.md`.
+Spend is capped rather than merely watched: a ₹150/month budget publishes to Pub/Sub, and a Cloud Function detaches the billing account if it is ever actually reached. The runbook, including the two IAM grants that make the kill switch work and how to recover from a trip, is in [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 The deployed corpus was regenerated during deployment rather than copied, and generation is not deterministic: it holds 3,472 cases (3,000 Bitext, 399 synthetic, 73 Hinglish) against the 3,400 described above, with 7 Hinglish cases lost to provider timeouts. The eval numbers in this README were measured on the original corpus and have not been re-run against the deployed one.
 

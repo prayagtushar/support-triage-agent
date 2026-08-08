@@ -43,8 +43,18 @@ app.add_middleware(
 app.include_router(tickets_router)
 
 
-@app.get("/healthz")
-def healthz() -> dict[str, str]:
+# Liveness is served at /livez, not /healthz, because Google Frontend swallows
+# /healthz before it reaches a Cloud Run container: that one path returns
+# Google's own HTML 404, while every other unrouted path (including /healthz2)
+# returns this app's JSON 404. So a /healthz probe against the deployed service
+# can never pass, no matter what the container does.
+#
+# /healthz stays registered as an alias. It is reachable inside the container
+# and on any host that is not behind Google Frontend, which is what the Docker
+# HEALTHCHECK and the local test suite use.
+@app.get("/livez")
+@app.get("/healthz", include_in_schema=False)
+def livez() -> dict[str, str]:
     """Liveness. Deliberately does not touch the database."""
     return {"status": "ok", "env": settings.app_env}
 

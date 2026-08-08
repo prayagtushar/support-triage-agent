@@ -47,7 +47,9 @@ async def main() -> int:
 
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
-            health = await client.get(f"{args.api}/healthz")
+            # /livez, not /healthz: Google Frontend intercepts /healthz, so this
+            # preflight fails against a Cloud Run URL even when the API is fine.
+            health = await client.get(f"{args.api}/livez")
             health.raise_for_status()
         except Exception as exc:
             print(f"API not reachable at {args.api}: {exc}")

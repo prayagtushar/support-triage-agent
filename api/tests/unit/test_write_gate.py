@@ -124,7 +124,7 @@ def test_review_with_the_right_key_is_accepted(client, gated):
 
 @pytest.mark.parametrize(
     "path",
-    ["/tickets", f"/tickets/{TICKET_ID}", f"/runs/{RUN_ID}", "/audit", "/healthz"],
+    ["/tickets", f"/tickets/{TICKET_ID}", f"/runs/{RUN_ID}", "/audit", "/healthz", "/livez"],
 )
 def test_reads_need_no_key(client, gated, path, monkeypatch):
     async def fake_list(*_: Any, **__: Any) -> list[dict[str, Any]]:

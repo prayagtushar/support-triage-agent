@@ -66,5 +66,5 @@ gcloud run deploy "${SERVICE}" \
 echo
 echo "Deployed. Smoke test:"
 echo "  API=\$(gcloud run services describe ${SERVICE} --region ${REGION} --project ${PROJECT_ID} --format 'value(status.url)')"
-echo "  curl -s \"\$API/healthz\""
+echo "  curl -s \"\$API/livez\"   # not /healthz: Google Frontend intercepts that path"
 echo "  curl -s \"\$API/readyz\""
