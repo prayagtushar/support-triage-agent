@@ -1,1 +1,265 @@
 @import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Typeface
+
+   GeistMono is the primary voice, not an accent. This is an adjudication
+   console: almost everything on screen is a measurement -- a confidence, a
+   latency, a similarity, a score out of five -- and mono keeps digits in
+   columns that the eye can compare down a table. Geist Sans is used only where
+   a human wrote the words: the customer's message, the judge's reasoning, the
+   drafted reply.
+--------------------------------------------------------------------------- */
+@font-face {
+  font-family: "GeistMono";
+  src: url("/fonts/GeistMono-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/Geist-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+/* ---------------------------------------------------------------------------
+   Palette
+
+   Warm paper stock with instrument-grade data on top. The four accents are
+   semantic and never decorative: each one means one thing everywhere it
+   appears, so colour is readable as information rather than styling.
+
+     teal     answered without a human, resolved, healthy
+     mustard  waiting on a human, caution, P2
+     rust     escalated, P1, failure, degraded
+     olive    evidence the draft actually cited
+
+   Dark mode is warm rather than slate. A tobacco ground keeps the paper
+   identity after dark instead of turning the product into a different one.
+--------------------------------------------------------------------------- */
+:root {
+  --paper: #faf7f2;
+  --paper-2: #f3eee4;
+  --paper-3: #ebe4d6;
+  --ink: #1c1917;
+  --ink-2: #6b6459;
+  --ink-3: #948b7c;
+  --rule: #e3dcd0;
+  --rule-2: #d2c8b6;
+
+  --teal: #0f6b63;
+  --teal-bg: #e2efec;
+  --rust: #a8442a;
+  --rust-bg: #f7e6e0;
+  --mustard: #96661a;
+  --mustard-bg: #f7edd9;
+  --olive: #4f6132;
+  --olive-bg: #eaeedd;
+
+  /* Fills for bars and meters. Deliberately more saturated than the text
+     tones above: text has to stay legible on cream, which pushes it dark, and
+     a dark ochre bar reads as mud rather than as a signal. */
+  --teal-fill: #17877a;
+  --rust-fill: #c2542f;
+  --mustard-fill: #cf9a2c;
+  --olive-fill: #7b9243;
+
+  --shadow: 0 1px 2px rgb(28 25 23 / 0.04), 0 4px 12px rgb(28 25 23 / 0.04);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #17150f;
+    --paper-2: #201d15;
+    --paper-3: #2a261c;
+    --ink: #ede7da;
+    --ink-2: #9a9184;
+    --ink-3: #7a7266;
+    --rule: #2e2a21;
+    --rule-2: #423c30;
+
+    --teal: #5fc9b6;
+    --teal-bg: #12312d;
+    --rust: #e8886a;
+    --rust-bg: #3a1e16;
+    --mustard: #dcaa4a;
+    --mustard-bg: #33270f;
+    --olive: #a9bd72;
+    --olive-bg: #232a15;
+
+    --teal-fill: #5fc9b6;
+    --rust-fill: #e8886a;
+    --mustard-fill: #dcaa4a;
+    --olive-fill: #a9bd72;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 12px rgb(0 0 0 / 0.3);
+    color-scheme: dark;
+  }
+}
+
+/* The toggle must win over the media query in both directions, so both themes
+   are restated explicitly rather than relying on one to be the fallback. */
+:root[data-theme="light"] {
+  --paper: #faf7f2;
+  --paper-2: #f3eee4;
+  --paper-3: #ebe4d6;
+  --ink: #1c1917;
+  --ink-2: #6b6459;
+  --ink-3: #948b7c;
+  --rule: #e3dcd0;
+  --rule-2: #d2c8b6;
+  --teal: #0f6b63;
+  --teal-bg: #e2efec;
+  --rust: #a8442a;
+  --rust-bg: #f7e6e0;
+  --mustard: #96661a;
+  --mustard-bg: #f7edd9;
+  --olive: #4f6132;
+  --olive-bg: #eaeedd;
+  --teal-fill: #17877a;
+  --rust-fill: #c2542f;
+  --mustard-fill: #cf9a2c;
+  --olive-fill: #7b9243;
+  --shadow: 0 1px 2px rgb(28 25 23 / 0.04), 0 4px 12px rgb(28 25 23 / 0.04);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --paper: #17150f;
+  --paper-2: #201d15;
+  --paper-3: #2a261c;
+  --ink: #ede7da;
+  --ink-2: #9a9184;
+  --ink-3: #7a7266;
+  --rule: #2e2a21;
+  --rule-2: #423c30;
+  --teal: #5fc9b6;
+  --teal-bg: #12312d;
+  --rust: #e8886a;
+  --rust-bg: #3a1e16;
+  --mustard: #dcaa4a;
+  --mustard-bg: #33270f;
+  --olive: #a9bd72;
+  --olive-bg: #232a15;
+  --teal-fill: #5fc9b6;
+  --rust-fill: #e8886a;
+  --mustard-fill: #dcaa4a;
+  --olive-fill: #a9bd72;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 12px rgb(0 0 0 / 0.3);
+  color-scheme: dark;
+}
+
+/* `inline` so the utilities resolve to the live custom properties above and
+   follow the theme, rather than baking one palette in at build time. */
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-2: var(--rule-2);
+
+  --color-teal: var(--teal);
+  --color-teal-bg: var(--teal-bg);
+  --color-rust: var(--rust);
+  --color-rust-bg: var(--rust-bg);
+  --color-mustard: var(--mustard);
+  --color-mustard-bg: var(--mustard-bg);
+  --color-olive: var(--olive);
+  --color-olive-bg: var(--olive-bg);
+
+  --color-teal-fill: var(--teal-fill);
+  --color-rust-fill: var(--rust-fill);
+  --color-mustard-fill: var(--mustard-fill);
+  --color-olive-fill: var(--olive-fill);
+
+  --font-mono: "GeistMono", ui-monospace, monospace;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    background: var(--paper);
+  }
+
+  body {
+    font-family: var(--font-mono);
+    background: var(--paper);
+    color: var(--ink);
+    font-feature-settings: "tnum" 1; /* digits align down a column */
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Sans is opt-in, for text a person wrote. */
+  .prose-human {
+    font-family: var(--font-sans);
+    font-feature-settings: normal;
+    line-height: 1.6;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--mustard-bg);
+    color: var(--ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Small caps label. Used for section headings and column heads so the mono
+     face reads as a system voice rather than as body copy. */
+  .eyebrow {
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+
+  .card {
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+  }
+
+  /* The docket rule. Hairlines rather than boxes: rows should read as entries
+     in a ledger, not as cards in a feed. */
+  .rule-row {
+    border-bottom: 1px solid var(--rule);
+  }
+}
+
+@keyframes strip-in {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+.animate-strip {
+  transform-origin: left;
+  animation: strip-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}

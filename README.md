@@ -1,5 +1,7 @@
 # Support Triage Agent
 
+[![ci](https://github.com/prayagtushar/support-triage-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/prayagtushar/support-triage-agent/actions/workflows/ci.yml)
+
 **[Live review queue →](https://support-triage-sigma.vercel.app)** — the queues, drafts, judge scores, retrieved cases and audit log are open, no signup. Submitting a ticket or recording a review needs a key, because those spend a pipeline run and write to the audit trail.
 
 An LLM agent that triages inbound customer support tickets end to end. Each ticket is classified by intent and urgency, matched against similar resolved cases, answered with a grounded draft reply, scored by a second model, and then routed by deterministic code: confident, well-grounded drafts go to an auto-reply queue, everything else lands in a human review queue with the full context attached.
@@ -8,11 +10,11 @@ Ticket triage is one of the most widely deployed production uses of LLM agents, 
 
 ![Review screen](assets/review.png)
 
-A real ticket from the review queue. The drafter promised to reverse a double charge and attached a 3–5 day timeline; the judge scored it 2/5 on groundedness because no retrieved case supports either the action or the timeline. The composite fell to 0.78, below the 0.90 auto-reply threshold, so the router sent it to a human with the draft, the judge's reasoning, and the five cases it retrieved all attached.
+A real ticket from the review queue, and the handoff working exactly as designed. A customer lost the phone holding their 2FA codes. The drafter cited five cases and claimed the only route back in is identity verification by support — but every case it cited is about recovering a *PIN*, not a lost second factor, so the judge scored groundedness 1/5 and said why. Note what the composite breakdown exposes: the classifier's self-reported 0.95 contributes **more** (0.285) than the judge's actual assessment of the draft (0.233). That is the weighting problem `make ablate` measures, visible on a single ticket.
 
 ![Queues](assets/queues.png)
 
-The review queue. The row with no intent and no confidence is a ticket that failed classification — it skipped retrieval and drafting entirely and was routed straight to a human.
+The review queue. The notch on every confidence bar is the 0.90 auto-reply threshold, so each row shows not just a score but its distance from the decision that score drove — which is the only part of the number that changed the outcome.
 
 ## Architecture
 
@@ -53,11 +55,26 @@ Key design decisions:
 | Orchestration | LangGraph, Postgres checkpointer |
 | API | FastAPI, Pydantic v2, psycopg3 |
 | Storage and retrieval | PostgreSQL + pgvector, hybrid vector + full-text with reciprocal rank fusion |
-| Models | Llama 3.3 70B (classify), Sarvam-105B (draft), Gemini 2.5 Flash Lite (judge) — all behind one OpenAI-compatible client; embeddings are `gemini-embedding-001` at 1536 dims, which needs Gemini's own batch endpoint rather than that client |
+| Models | Llama 3.3 70B (classify), Sarvam-105B (draft), Gemini 2.5 Flash Lite (judge) — all behind one OpenAI-compatible client. Embeddings are `text-embedding-3-small` at 1536 dims via OpenRouter; the corpus was originally embedded with `gemini-embedding-001`, and moving between them means re-embedding every row, because vectors from different models are not comparable |
 | Observability | Langfuse traces, structlog JSON logs |
 | Evaluation | 60-ticket golden set, threshold sweep, reliability diagram, regression gate |
-| Dashboard | Vite, React 19, TanStack Query, Tailwind |
+| Dashboard | Vite, React 19, TanStack Query, Tailwind v4, Geist Mono |
 | Packaging | uv, bun, Docker Compose |
+
+## Dashboard
+
+Four surfaces, all of them reading data the pipeline already recorded rather than anything computed for display.
+
+- **Queues** — the three lanes, with the confidence meter described above.
+- **Review** — the draft, the judge's three sub-scores and reasoning, the retrieved cases with citation markers and similarity, the classifier's own rationale, and the composite broken into its weighted parts. Below that, the pipeline as it actually ran: five nodes, real per-node latency drawn in proportion, and the model, provider and rupee cost of each. A ticket that failed classification shows retrieve, draft and score as *skipped*, because declining to spend drafter tokens on an unclassifiable ticket is a design decision worth seeing.
+- **Evals** — the measurement page, leading with the metric that misses its target rather than burying it. Threshold sweep, reliability buckets, and the judge ablation.
+- **Submit** — send a ticket as a customer would and watch the stages land. Progress is read back from the LangGraph checkpointer, so the stages are the ones that actually completed rather than a timer pretending.
+
+Two things the dashboard does deliberately:
+
+**It never hardcodes the policy.** Thresholds and composite weights come from `GET /policy`, so the notch on every meter and the arithmetic in every breakdown track the config actually in force. A dashboard that drew its threshold from a constant would start lying the first time the policy was retuned — which, given the ablation result above, is the next thing that should happen.
+
+**It says when the system is serving but not working.** `GET /status` reports the empty-retrieval rate over recent runs, and a banner appears when retrieval has stopped producing evidence. That check exists because of a real outage: the embedding key ran out of credit, every retrieval returned nothing, every ticket was correctly routed to a human by hard rule, and no conventional signal moved. Nothing failed. The system just quietly stopped knowing anything.
 
 ## Evaluation
 
@@ -79,7 +96,9 @@ Measured on golden v0 (60 hand-written tickets, 27% non-English, 5 adversarial),
 
 **1. Auto-reply precision does not meet the bar this system was designed against.** The target was 0.95. Across the full threshold sweep the system reaches 0.727 at 0.85 and 0.778 at 0.90; at 0.95 it auto-replies to nothing. The threshold was raised from 0.85 to 0.90 to trade coverage for safety, and the bar was not lowered to make the number look met. On this corpus, auto-reply is not safe to enable at the intended standard.
 
-**2. The ranges are ranges because the metric is unstable at this sample size.** Two runs with identical configuration produced auto-reply precision of 0.778 and 0.500. At a 0.90 threshold only ~10 tickets are auto-replied, so one flip moves precision ten points. Intent accuracy, measured across all 60 tickets, was stable to three decimals across both runs. Growing the golden set to 100+ is a precondition for the headline number to mean anything, not polish.
+**2. The ranges are ranges because the metric is unstable at this sample size.** Two runs with identical configuration produced auto-reply precision of 0.778 and 0.500. At a 0.90 threshold only ~10 tickets are auto-replied, so one flip moves precision ten points. Intent accuracy, measured across all 60 tickets, was stable to three decimals across both runs. Growing the golden set is a precondition for the headline number to mean anything, not polish.
+
+`make coverage` works out the size instead of guessing at a round one. The precision denominator is not how many tickets are labelled `auto_reply` — it is how many the system chooses to send, which at this threshold is 17% of the set. Resolving precision to ±0.05 therefore needs a denominator of 20, so **~120 tickets, not 100**. Note the direction of that interaction: raising the threshold for safety shrinks the denominator, so the headline metric gets noisier exactly as the policy gets more conservative.
 
 **3. The composite confidence is overconfident in every bucket.**
 
@@ -95,11 +114,15 @@ The weights (0.5 judge, 0.3 classifier, 0.2 retrieval) were a guess, and two of 
 
 The root cause under most of this is the corpus. Bitext's "resolutions" are largely templates — *"please provide your account details and I'll look it up"* — so retrieval finds topically similar cases that contain no answer to ground on. 25 of 60 drafts declared themselves unable to answer while only 5 had weak retrieval, and the drafter was not wrong to.
 
+Every failure above is written up per-component — what happened, which part owns it, what I changed, and what I deliberately did not change — in [`docs/failure_analysis.md`](docs/failure_analysis.md).
+
 ## What works well
 
-Classification is strong and language-independent: 0.950 intent accuracy and perfect language detection across English, Hinglish and Devanagari. One measured prompt change took intent accuracy from 0.867 to 0.967 on the classifier eval by fixing a single systematic error — the model was treating "phrased as a question" as meaning `how_to`.
+Classification is strong: 0.950 intent accuracy, stable to three decimals across repeated runs, and language detection correct on all 60 tickets. That last figure needs one qualifier the table cannot carry — the set is 44 English and 15 Hinglish against a single Devanagari ticket, so "correct on Devanagari" rests on n=1 and should not be read as a claim about the script. `make coverage` reports that gap rather than leaving it to be discovered. One measured prompt change took intent accuracy from 0.867 to 0.967 on the classifier eval by fixing a single systematic error — the model was treating "phrased as a question" as meaning `how_to`.
 
 The judge earns its place. Three times during development the drafter invented something and the judge caught it precisely: an invented cancellation-link location, a claim to have checked a transaction the agent has no access to, and a refund timeline supported by nothing. Each time the composite fell and the router sent the ticket to a human instead of a customer.
+
+`make ablate` puts a number on that. It re-routes the stored eval runs under reweighted composites offline — no API keys, no cost — and refuses to report anything until it has replayed all 60 recorded routes from the stored signals. The stable finding across both runs is one I did not expect: **weighting the judge at 1.0 and dropping the other two inputs beats the shipped 0.5/0.3/0.2 composite** (0.800 vs 0.778, and 0.667 vs 0.632). The classifier and retrieval terms are diluting the judge rather than supplementing it, which makes the "the weights were a guess" caveat above concrete rather than modest. Whether the judge is strictly *necessary* is still unsettled at n=60 — that arm flips sign between runs.
 
 ## Data
 
@@ -125,19 +148,25 @@ uv run python scripts/embed_corpus.py
 
 make api         # http://localhost:8000
 make ui          # http://localhost:5173
-make seed        # fill the queues
+make seed-local  # run the golden set through the pipeline into the queues
 ```
+
+`make seed-local` drives the graph directly rather than going through the API, because `POST /tickets` enforces a public-demo daily cap that a local database has no reason to be bound by. Sixty tickets costs about ₹3 and a few minutes.
 
 Quality gates and evals:
 
 ```bash
-make check       # ruff, mypy, offline tests (93 tests, under 2s)
+make check       # ruff, mypy, 120 api tests + 27 dashboard tests, under 5s
 make eval        # full pipeline over the golden set, needs API keys
 make calibrate   # reliability diagram
+make ablate      # does the judge earn its weight? offline, free
+make coverage    # where the golden set is too thin to support its claims
+make degraded    # runs that finished but did not work
+make ui-evals    # regenerate the dashboard's eval data from the latest report
 make gate        # fail if the latest run regressed against the baseline
 ```
 
-The default test suite is offline: anything needing a database, a network call, or an API key is behind the `integration` marker, so `make check` runs clean with nothing else started. Full evals are a pre-merge make target rather than part of that suite — they need provider keys and minutes of runtime.
+The default test suite is offline: anything needing a database, a network call, or an API key is behind the `integration` marker, so `make check` runs clean with nothing else started. CI runs exactly that — `make check` plus the dashboard's typecheck and build — on every push and pull request; the workflow is in [`.github/workflows/ci.yml`](.github/workflows/ci.yml). Full evals are a pre-merge make target rather than part of that suite, because they need provider keys and minutes of runtime.
 
 ## Deployment
 
@@ -154,7 +183,7 @@ Two deployment details are load-bearing rather than incidental:
 - **`--no-cpu-throttling`.** `POST /tickets` returns 202 and runs the 39–48s pipeline in a background task, after the response is sent. Cloud Run's default throttling would cut CPU at that exact moment and strand every ticket at status `received`. The failure is silent — no error, just a queue that never moves — so `scripts/check_stuck.py` reports tickets that have sat in `received` too long.
 - **`--max-instances 1`.** The provider rate limiters are per-process and set to free-tier ceilings. A second instance doubles the real request rate and earns 429s. This is a correctness constraint that happens to also be cheap.
 
-Spend is capped rather than merely watched: a ₹150/month budget publishes to Pub/Sub, and a Cloud Function detaches the billing account if it is ever actually reached. The runbook, including the two IAM grants that make the kill switch work and how to recover from a trip, is in `docs/DEPLOY.md`.
+Spend is capped rather than merely watched: a ₹150/month budget publishes to Pub/Sub, and a Cloud Function detaches the billing account if it is ever actually reached. The runbook, including the two IAM grants that make the kill switch work and how to recover from a trip, is in [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 The deployed corpus was regenerated during deployment rather than copied, and generation is not deterministic: it holds 3,472 cases (3,000 Bitext, 399 synthetic, 73 Hinglish) against the 3,400 described above, with 7 Hinglish cases lost to provider timeouts. The eval numbers in this README were measured on the original corpus and have not been re-run against the deployed one.
 

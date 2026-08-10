@@ -1,3 +1,9 @@
+# Named explicitly. Compose otherwise derives the project name from this file's
+# parent directory -- "infra" -- which other projects here use too, so two of
+# them share one Compose project and the second `up` recreates this container as
+# its own service. That happened.
+name: triage
+
 services:
   db:
     image: pgvector/pgvector:pg16
@@ -34,3 +40,8 @@ services:
 
 volumes:
   pgdata:
+    # Pinned to the volume that already holds the data. Volume names are
+    # namespaced by the Compose project, so setting `name:` above would
+    # otherwise point this at a new, empty triage_pgdata and orphan the
+    # existing database.
+    name: infra_pgdata

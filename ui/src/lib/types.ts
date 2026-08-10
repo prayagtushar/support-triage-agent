@@ -76,7 +76,17 @@ export interface TicketDetail {
   route_reason: string | null;
   errors: string[] | null;
   latency_ms: Record<string, number> | null;
-  token_usage: Record<string, { estimated_cost_inr: number | null }> | null;
+  token_usage: Record<
+    string,
+    {
+      model?: string;
+      provider?: string;
+      attempts?: number;
+      prompt_tokens?: number;
+      completion_tokens?: number;
+      estimated_cost_inr: number | null;
+    }
+  > | null;
   langfuse_trace_id: string | null;
 }
 
@@ -97,4 +107,39 @@ export interface ReviewPayload {
   action: "approve" | "edit" | "reject";
   final_text?: string;
   note?: string;
+}
+
+export interface Policy {
+  thresholds: {
+    auto_reply: number;
+    review: number;
+    weak_retrieval_floor: number;
+  };
+  composite_weights: {
+    judge: number;
+    classifier: number;
+    retrieval: number;
+  };
+  models: Record<string, string>;
+  max_tickets_per_day: number;
+}
+
+export interface SystemStatus {
+  runs: number;
+  degraded: boolean;
+  reason: string;
+  empty_retrieval_rate?: number;
+  error_rate?: number;
+  routes?: Record<string, number>;
+  tickets_last_24h?: number;
+}
+
+export interface TicketProgress {
+  status: TicketStatus;
+  progress_available: boolean;
+  completed: string[];
+  skipped: string[];
+  classification?: Classification | null;
+  retrieved_count?: number;
+  errors?: string[];
 }

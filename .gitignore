@@ -1,6 +1,10 @@
-# Local working docs and CI config. Intentionally not tracked.
-docs/
-.github/
+# Working docs stay local: the build guide, sprint plan, scratch notes, and
+# docs/study/ (interview prep and talking points) are for me, not readers.
+# The deployment runbook and the failure analysis are published, because the
+# README points at them and they are part of what makes the project reviewable.
+docs/*
+!docs/DEPLOY.md
+!docs/failure_analysis.md
 
 # Environment files
 .env
