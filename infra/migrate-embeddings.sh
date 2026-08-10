@@ -85,15 +85,41 @@ fi
 read -r -p "Re-embed the whole corpus through ${TARGET_PROVIDER}? [y/N] " reply
 [[ "${reply}" == "y" || "${reply}" == "Y" ]] || { echo "aborted"; exit 1; }
 
+# Clearing the old vectors is what makes the next step do anything at all.
+#
+# embed_corpus.py claims only rows WHERE embedding IS NULL, deliberately: that is
+# what lets a run interrupted by a rate limit resume instead of starting over. It
+# also means that against a fully embedded corpus it does nothing and reports
+# "every case already has an embedding" -- which, on the first attempt at this
+# migration, looked exactly like success. The verify step then passed too, because
+# every row did have a vector. They were the Gemini vectors this migration exists
+# to replace, and deploying on top of that is the silent-nonsense case the header
+# warns about, reached by way of two green checks.
+#
+# The corpus is briefly half-embedded while this runs. That is safe here and only
+# here: the deployed query path is still on the old provider and retrieval is
+# already returning nothing, so there is no working state to damage, and the
+# verify gate below refuses to print the deploy step unless every row came back.
 echo
-echo "==> Step 1/3: re-embedding the corpus (this is the slow part)"
+echo "==> Step 1/4: clearing the old ${TARGET_DIM}-dim vectors"
+uv run python - <<'PY'
+from app.db import connect
+
+with connect() as conn, conn.cursor() as cur:
+    cur.execute("UPDATE resolved_cases SET embedding = NULL WHERE embedding IS NOT NULL")
+    print(f"    cleared {cur.rowcount} vectors")
+    conn.commit()
+PY
+
+echo
+echo "==> Step 2/4: re-embedding the corpus (this is the slow part)"
 EMBEDDING_PROVIDER="${TARGET_PROVIDER}" \
 EMBEDDING_MODEL="${TARGET_MODEL}" \
 EMBEDDING_DIM="${TARGET_DIM}" \
   uv run python scripts/embed_corpus.py
 
 echo
-echo "==> Step 2/3: verifying every row is embedded before touching the service"
+echo "==> Step 3/4: verifying every row is embedded before touching the service"
 uv run python - <<'PY'
 import sys
 from app.db import connect
@@ -110,7 +136,7 @@ if total == 0 or embedded != total:
 PY
 
 echo
-echo "==> Step 3/3: deploy, so the query path uses the same model as the corpus"
+echo "==> Step 4/4: deploy, so the query path uses the same model as the corpus"
 cat <<MSG
 
 Not done automatically: this changes a public service, and the corpus write
