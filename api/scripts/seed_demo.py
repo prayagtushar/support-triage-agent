@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import os
 import sys
 
 import httpx
@@ -40,6 +41,15 @@ async def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--api", default="http://localhost:8000")
     parser.add_argument("--concurrency", type=int, default=3)
+    parser.add_argument(
+        "--key",
+        default=os.environ.get("DEMO_WRITE_KEY", ""),
+        help=(
+            "Value for X-Demo-Key. Required against any deployment that sets "
+            "DEMO_WRITE_KEY, which is every deployment that is reachable from the "
+            "internet; defaults to $DEMO_WRITE_KEY so it need not be typed."
+        ),
+    )
     args = parser.parse_args()
 
     by_id = {t.id: t for t in load_golden()}
@@ -57,11 +67,14 @@ async def main() -> int:
 
         semaphore = asyncio.Semaphore(args.concurrency)
 
+        headers = {"X-Demo-Key": args.key} if args.key else {}
+
         async def submit(t: GoldenTicket) -> None:
             async with semaphore:
                 response = await client.post(
                     f"{args.api}/tickets",
                     json={"subject": t.subject, "body": t.body, "channel": "web"},
+                    headers=headers,
                 )
                 status = "ok" if response.status_code == 202 else str(response.status_code)
                 print(f"  {t.id}  {status}  {t.subject[:52]}")
