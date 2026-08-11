@@ -193,9 +193,20 @@ what the offline test suite runs against.
 ## Deploying
 
 ```bash
-export CORS_ORIGINS='["https://<vercel-domain>"]'
 export LANGFUSE_PUBLIC_KEY=pk-lf-...
 infra/deploy-api.sh              # builds and deploys, tag defaults to latest
+```
+
+`CORS_ORIGINS` no longer needs exporting: the deployed dashboard's origin is the
+default in `deploy-api.sh`. It used to be listed here as something to remember,
+and on 2026-08-10 a deploy that forgot it narrowed production to a localhost
+origin — `--set-env-vars` replaces the whole environment — so every request from
+the live dashboard failed preflight. The page still rendered; only its data
+disappeared, under "Could not reach the API". Override only for a different
+frontend:
+
+```bash
+CORS_ORIGINS='["https://example.com"]' infra/deploy-api.sh
 ```
 
 Dashboard:
