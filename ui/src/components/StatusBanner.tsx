@@ -2,18 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getStatus } from "../lib/api";
 
-/**
- * Says out loud when the system is serving but not working.
- *
- * This exists because of a real outage: the embedding key ran out of credit, so
- * every retrieval returned nothing, every ticket went to a human by hard rule,
- * and nothing else changed. No request failed, no ticket stalled, the health
- * endpoint stayed green and the queues still rendered. The only symptom was two
- * empty lanes, which reads as a quiet day rather than a broken dependency.
- *
- * Silent when healthy. A banner that is always present is furniture, and gets
- * read as decoration rather than as a warning.
- */
+/** Says out loud when the system is serving but not working. Silent when healthy. */
 export default function StatusBanner() {
   const { data } = useQuery({
     queryKey: ["status"],

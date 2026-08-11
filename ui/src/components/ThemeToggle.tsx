@@ -9,13 +9,7 @@ function apply(theme: Theme) {
   else root.setAttribute("data-theme", theme);
 }
 
-/**
- * Light, dark, or follow the OS.
- *
- * "system" removes the attribute entirely rather than resolving the OS
- * preference and writing it back, so the page keeps tracking the OS if it
- * changes while open.
- */
+/** Light, dark, or follow the OS. "system" unsets the attribute so the OS keeps winning. */
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(STORAGE) as Theme | null) ?? "system",

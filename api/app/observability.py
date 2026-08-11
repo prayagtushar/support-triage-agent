@@ -1,8 +1,4 @@
-"""Langfuse tracing. A lens, not a dependency.
-
-Every call here swallows its own failures. If Langfuse is unreachable the
-ticket still processes and the run row in Postgres is still complete.
-"""
+"""Langfuse tracing: a lens, not a dependency. Every call here swallows its own failures."""
 
 from __future__ import annotations
 

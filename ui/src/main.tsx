@@ -39,8 +39,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       <header className="border-b border-rule bg-paper-2">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-6 py-4">
           <span className="flex items-baseline gap-2">
-            {/* The mark is the routing decision in miniature: three lanes, one
-                of them chosen. */}
+            {/* The mark is the routing decision in miniature: three lanes, one chosen. */}
             <span aria-hidden className="flex items-end gap-[2px]">
               <span className="h-2.5 w-[3px] bg-teal-fill" />
               <span className="h-4 w-[3px] bg-mustard-fill" />

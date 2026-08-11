@@ -1,11 +1,4 @@
-"""Embedding, with two providers behind one function.
-
-Gemini goes over its native REST API rather than the OpenAI-compatible shim,
-because the shim rejects task_type and asymmetric embedding (documents indexed
-one way, queries another) matters for retrieval quality. OpenAI-family models
-are trained symmetric and need no equivalent, so they go through the normal
-client.
-"""
+"""Embedding. Gemini needs its own REST call because the OpenAI shim rejects task_type."""
 
 from __future__ import annotations
 

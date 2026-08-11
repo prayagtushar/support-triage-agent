@@ -1,9 +1,4 @@
-"""The surfaces the dashboard reads: /policy, /status, and ticket progress.
-
-All offline. The repository and the checkpointer are faked, for the same reason
-the rest of the suite fakes them: a health surface you can only test against a
-live database is a health surface nobody tests.
-"""
+"""The surfaces the dashboard reads: /policy, /status and ticket progress. All offline."""
 
 from typing import Any
 
@@ -33,8 +28,7 @@ def offline_lifespan(monkeypatch):
 
 
 def test_policy_reports_the_thresholds_actually_in_force():
-    """The dashboard draws its threshold line from this, so it must be the
-    live Settings value rather than a duplicated constant."""
+    """The dashboard draws its threshold line from this, so it must be the live value."""
     with TestClient(app) as c:
         body = c.get("/policy").json()
 
@@ -50,8 +44,7 @@ def test_policy_weights_sum_to_one():
 
 
 def test_policy_names_a_different_vendor_for_judge_and_drafter():
-    """Cross-vendor judging is the invariant Settings refuses to boot without.
-    Publishing both makes it checkable from outside the process."""
+    """Cross-vendor judging is the invariant Settings refuses to boot without."""
     with TestClient(app) as c:
         models = c.get("/policy").json()["models"]
     assert models["judge"].split("/")[0] != models["drafter"].split("/")[0]
@@ -84,9 +77,7 @@ def test_status_is_healthy_when_retrieval_is_producing_cases(monkeypatch):
 
 
 def test_status_flags_the_outage_that_actually_happened(monkeypatch):
-    """Every run finished, nothing errored in a way that failed a request, and
-    retrieval returned nothing on all of them. This is the case that stayed
-    invisible in production for two days."""
+    """Every run finished, nothing errored, and retrieval returned nothing on all of them."""
     with _status_client(
         monkeypatch,
         {"total": 2, "with_errors": 2, "empty_retrieval": 2, "routes": {"human_review": 2}},
@@ -98,9 +89,7 @@ def test_status_flags_the_outage_that_actually_happened(monkeypatch):
 
 
 def test_status_degrades_on_empty_retrieval_even_with_no_recorded_errors(monkeypatch):
-    """A provider returning an empty list is not an error, but the drafter still
-    had nothing to ground on. Output quality is the thing being watched, not
-    whether an exception was raised."""
+    """An empty list is not an error, but the drafter still had nothing to ground on."""
     with _status_client(
         monkeypatch,
         {"total": 10, "with_errors": 0, "empty_retrieval": 9, "routes": {"human_review": 10}},
@@ -167,8 +156,7 @@ def test_progress_lists_completed_nodes_in_order(monkeypatch):
 
 
 def test_progress_marks_the_expensive_nodes_skipped_when_classification_failed(monkeypatch):
-    """after_classify routes straight to route when there is no intent. Those
-    nodes are never going to run, so a client must not wait on them."""
+    """Those nodes are never going to run, so a client must not sit waiting on them."""
     values = {
         "node_timings_ms": [{"node": "classify", "ms": 8000}],
         "classification": None,
@@ -188,8 +176,7 @@ def test_progress_reports_no_progress_when_nothing_is_checkpointed_yet(monkeypat
 
 
 def test_progress_admits_it_cannot_see_an_in_memory_saver(monkeypatch):
-    """With no Postgres checkpointer the graph uses a per-run in-memory saver
-    this request cannot read. Saying so beats reporting a stalled pipeline."""
+    """Saying so beats reporting a stalled pipeline."""
     with _progress_client(monkeypatch, {"status": "received"}, None) as c:
         body = c.get(f"/tickets/{TICKET_ID}/progress").json()
 
@@ -197,8 +184,7 @@ def test_progress_admits_it_cannot_see_an_in_memory_saver(monkeypatch):
 
 
 def test_progress_survives_a_failing_checkpoint_read(monkeypatch):
-    """Polling must never 500. A broken checkpoint read is a lost progress bar,
-    not a lost ticket."""
+    """Polling must never 500: a broken read is a lost progress bar, not a lost ticket."""
     with _progress_client(
         monkeypatch, {"status": "received"}, FakeCheckpointer(None, raises=True)
     ) as c:

@@ -1,8 +1,6 @@
 name: ci
 
-# Only the offline half runs here. The full eval suite needs provider API keys
-# and minutes of runtime, so it is a make target run before merging rather than
-# a step that would make every push slow and flaky.
+# Only the offline half runs here; the full eval suite needs API keys and minutes.
 on:
   push:
     branches: [main]

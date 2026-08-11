@@ -1,10 +1,4 @@
-"""Turning raw pipeline rows into the numbers that describe the product's risk.
-
-Routing accuracy alone hides an asymmetry: a false auto-reply reaches a
-customer, while a missed review is a silent failure. Auto-reply precision and
-review recall are the two metrics that encode that, and they are what the
-summary leads with.
-"""
+"""Pipeline rows into risk numbers. Accuracy hides the asymmetry; precision and recall show it."""
 
 from __future__ import annotations
 
@@ -101,12 +95,7 @@ def reliability_buckets(rows: Sequence[dict[str, Any]], width: float = 0.1) -> l
 def sweep_thresholds(
     rows: Sequence[dict[str, Any]], candidates: Sequence[float]
 ) -> list[dict[str, Any]]:
-    """What auto-reply precision and review recall would be at each threshold.
-
-    Re-routes from the recorded signals rather than re-running the pipeline:
-    the hard rules (P1, weak retrieval, safe fallback) already produced their
-    routes and do not depend on the threshold.
-    """
+    """Precision and recall at each threshold, re-routed from recorded signals, not re-run."""
     results = []
     for threshold in candidates:
         rerouted = []

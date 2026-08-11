@@ -1,19 +1,7 @@
 """Fill the local queues by running the real pipeline, for demos and screenshots.
 
-    uv run python scripts/seed_local.py --reset          # wipe and reseed all 60
-    uv run python scripts/seed_local.py --limit 10       # add ten more
-
-Unlike seed_demo.py this does not go through the API. Two reasons:
-
-  1. `POST /tickets` enforces MAX_TICKETS_PER_DAY, which is a public-demo abuse
-     ceiling. Seeding a local database is not abuse, and working around the cap
-     by raising it in .env would leave the local config lying about production.
-  2. Driving the graph directly is what the eval runner already does, so the
-     rows written here are produced exactly the way a real request produces
-     them -- same nodes, same models, same routing policy.
-
-Every ticket costs a real pipeline run against three providers, roughly Rs 0.05
-and 15-40 seconds, so --limit exists and --reset asks before deleting.
+uv run python scripts/seed_local.py --reset          # wipe and reseed all 60
+uv run python scripts/seed_local.py --limit 10       # add ten more
 """
 
 from __future__ import annotations
@@ -37,12 +25,7 @@ ROUTE_TO_STATUS = {
 
 
 def reset() -> None:
-    """Truncate the demo tables, leaving the corpus alone.
-
-    resolved_cases is deliberately untouched: re-embedding 3,400 rows is the
-    single largest provider spend in this project and has nothing to do with
-    refreshing a queue.
-    """
+    """Truncate the demo tables. resolved_cases is left alone; re-embedding it is the real cost."""
     with connect() as conn, conn.cursor() as cur:
         cur.execute("TRUNCATE review_actions, agent_runs, tickets CASCADE")
         conn.commit()
@@ -68,8 +51,7 @@ async def run_one(graph: Any, ticket: GoldenTicket) -> str | None:
             config={"configurable": {"thread_id": ticket_id}},
         )
     except Exception as exc:
-        # Mirrors process_ticket: a failed run still records why, and still
-        # lands in front of a human rather than vanishing.
+        # Mirrors process_ticket: a failed run still records why and still reaches a human.
         await repo.insert_run(ticket_id, {"errors": [f"pipeline: {exc}"]}, None)
         await repo.update_ticket_status(ticket_id, "in_review")
         print(f"    {ticket.id} FAILED {type(exc).__name__}")
@@ -113,9 +95,7 @@ async def main() -> int:
 
         ids = [i for i in await asyncio.gather(*(guarded(t) for t in tickets)) if i]
 
-        # A demo with an empty audit trail hides the feature the audit page is
-        # for, so a few tickets get reviewed. Actions vary because a ledger of
-        # nothing but approvals says less than one that shows a rejection.
+        # Review a few, with varied actions: an audit page of pure approvals shows nothing.
         if args.reviews:
             reviewed = 0
             plan = [

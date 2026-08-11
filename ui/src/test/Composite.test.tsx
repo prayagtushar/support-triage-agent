@@ -22,11 +22,7 @@ const classification: Classification = {
 };
 const retrieval: Retrieval = { cases: [], weak: false, best_similarity: 0.324 };
 
-/**
- * This panel restates arithmetic the server already did. Its whole value is
- * that the numbers add up to the composite the router used, so that is what the
- * tests check -- not the markup.
- */
+/** This panel restates the server's arithmetic, so the tests check the numbers, not markup. */
 describe("Composite", () => {
   it("shows each signal's weighted contribution", () => {
     render(
@@ -74,8 +70,7 @@ describe("Composite", () => {
   });
 
   it("uses the weights the server reports, not the shipped defaults", () => {
-    // The judge ablation's whole point is that these weights should change. If
-    // this panel hardcoded them it would start lying the moment they did.
+    // The weights should change; hardcoding them here would start lying the moment they did.
     const retuned: Policy = {
       ...policy,
       composite_weights: { judge: 1, classifier: 0, retrieval: 0 },

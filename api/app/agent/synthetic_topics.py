@@ -1,8 +1,4 @@
-"""Seed topics for synthetic corpus generation.
-
-Diversity is steered by topic rather than by asking a model for "varied"
-examples, which collapses onto the same three or four scenarios.
-"""
+"""Seed topics for synthetic generation. Asking a model for "varied" examples collapses instead."""
 
 from __future__ import annotations
 

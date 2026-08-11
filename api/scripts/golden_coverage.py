@@ -1,24 +1,6 @@
 """Where the golden set is too thin to support the claims made from it.
 
-    uv run python scripts/golden_coverage.py [--golden v0] [--resolution 0.05]
-
-failure_analysis.md says growing the golden set past 100 is a precondition
-rather than polish. This works out which tickets to write, and how many, instead
-of guessing at a round number.
-
-Two different problems get conflated under "small sample":
-
-  1. Cells with too few tickets to support a per-slice claim at all. Language
-     accuracy of 1.000 sounds strong until you notice Devanagari is one ticket.
-
-  2. The auto-reply precision denominator, which is not the number of tickets
-     labelled auto_reply -- it is the number the system chooses to send. Raising
-     the threshold shrinks it, so the headline metric gets noisier exactly as
-     the policy gets safer. That interaction is why the fix is a total-size
-     target, not a rebalance.
-
-Offline and free: it reads labels, and reads the auto-reply rate off a stored
-report when one is available.
+uv run python scripts/golden_coverage.py [--golden v0] [--resolution 0.05]
 """
 
 from __future__ import annotations
@@ -33,8 +15,7 @@ from typing import Any
 from app.corpus import TAXONOMY
 from app.evals.golden import REPORTS_DIR, load_golden
 
-# Below this, a per-slice rate is a headline waiting to be misread: a single
-# ticket moves it by more than the differences anyone would quote it for.
+# Below this a per-slice rate moves more per ticket than the differences people quote.
 THIN = 5
 
 ROUTES = ("auto_reply", "human_review", "escalate")
@@ -90,8 +71,7 @@ def main() -> int:
         print("\n".join(block))
         print()
 
-    # Cross-tab, because the marginals can both look healthy while a cell that
-    # gets quoted -- Hinglish intent accuracy, for one -- rests on two tickets.
+    # Cross-tab: both marginals can look healthy while a quoted cell rests on two tickets.
     print("intent x language, cells below the thin threshold:")
     pairs = Counter((t.expected_intent, t.language) for t in tickets)
     seen_languages = sorted(languages)

@@ -1,12 +1,6 @@
 """Measure retrieval over the golden set and tune the weak-retrieval floor.
 
-    uv run python scripts/eval_retrieval.py
-
-The floor is a precision/recall tradeoff on the weak flag. Missing an
-uncovered ticket means answering confidently about something the corpus does
-not know, which reaches a customer. Flagging a covered ticket only costs a
-human a glance. The two errors are not symmetric and the floor should not
-pretend they are.
+uv run python scripts/eval_retrieval.py
 """
 
 from __future__ import annotations
@@ -22,12 +16,7 @@ from app.config import settings
 from app.evals.golden import REPORTS_DIR, GoldenTicket, load_golden
 from app.retrieval.search import find_similar_cases
 
-# Tickets the corpus genuinely cannot cover, named explicitly so they cannot
-# drift when notes are edited.
-#   g058 developer API question, corpus is consumer support
-#   g040 business sales enquiry, corpus is support
-#   g056 one line with no information in it
-#   g057 pure Devanagari, and the corpus has no Devanagari rows at all
+# Tickets the corpus cannot cover: dev API, sales enquiry, empty text, pure Devanagari.
 EXPECTED_WEAK = {"g058", "g040", "g056", "g057"}
 
 

@@ -65,8 +65,7 @@ def test_weak_retrieval_forces_review_despite_perfect_judge_scores():
 
 
 def test_safe_fallback_forces_review():
-    """A good fallback scores high on groundedness because it claims nothing.
-    The router, not the judge, is what keeps it away from a customer."""
+    """A fallback scores high on groundedness because it claims nothing. The router catches it."""
     route, _ = decide_route(signals(is_safe_fallback=True), CFG)
     assert route == "human_review"
 

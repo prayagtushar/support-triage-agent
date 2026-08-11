@@ -1,14 +1,4 @@
-"""Policy and health surfaces the dashboard reads. Both public, both cheap.
-
-`/policy` exists so the UI never hardcodes a threshold or a composite weight.
-Those live in Settings precisely so a policy change is a config change, and a
-dashboard that drew its threshold line from a constant in a TypeScript file
-would quietly start lying the first time the config moved.
-
-`/status` is check_degraded.py over HTTP. The failure it watches for is the one
-that already happened in production: retrieval returning nothing on every
-ticket while every conventional health signal stayed green.
-"""
+"""Policy and health, so the dashboard never hardcodes a threshold or guesses at degradation."""
 
 from __future__ import annotations
 
@@ -48,13 +38,7 @@ async def policy() -> dict[str, Any]:
 
 @router.get("/status")
 async def status(last: int = Query(default=50, ge=1, le=200)) -> dict[str, Any]:
-    """Whether recent runs actually worked, not merely whether they finished.
-
-    `degraded` is deliberately computed from the empty-retrieval rate rather
-    than from any node's error string. A provider can change its error shape,
-    but "retrieval returned nothing" is the symptom that matters to output
-    quality however it is worded upstream.
-    """
+    """Whether recent runs worked, not merely finished. Keyed on empty retrieval, not errors."""
     health = await repo.recent_run_health(last)
     total = int(health["total"])
     if total == 0:

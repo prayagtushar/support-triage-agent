@@ -6,8 +6,7 @@ import { Pipeline } from "../components/Pipeline";
 
 describe("IntentBadge", () => {
   it("says a ticket is unclassified rather than leaving a blank cell", () => {
-    // A missing intent means classification failed, which is information. An
-    // empty cell leaves the reader to guess.
+    // A missing intent means classification failed, which is information.
     render(<IntentBadge intent={null} />);
     expect(screen.getByText("unclassified")).toBeInTheDocument();
   });
@@ -63,8 +62,7 @@ describe("Pipeline", () => {
   };
 
   it("marks nodes that never ran as skipped, not as pending forever", () => {
-    // A ticket that fails classification skips retrieve, draft and score by
-    // design; the reader should see that decision.
+    // A ticket that fails classification skips retrieve, draft and score by design.
     render(
       <Pipeline latency={{ classify: 8000, route: 0 }} usage={usage} errors={null} />,
     );

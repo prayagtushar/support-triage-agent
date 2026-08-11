@@ -9,12 +9,7 @@ _FENCE = re.compile(r"```(?:json)?\s*(.*?)\s*```", re.DOTALL | re.IGNORECASE)
 
 
 def extract_json_object(content: str) -> str:
-    """Best-effort recovery of a single JSON object from model output.
-
-    Handles reasoning preambles, fenced code blocks, and prose either side of
-    the object. Returns the input unchanged when nothing better is found, so
-    the caller's schema validation produces the error message.
-    """
+    """Dig one JSON object out of model output. Returns the input unchanged when it cannot."""
     text = _THINK_BLOCK.sub("", content).strip()
 
     fenced = _FENCE.search(text)

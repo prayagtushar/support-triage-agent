@@ -27,11 +27,9 @@ class Classification(BaseModel):
     urgency: Urgency
     language: Language
     sentiment: Sentiment
-    # Self-reported, and weakly calibrated at best. Kept as one signal among
-    # several; M8 measures how much it is actually worth.
+    # Self-reported and weakly calibrated; one signal among several.
     confidence: float = Field(ge=0.0, le=1.0)
-    # For the review UI and debugging, not chain of thought. Capped so we are
-    # not paying for an essay per ticket.
+    # For the review UI, not chain of thought. Capped so we don't pay for an essay per ticket.
     rationale: str = Field(max_length=280)
 
 
@@ -47,8 +45,7 @@ class Draft(BaseModel):
 class JudgeScores(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
-    # Integer 1-5, not 0-100: a model cannot meaningfully separate 82 from 87,
-    # and pretending it can only adds noise to the routing thresholds.
+    # 1-5, not 0-100: a model cannot separate 82 from 87, and pretending otherwise adds noise.
     groundedness: int = Field(ge=1, le=5)
     completeness: int = Field(ge=1, le=5)
     tone: int = Field(ge=1, le=5)

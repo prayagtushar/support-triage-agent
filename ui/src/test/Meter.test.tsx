@@ -11,12 +11,7 @@ const policy: Policy = {
   max_tickets_per_day: 50,
 };
 
-/**
- * The meter is the one component that encodes the routing policy visually, so
- * the thing worth testing is that it reads the threshold from the server rather
- * than from a constant -- and that the band boundaries land on the same side as
- * the router's own comparisons.
- */
+/** The meter encodes routing policy visually, so it must read the threshold from the server. */
 describe("ConfidenceMeter", () => {
   it("labels the value and the threshold it is measured against", () => {
     render(<ConfidenceMeter value={0.78} policy={policy} />);
@@ -37,8 +32,7 @@ describe("ConfidenceMeter", () => {
   });
 
   it("renders a dash when there is no score, rather than 0.00", () => {
-    // A ticket that failed classification has no composite. Showing 0.00 would
-    // read as "scored zero", which is a different claim.
+    // No composite when classification failed; showing 0.00 would read as "scored zero".
     render(<ConfidenceMeter value={null} policy={policy} />);
     expect(screen.getByText("—")).toBeInTheDocument();
   });

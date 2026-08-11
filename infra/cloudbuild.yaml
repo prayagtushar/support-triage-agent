@@ -1,10 +1,4 @@
-# Build the API image with BuildKit enabled.
-#
-# `gcloud builds submit --tag` uses the legacy Docker builder, which fails on
-# the `RUN --mount=type=cache` lines in api/Dockerfile with "the --mount option
-# requires BuildKit". Those cache mounts are worth keeping — they stop a source
-# edit from reinstalling every dependency — so the build opts into BuildKit
-# rather than the Dockerfile giving them up.
+# BuildKit, because `builds submit --tag` uses the legacy builder and rejects cache mounts.
 
 steps:
   - name: gcr.io/cloud-builders/docker

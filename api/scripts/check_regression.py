@@ -1,11 +1,7 @@
 """Fail if the latest eval report is worse than the blessed baseline.
 
-    uv run python scripts/check_regression.py            # check
-    uv run python scripts/check_regression.py --bless    # adopt the latest report
-
-Full evals need model access and minutes of runtime, so this is a make target
-run before merging rather than a step in CI. Teams run smoke evals in CI and
-full evals nightly; this is scoped the same way, deliberately.
+uv run python scripts/check_regression.py            # check
+uv run python scripts/check_regression.py --bless    # adopt the latest report
 """
 
 from __future__ import annotations
@@ -21,8 +17,7 @@ from app.evals.golden import REPORTS_DIR
 
 BASELINE = Path(__file__).resolve().parent.parent / "evals" / "baseline.json"
 
-# Tolerance is one point. Model sampling moves numbers slightly between runs,
-# and a gate that fires on noise gets ignored, which is worse than no gate.
+# One point of tolerance: a gate that fires on sampling noise gets ignored.
 TOLERANCE = 0.01
 
 GUARDED = [

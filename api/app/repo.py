@@ -1,9 +1,4 @@
-"""SQL over psycopg. Parameterised only, no ORM.
-
-Six tables and a dozen queries, every one of which you would want to EXPLAIN
-verbatim. On a team with a growing schema the answer would be SQLAlchemy Core
-plus Alembic, for the same reasons Alembic wins the migrations question.
-"""
+"""SQL over psycopg, parameterised, no ORM. Six tables and a dozen queries worth EXPLAINing."""
 
 from __future__ import annotations
 
@@ -89,11 +84,7 @@ async def update_ticket_status(ticket_id: str, status: str) -> None:
 
 
 async def count_tickets_last_24h() -> int:
-    """Backs the daily spend cap.
-
-    A rolling 24h window rather than a calendar day, so the ceiling cannot be
-    doubled by submitting either side of midnight.
-    """
+    """Backs the daily cap. Rolling 24h, so the ceiling cannot be doubled across midnight."""
     row = await _fetch_one(
         "SELECT count(*) AS n FROM tickets WHERE created_at > now() - interval '24 hours'"
     )
@@ -101,13 +92,7 @@ async def count_tickets_last_24h() -> int:
 
 
 async def recent_run_health(last: int) -> dict[str, Any]:
-    """Aggregate over the most recent runs, for /status.
-
-    Counts empty retrieval separately from recorded errors. A run can retrieve
-    nothing without any node raising -- a provider returning an empty list is
-    not an error -- and that case still means the drafter had nothing to ground
-    on, so it is the number worth alerting on.
-    """
+    """Recent-run aggregate for /status. Empty retrieval is counted apart from raised errors."""
     row = await _fetch_one(
         """
         WITH recent AS (

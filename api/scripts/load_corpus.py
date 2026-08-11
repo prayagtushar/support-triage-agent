@@ -42,8 +42,7 @@ def download_if_missing() -> None:
 def load_rows(per_intent: int) -> list[tuple[str, str, str]]:
     table = pq.read_table(PARQUET_PATH).to_pydict()
 
-    # Half of Bitext carries {{Order Number}}-style templates, some malformed.
-    # Dropping those rows beats inventing 391 substitutions, and leaves plenty.
+    # Half of Bitext carries {{Order Number}} templates; dropping them still leaves plenty.
     buckets: dict[str, list[tuple[str, str, str]]] = {}
     for instruction, intent, response in zip(
         table["instruction"], table["intent"], table["response"], strict=True

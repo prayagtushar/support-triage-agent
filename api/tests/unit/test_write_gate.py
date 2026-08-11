@@ -1,13 +1,4 @@
-"""The write gate and the daily cap.
-
-Reads stay public so the queues, drafts and audit trail can be browsed without
-signing up. The two endpoints that cost money are gated: POST /tickets spends a
-pipeline run, and POST /review writes to the audit trail.
-
-The gate is a demo key, not an identity system. It keeps crawlers and casual
-abuse out; the daily cap is what actually bounds the bill, because a key shared
-with interviewers is a key that can leak.
-"""
+"""The write gate and the daily cap. Reads stay public; the endpoints that cost money are gated."""
 
 from typing import Any
 
@@ -81,8 +72,7 @@ TICKET = {"subject": "charged twice", "body": "two charges on my card"}
 
 
 def test_no_key_configured_leaves_writes_open(client):
-    """Local dev and the offline suite must not need a key. An unset key is a
-    disabled gate, not an impassable one."""
+    """An unset key is a disabled gate, not an impassable one."""
     monkeypatched = settings.demo_write_key
     assert monkeypatched == ""
     assert client.post("/tickets", json=TICKET).status_code == 202
@@ -157,8 +147,7 @@ def test_at_the_cap_is_429(client, gated):
 
 
 def test_the_cap_applies_even_without_a_key_configured(client):
-    """The cap is not part of the gate. It must bound spend even in the
-    ungated configuration."""
+    """The cap is not part of the gate; it must bound spend in the ungated config too."""
     client.state["daily_count"] = settings.max_tickets_per_day
     assert client.post("/tickets", json=TICKET).status_code == 429
 

@@ -58,8 +58,7 @@ def get_client(name: Provider) -> AsyncOpenAI:
     config = get_provider(name)
     if not config.api_key:
         raise RuntimeError(f"{name} has no API key configured")
-    # Retries are handled in app.llm.client so the policy is ours and the
-    # attempt count reaches CallStats.
+    # Retries live in app.llm.client so the attempt count reaches CallStats.
     return AsyncOpenAI(
         base_url=config.base_url,
         api_key=config.api_key,

@@ -1,10 +1,6 @@
 """The eval suite. Runs the pipeline over the golden set and writes three artifacts.
 
-  uv run python scripts/run_evals.py [--label v1] [--golden v0]
-
-report_<stamp>.json       everything, machine readable
-summary_<stamp>.md        the headline table, risk metrics first
-calibration_<stamp>.csv   one row per ticket, feeds the reliability diagram
+uv run python scripts/run_evals.py [--label v1] [--golden v0]
 """
 
 from __future__ import annotations

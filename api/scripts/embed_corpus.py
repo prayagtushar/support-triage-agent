@@ -1,10 +1,6 @@
 """Embed resolved cases that do not yet have a vector.
 
-    uv run python scripts/embed_corpus.py [--batch 100]
-
-Resumable: it only claims rows where embedding IS NULL, so a rate-limit
-failure part-way through costs the current batch and nothing else. Re-running
-picks up whatever is left, including rows whose text was edited afterwards.
+uv run python scripts/embed_corpus.py [--batch 100]
 """
 
 from __future__ import annotations

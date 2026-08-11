@@ -9,22 +9,7 @@ const WHAT_IT_DID: Record<Node, string> = {
   route: "fixed policy over the scores above",
 };
 
-/**
- * The pipeline as it actually ran, with segment widths proportional to time
- * spent in each node.
- *
- * The README describes a five-node state machine and the UI used to show only
- * its output, with per-node latency crammed into a footer string. Every number
- * here was already being recorded; none of it was visible. Drawing it in
- * proportion also makes the system's real cost legible at a glance -- retrieval
- * and classification dominate, and the routing step that decides the outcome
- * takes no measurable time at all, because it is ordinary code rather than a
- * model call.
- *
- * A ticket that failed classification skips retrieve, draft and score entirely.
- * Those are drawn as explicitly skipped rather than omitted, because "we chose
- * not to spend drafter tokens on this" is a design decision worth seeing.
- */
+/** The pipeline as it ran, with segment widths proportional to time spent in each node. */
 export function Pipeline({
   latency,
   usage,

@@ -40,9 +40,7 @@ export default function Queues() {
 
   const { data: policy } = useQuery({ queryKey: ["policy"], queryFn: getPolicy });
 
-  // One query per lane so every tab carries a live count, not just the open
-  // one. useQueries rather than useQuery in a loop, which would be a hook call
-  // inside a map.
+  // One query per lane so every tab carries a live count, via useQueries not a loop.
   const results = useQueries({
     queries: LANES.map((l) => ({
       queryKey: ["tickets", l.key],

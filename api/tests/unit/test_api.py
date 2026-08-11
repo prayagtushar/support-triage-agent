@@ -15,8 +15,7 @@ RUN_ID = "22222222-2222-2222-2222-222222222222"
 
 @pytest.fixture(autouse=True)
 def offline_lifespan(monkeypatch):
-    """Faking the repo functions is not enough: entering TestClient runs the
-    lifespan, which opens a real pool and checkpointer before any route is hit."""
+    """Entering TestClient runs the lifespan, which would open a real pool and checkpointer."""
 
     async def noop() -> None:
         return None
@@ -29,8 +28,7 @@ def offline_lifespan(monkeypatch):
 
 @pytest.fixture
 def client(monkeypatch):
-    """Replaces the persistence seam. The API is testable without a database
-    for the same reason the agent is testable without HTTP."""
+    """Replaces the persistence seam, so the API is testable without a database."""
     state: dict[str, Any] = {"status": None, "reviews": [], "detail": None, "background": []}
 
     async def fake_insert_ticket(**_: Any) -> str:
@@ -55,9 +53,7 @@ def client(monkeypatch):
     async def fake_actions(limit: int, offset: int) -> list[dict[str, Any]]:
         return []
 
-    # The daily cap runs as a dependency on POST /tickets, so it hits the
-    # repository before any handler body does. The cap itself is covered in
-    # test_write_gate.py; here it just has to stay out of the way.
+    # The cap is a dependency, so it hits the repo first. Covered in test_write_gate.py.
     async def fake_count_today() -> int:
         return 0
 
@@ -127,8 +123,7 @@ def test_review_reject_escalates(client):
 
 
 def test_edit_without_text_is_rejected(client):
-    """Every 'edit' row must carry what the human actually preferred, or it is
-    not labelled data."""
+    """An 'edit' row without the text the human preferred is not labelled data."""
     client.state["detail"] = {"run_id": RUN_ID}
     response = client.post(
         f"/tickets/{TICKET_ID}/review", json={"action": "edit", "final_text": "   "}

@@ -38,8 +38,7 @@ async def draft_reply(
     except TriageError as exc:
         return None, None, f"draft: {exc}"
 
-    # A citation pointing past the end of the evidence renders as a broken
-    # expander in the review UI, so drop them here rather than downstream.
+    # A citation past the end of the evidence renders as a broken expander in the review UI.
     valid = [c for c in draft.citations if 1 <= c <= len(cases)]
     if valid != draft.citations:
         draft = draft.model_copy(update={"citations": valid})

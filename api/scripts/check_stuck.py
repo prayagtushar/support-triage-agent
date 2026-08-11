@@ -1,18 +1,6 @@
 """Report tickets whose pipeline never finished.
 
 uv run python scripts/check_stuck.py [--older-than-minutes 5]
-
-This exists because of how the API is deployed. POST /tickets returns 202 and
-runs the pipeline in a FastAPI BackgroundTask, after the response is sent. On
-Cloud Run that work continues only because the service runs with CPU always
-allocated; Google does not contractually guarantee post-response execution, and
-scale-down is best-effort.
-
-In practice the idle window is minutes and a run is ~40s, so this should always
-report zero. The point is that if the guarantee ever fails, it shows up as a
-number here instead of as a customer waiting in a queue nobody looks at.
-
-Exits 1 when anything is stuck, so it can be used as a check.
 """
 
 from __future__ import annotations

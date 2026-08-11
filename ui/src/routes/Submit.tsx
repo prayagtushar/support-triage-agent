@@ -121,8 +121,7 @@ export default function Submit() {
     onError: (err) => setNeedsKey(err instanceof WriteKeyError),
   });
 
-  // Stop as soon as the ticket leaves 'received': that is set after the run row
-  // is written, so it is the only signal that the result is actually readable.
+  // Stop once status leaves 'received': that is set after the run row is written.
   const settled = (p: TicketProgress | undefined) => Boolean(p && p.status !== "received");
 
   const progress = useQuery({

@@ -1,10 +1,6 @@
 """Reliability diagram from the latest eval report.
 
-    uv run python scripts/plot_calibration.py
-
-Writes an SVG next to the reports. No plotting dependency: the diagram is a
-handful of points and a diagonal, and adding matplotlib to a container for
-that would be silly.
+uv run python scripts/plot_calibration.py
 """
 
 from __future__ import annotations

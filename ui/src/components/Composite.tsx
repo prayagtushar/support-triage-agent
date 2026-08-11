@@ -1,20 +1,6 @@
 import type { JudgeScores, Policy, Retrieval, Classification } from "../lib/types";
 
-/**
- * The composite confidence, shown as the arithmetic that produced it.
- *
- * `route_reason` already says "composite 0.78 in the review band", which tells a
- * reviewer the outcome but not why. Breaking the number into its three weighted
- * parts shows which signal actually moved the decision -- and makes a finding
- * from the judge ablation visible without having to read it: the classifier
- * term sits near 0.95 on almost every ticket, so it contributes weight without
- * contributing information, and the retrieval term is a proxy for relevance
- * rather than a measure of whether the case answers the question.
- *
- * Weights come from /policy. Hardcoding 0.5/0.3/0.2 here would make this panel
- * lie the moment the policy was retuned, which is the change this project
- * expects to make next.
- */
+/** The composite confidence, shown as the arithmetic that produced it. Weights come from /policy. */
 export function Composite({
   policy,
   judge,
@@ -56,8 +42,7 @@ export function Composite({
 
   return (
     <div className="space-y-2">
-      {/* Stacked rather than tabular: this panel lives in a narrow column, and a
-          four-column table collapses its headers into each other there. */}
+      {/* Stacked, not tabular: this column is too narrow for four headers. */}
       {parts.map((p) => {
         const contribution = p.score === null ? null : p.weight * p.score;
         return (

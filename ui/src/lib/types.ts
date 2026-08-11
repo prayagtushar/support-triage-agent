@@ -1,5 +1,4 @@
-// Typed by hand against the FastAPI response models. Generating these from the
-// OpenAPI schema is the obvious upgrade; by hand keeps the contract visible.
+// Typed by hand against the FastAPI response models, which keeps the contract visible.
 
 export type Route = "auto_reply" | "human_review" | "escalate";
 export type Urgency = "P1" | "P2" | "P3" | "P4";

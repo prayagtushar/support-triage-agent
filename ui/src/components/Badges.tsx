@@ -1,19 +1,6 @@
 import type { Language, Route, Urgency } from "../lib/types";
 
-/**
- * Colour is information here, not decoration. Each accent means one thing
- * across the whole interface:
- *
- *   teal     answered without a human, healthy
- *   mustard  waiting on a human, caution
- *   rust     escalated, P1, failed
- *   olive    evidence the draft actually cited
- *
- * Urgency and route are the two fields worth colouring, because they are what a
- * reviewer triages on. Intent and language stay neutral: eight intents in eight
- * hues would turn a queue into confetti and make the two fields that matter
- * harder to find.
- */
+/** Colour is information: teal healthy, mustard waiting, rust escalated, olive cited. */
 const base =
   "inline-flex items-center rounded-[2px] px-1.5 py-0.5 text-[11px] font-medium leading-tight";
 
@@ -37,8 +24,7 @@ export function UrgencyBadge({ urgency }: { urgency: Urgency | null }) {
 
 export function IntentBadge({ intent }: { intent: string | null }) {
   if (!intent) {
-    // A ticket with no intent failed classification. Saying so is more useful
-    // than an empty cell the reader has to interpret.
+    // A ticket with no intent failed classification; saying so beats an empty cell.
     return <span className={`${base} bg-rust-bg text-rust`}>unclassified</span>;
   }
   return <span className={`${base} bg-paper-3 text-ink-2`}>{intent.replace(/_/g, " ")}</span>;

@@ -1,9 +1,4 @@
-"""Durable checkpoints in Postgres.
-
-LangGraph persists state after every node, keyed by thread_id. At portfolio
-scale nothing resumes automatically; the point is that a crashed run leaves an
-inspectable record of how far it got, rather than nothing.
-"""
+"""Durable checkpoints in Postgres, so a crashed run leaves a record of how far it got."""
 
 from __future__ import annotations
 
@@ -16,17 +11,12 @@ from app.config import settings
 log = structlog.get_logger()
 
 _checkpointer: Any | None = None
-# The context manager owns the connection. Dropping this reference lets it be
-# collected, and the next write fails with "the connection is closed".
+# The context manager owns the connection; drop this and the next write finds it closed.
 _manager: Any | None = None
 
 
 async def get_checkpointer() -> Any | None:
-    """Returns None when Postgres checkpointing is unavailable.
-
-    A checkpointer that cannot start must not stop tickets being triaged, so
-    the graph falls back to the in-memory saver.
-    """
+    """None when Postgres is unavailable: the graph falls back to the in-memory saver."""
     global _checkpointer, _manager
     if _checkpointer is not None:
         return _checkpointer

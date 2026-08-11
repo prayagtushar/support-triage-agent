@@ -1,34 +1,6 @@
 """Does the judge actually improve routing, or is it expensive theatre?
 
-    uv run python scripts/ablate_judge.py [--report evals/reports/report_x.json]
-
-The README claims the judge earns its place, and supports that with three
-anecdotes: times the drafter invented something and the judge caught it. Three
-anecdotes is a story, not a measurement. This is the measurement.
-
-It costs nothing and needs no API keys. Every signal the router consumes is
-already recorded per ticket in an eval report -- classifier confidence, judge
-sub-scores, retrieval similarity, the safe-fallback flag -- so the arms are
-recomputed offline by calling the real `decide_route` with reweighted Settings.
-Reusing the production policy rather than reimplementing it is the point: an
-ablation against a copy of the router would only measure the copy.
-
-Three arms, all with the judge's weight redistributed proportionally so the
-weights still sum to 1.0:
-
-    full        0.5 judge / 0.3 classifier / 0.2 retrieval   (as shipped)
-    no_judge    0.0 judge / 0.6 classifier / 0.4 retrieval
-    judge_only  1.0 judge / 0.0 classifier / 0.0 retrieval
-
-One thing this deliberately does NOT do is set `judge=None` to represent
-"no judge". That would trip the upstream-failure guard in `decide_route` and
-send every ticket to human review, measuring the guard rather than the judge.
-The question here is narrower and more useful: does the judge's *score* carry
-routing signal that the other two inputs do not?
-
-Each arm is swept across thresholds, because arms produce composites on
-different scales. Comparing them at a single fixed 0.90 threshold would
-mostly measure that scale shift.
+uv run python scripts/ablate_judge.py [--report evals/reports/report_x.json]
 """
 
 from __future__ import annotations
@@ -64,11 +36,7 @@ def latest_report() -> Path:
 
 
 def signals_of(row: dict[str, Any]) -> RouteSignals:
-    """Rebuild the router's inputs from a recorded eval row.
-
-    `classification` carries only the two keys the router reads. Rebuilding the
-    whole dict would invite the reader to think the rest is load-bearing.
-    """
+    """Rebuild the router's inputs from a recorded eval row, and only the keys it reads."""
     return RouteSignals(
         classification={
             "confidence": row.get("classifier_confidence") or 0.0,
@@ -87,13 +55,7 @@ def signals_of(row: dict[str, Any]) -> RouteSignals:
 def arm_settings(
     weights: tuple[float, float, float], threshold: float, policy: dict[str, Any]
 ) -> Settings:
-    """Settings for one arm, based on the policy the report was RUN under.
-
-    Not on current config. Reports predate threshold changes -- report_v1 was
-    measured at 0.85, before the raise to 0.90 -- and replaying an old report
-    against today's threshold silently reclassifies every ticket in the moved
-    band. That looks exactly like a reconstruction bug in the fidelity check.
-    """
+    """Settings for one arm, under the policy the report was run with, not current config."""
     judge, classifier, retrieval = weights
     if abs(judge + classifier + retrieval - 1.0) > 1e-6:
         raise SystemExit(f"arm weights must sum to 1.0, got {weights}")
@@ -139,12 +101,7 @@ def measure(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def check_fidelity(rows: list[dict[str, Any]], policy: dict[str, Any]) -> tuple[int, list[str]]:
-    """The `full` arm must reproduce the routes the pipeline actually recorded.
-
-    If it does not, the reconstruction in signals_of() is wrong and every number
-    below it is meaningless. This is the check that makes the rest trustworthy,
-    so a mismatch is a hard failure rather than a warning.
-    """
+    """The `full` arm must reproduce recorded routes, or signals_of() is wrong."""
     config = arm_settings(ARMS["full"], policy["auto_reply"], policy)
     replayed = route_all(rows, config)
     mismatches = [
@@ -183,10 +140,7 @@ def main() -> int:
         return 1
     print(f"fidelity check: {total}/{total} recorded routes reproduced from stored signals\n")
 
-    # How many tickets can any reweighting actually move? The hard rules (P1,
-    # weak retrieval, safe fallback) fire before the composite is consulted, so
-    # they are identical in every arm. Without this number the arms look
-    # suspiciously similar and the reader cannot tell why.
+    # Hard rules fire before the composite, so this is the population any arm could move.
     shipped = route_all(rows, arm_settings(ARMS["full"], policy["auto_reply"], policy))
     composite_decided = sum(1 for r in shipped if r["route_reason"].startswith("composite"))
     print(
@@ -225,9 +179,7 @@ def main() -> int:
             )
         print()
 
-    # The comparison that answers the question. Precision at zero auto-replies
-    # is 0.0 by convention and means "declined to answer anything", not "wrong",
-    # so an arm that reaches high precision only by sending nothing is excluded.
+    # Precision at zero auto-replies is 0.0 by convention, so arms that send nothing are out.
     print("=== best achievable auto-reply precision, arms that answer at least 5 tickets")
     for name, arm in results["arms"].items():
         answering = [s for s in arm["sweep"] if s["auto_replied"] >= 5]

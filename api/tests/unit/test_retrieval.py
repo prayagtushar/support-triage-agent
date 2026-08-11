@@ -24,11 +24,7 @@ def test_empty_input_produces_no_scores():
 
 
 def test_cosine_distance_converts_to_similarity_in_the_right_direction():
-    """pgvector's <=> is distance: identical vectors are 0, opposites are 2.
-
-    Getting this backwards silently inverts the weak-retrieval flag, which is
-    the kind of bug that produces confident answers about nothing.
-    """
+    """pgvector's <=> is distance: identical vectors are 0, opposites are 2."""
     identical_distance = 0.0
     unrelated_distance = 1.0
 

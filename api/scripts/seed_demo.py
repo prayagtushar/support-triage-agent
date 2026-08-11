@@ -1,8 +1,6 @@
 """Submit a spread of tickets through the real API so every queue has residents.
 
-    uv run python scripts/seed_demo.py [--api http://localhost:8000]
-
-Deterministic demo data is the difference between a demo and a gamble.
+uv run python scripts/seed_demo.py [--api http://localhost:8000]
 """
 
 from __future__ import annotations
@@ -16,8 +14,7 @@ import httpx
 
 from app.evals.golden import GoldenTicket, load_golden
 
-# Chosen to fill all three lanes: easy wins, Hinglish, a P1, a legal threat,
-# and one the corpus knows nothing about.
+# Chosen to fill all three lanes: easy wins, Hinglish, a P1, and one nobody can answer.
 DEMO_IDS = [
     "g021",
     "g003",
@@ -57,8 +54,7 @@ async def main() -> int:
 
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
-            # /livez, not /healthz: Google Frontend intercepts /healthz, so this
-            # preflight fails against a Cloud Run URL even when the API is fine.
+            # /livez, not /healthz: Google Frontend intercepts the latter on Cloud Run.
             health = await client.get(f"{args.api}/livez")
             health.raise_for_status()
         except Exception as exc:

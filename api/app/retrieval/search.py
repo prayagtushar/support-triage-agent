@@ -48,11 +48,7 @@ LIMIT %(k)s
 
 
 def reciprocal_rank_fusion(ranked_lists: dict[str, list[str]], k: int) -> dict[str, float]:
-    """score(doc) = sum over legs of 1/(k + rank).
-
-    The constant dampens the gap between rank 1 and rank 5, which is what makes
-    the fusion robust to one leg being noisy.
-    """
+    """score(doc) = sum of 1/(k + rank) over legs. k dampens rank 1 vs rank 5."""
     scores: dict[str, float] = {}
     for ids in ranked_lists.values():
         for rank, case_id in enumerate(ids, start=1):
@@ -82,8 +78,7 @@ async def find_similar_cases(
     vector_rows = _fetch(_VECTOR_SQL, {"query": query_vector, "intent": intent, "k": depth})
     lexical_rows = _fetch(_LEXICAL_SQL, {"q": text, "intent": intent, "k": depth})
 
-    # Degraded beats dead: an intent filter that matched nothing (a misclassified
-    # ticket, or an intent with thin coverage) falls back to the whole corpus.
+    # Degraded beats dead: an intent filter that matched nothing falls back to the whole corpus.
     if intent is not None and not vector_rows and not lexical_rows:
         vector_rows = _fetch(_VECTOR_SQL, {"query": query_vector, "intent": None, "k": depth})
         lexical_rows = _fetch(_LEXICAL_SQL, {"q": text, "intent": None, "k": depth})
@@ -122,10 +117,7 @@ async def find_similar_cases(
         for case_id, score in ordered
     ]
 
-    # The weak signal is raw cosine similarity, not the fused score: fusion is
-    # relative to whatever came back, so it stays high even when everything
-    # returned is irrelevant. Similarity is absolute, so it can say "nothing
-    # here is close".
+    # Cosine, not the fused score: fusion is relative, so it stays high even on junk results.
     best_similarity = max((c.similarity for c in cases), default=0.0)
 
     return RetrievalResult(

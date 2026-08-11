@@ -1,19 +1,6 @@
 """Export the eval evidence the dashboard renders, without the per-ticket rows.
 
-    uv run python scripts/export_ui_evals.py
-
-Writes ui/src/data/evals.json.
-
-Eval reports are historical artifacts, not live state: they describe a run that
-happened, against a corpus and a threshold that were true at the time. So the
-dashboard imports them at build time rather than fetching them, which also keeps
-`evals/reports` out of the API image (`.dockerignore` excludes it) and off the
-request path.
-
-A full report is ~80 KB because it embeds all 60 ticket rows. Stripping those
-leaves ~3 KB, which is the headline metrics, the reliability buckets, the
-threshold sweep and the per-intent table -- everything the dashboard shows and
-nothing it does not.
+uv run python scripts/export_ui_evals.py
 """
 
 from __future__ import annotations
@@ -27,8 +14,7 @@ from app.evals.golden import REPORTS_DIR
 
 UI_DATA = Path(__file__).resolve().parent.parent.parent / "ui" / "src" / "data"
 
-# Keys worth shipping. Everything else in a report is either per-row detail or
-# reproducible from these.
+# Keys worth shipping; the rest is per-row detail or derivable from these.
 KEEP = (
     "label",
     "timestamp",
@@ -84,8 +70,7 @@ def main() -> int:
         "ablation": None,
     }
 
-    # Both runs, so the dashboard can show the spread rather than one figure.
-    # The instability is the point; a single number would hide it.
+    # Both runs, so the dashboard shows the spread. The instability is the point.
     for path in sorted(REPORTS_DIR.glob("report_*.json")):
         run = load(path)
         payload["runs"].append(
@@ -98,10 +83,7 @@ def main() -> int:
                 "review_recall": run.get("review_recall"),
                 "routing_accuracy": run.get("routing_accuracy"),
                 "intent_accuracy": run.get("intent_accuracy"),
-                # The two stored runs were measured at different thresholds, so
-                # their headline figures are not a repeatability comparison. The
-                # sweep lets the dashboard line them up at a matched threshold,
-                # which is the only way the spread means anything.
+                # The runs used different thresholds; the sweep lines them up at a matched one.
                 "sweep": run.get("threshold_sweep", []),
             }
         )

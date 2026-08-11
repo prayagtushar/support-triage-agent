@@ -108,9 +108,7 @@ export default function TicketReview() {
       {/* Left: what a reviewer acts on. Right: what they need to trust it. */}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_21rem]">
         <div className="space-y-8">
-          {/* No "safe fallback" flag here on purpose: the pipeline computes one
-              but agent_runs does not persist it, and route_reason cannot tell it
-              apart from weak retrieval. Better to show nothing than to guess. */}
+          {/* No safe-fallback flag: agent_runs never persists it, and route_reason cannot tell. */}
           <Section title="draft reply">
             <textarea
               value={text}
@@ -281,8 +279,7 @@ export default function TicketReview() {
         </aside>
       </div>
 
-      {/* Full width, below both columns: the node list is wide content and was
-          being crushed into the sidebar. */}
+      {/* Full width below both columns: the node list was being crushed in the sidebar. */}
       <Section
         title="pipeline"
         aside={

@@ -1,10 +1,6 @@
 """Measure the classifier against the golden set.
 
-    uv run python scripts/eval_classifier.py [--golden v0] [--label baseline]
-                                             [--provider groq] [--model ...]
-
-Writes a timestamped JSON report into evals/reports/. Commit the reports: the
-sequence of them is the evidence for what each prompt change actually bought.
+uv run python scripts/eval_classifier.py [--golden v0] [--label baseline]
 """
 
 from __future__ import annotations

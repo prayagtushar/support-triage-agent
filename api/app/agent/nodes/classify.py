@@ -10,11 +10,7 @@ from app.llm import CallStats, complete_json
 async def classify_ticket(
     subject: str, body: str
 ) -> tuple[Classification | None, CallStats | None, str | None]:
-    """Classify one ticket.
-
-    Never raises. A failure is a value the router turns into a human_review
-    route, because a ticket we could not classify still has to go somewhere.
-    """
+    """Classify one ticket. Never raises; a failure becomes a human_review route."""
     try:
         classification, stats = await complete_json(
             provider=settings.classifier_provider,

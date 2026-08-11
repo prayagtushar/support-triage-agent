@@ -5,12 +5,7 @@ import time
 
 
 class RateLimiter:
-    """Paces on requests and on tokens, because providers cap both.
-
-    Groq's free tier allows 30 requests a minute but only 12000 tokens, so a
-    request-only limiter lets four long prompts blow the token ceiling while
-    still looking well behaved.
-    """
+    """Paces requests and tokens both: Groq allows 30 rpm but only 12k tpm, so rpm alone lies."""
 
     def __init__(self, rpm: int, tpm: int = 0) -> None:
         self._request_interval = 60.0 / rpm if rpm > 0 else 0.0

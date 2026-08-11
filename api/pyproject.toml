@@ -35,9 +35,7 @@ dev = [
 pythonpath = ["."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-# The default suite must stay fast and offline. Anything needing a database,
-# a network call, or a provider API key is marked and excluded here; run those
-# deliberately with `-m integration`.
+# The default suite stays fast and offline; run the rest with `-m integration`.
 addopts = "-m 'not integration'"
 markers = [
     "integration: needs a live database, network, or provider API key",
@@ -79,9 +77,7 @@ warn_unreachable = true
 module = ["pyarrow.*"]
 ignore_missing_imports = true
 
-# LangGraph's add_node is heavily overloaded over protocol types that a plain
-# `async (State) -> dict` does not structurally match. The node functions
-# themselves are fully typed and checked; only the registration calls are not.
+# LangGraph's add_node overloads do not match a plain `async (State) -> dict`.
 [[tool.mypy.overrides]]
 module = ["app.agent.graph"]
 disable_error_code = ["call-overload"]

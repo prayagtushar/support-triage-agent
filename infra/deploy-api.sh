@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 # Build and deploy the triage API to Cloud Run.
 #
-# Assumes gcloud is authenticated, the secrets below exist in Secret Manager,
-# and the Artifact Registry repo `triage` exists in asia-south1.
-#
 # Usage: infra/deploy-api.sh [IMAGE_TAG]      (default tag: latest)
 
 set -euo pipefail
@@ -16,14 +13,7 @@ IMAGE="asia-south1-docker.pkg.dev/${PROJECT_ID}/triage/api:${TAG}"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# The deployed dashboard's origin, as the default rather than something to
-# remember. --set-env-vars replaces the whole set, so a deploy run without
-# CORS_ORIGINS exported used to quietly narrow production down to a localhost
-# origin and every request from the live dashboard failed preflight. The page
-# still loaded; only the data was gone. That happened on 2026-08-10.
-#
-# Override for a different frontend:
-#   CORS_ORIGINS='["https://example.com"]' infra/deploy-api.sh
+# Defaulted, not remembered: --set-env-vars replaces the whole set, so omitting this broke CORS.
 DEFAULT_CORS_ORIGINS='["https://support-triage-sigma.vercel.app","http://localhost:5173"]'
 
 echo "Building ${IMAGE}..."
@@ -34,25 +24,9 @@ gcloud builds submit "${REPO_ROOT}/api" \
 
 echo "Deploying to ${SERVICE} (${PROJECT_ID}/${REGION})..."
 
-# --no-cpu-throttling is the flag this whole deployment depends on.
-#   POST /tickets returns 202 immediately and runs the 39-48s pipeline in a
-#   FastAPI BackgroundTask. With the default throttling, CPU is cut to near zero
-#   the moment the response is sent, and the pipeline stalls forever with the
-#   ticket stuck at status 'received'. Cloud Run still scales to zero; it just
-#   keeps the CPU running while the instance is alive.
-#
-# --max-instances 1 is correctness, not cost.
-#   The provider rate limiters in app/llm/ratelimit.py are per-process and
-#   configured to free-tier ceilings. A second instance doubles the real request
-#   rate and earns 429s from Gemini and OpenRouter.
-#
-# 1 vCPU / 512Mi is ample: every node in the pipeline is waiting on a provider
-# API, not computing. There are no local models in this image.
-#
-# --port 8000 because the Dockerfile CMD hardcodes 8000 rather than reading
-# $PORT. Cloud Run defaults to expecting 8080 and the container fails its
-# startup probe with no useful error. Keeping the port fixed also keeps the
-# image identical to what docker-compose runs locally.
+# --no-cpu-throttling: POST /tickets finishes its work after responding, and would stall without it.
+# --max-instances 1: the rate limiters are per-process, so a second instance earns 429s.
+# --port 8000: the Dockerfile CMD hardcodes it instead of reading $PORT.
 gcloud run deploy "${SERVICE}" \
   --image "${IMAGE}" \
   --region "${REGION}" \

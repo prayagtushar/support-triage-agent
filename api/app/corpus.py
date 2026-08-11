@@ -43,6 +43,5 @@ TAXONOMY: tuple[str, ...] = (
     "other",
 )
 
-# Bitext is a consumer commerce corpus; it has no engineering-defect or
-# product-request cases at all. Both are filled by gen_synthetic.py.
+# Bitext is consumer commerce: no defect or product-request cases. gen_synthetic.py fills both.
 INTENTS_ABSENT_FROM_BITEXT: frozenset[str] = frozenset({"bug_report", "feature_request"})

@@ -1,11 +1,6 @@
 """Rewrite English corpus cases as Hinglish.
 
-    uv run python scripts/gen_hinglish.py [--per-intent 10] [--reset]
-
-There is no good public Hinglish support corpus, so these are generated and
-marked source='synthetic', language='hi-en'. They are hand-reviewed afterwards;
-the failure mode to hunt is translationese, sentences that are grammatically
-Hinglish but that no human would type.
+uv run python scripts/gen_hinglish.py [--per-intent 10] [--reset]
 """
 
 from __future__ import annotations

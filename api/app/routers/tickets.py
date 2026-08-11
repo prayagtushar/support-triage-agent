@@ -18,12 +18,7 @@ router = APIRouter(tags=["tickets"])
 
 
 async def require_write_key(x_demo_key: str | None = Header(default=None)) -> None:
-    """Gates the endpoints that cost something. Reads stay open.
-
-    An unconfigured key disables the gate rather than locking everyone out, so
-    a missing environment variable degrades to local-dev behaviour instead of a
-    demo that 401s on every request.
-    """
+    """Gates the endpoints that cost something. An unset key means local dev, not lockout."""
     expected = settings.demo_write_key
     if not expected:
         return
@@ -32,13 +27,7 @@ async def require_write_key(x_demo_key: str | None = Header(default=None)) -> No
 
 
 async def enforce_daily_cap() -> None:
-    """The actual spend ceiling.
-
-    Deliberately independent of the write key: the key can leak, and a cap that
-    applied only to unauthenticated callers would bound nothing. Applies to
-    ticket creation alone, because that is what starts a pipeline run. Reviews
-    are free, and clearing the queue must never be rate limited.
-    """
+    """The real spend ceiling. Independent of the write key, because keys leak."""
     used = await repo.count_tickets_last_24h()
     if used >= settings.max_tickets_per_day:
         log.warning("daily_cap_reached", used=used, cap=settings.max_tickets_per_day)
@@ -76,12 +65,7 @@ class ReviewIn(BaseModel):
 
 
 async def process_ticket(ticket_id: str, payload: TicketIn) -> None:
-    """Background execution of one pipeline run.
-
-    Nothing may escape this function. A crashed pipeline that leaves a ticket
-    at status 'received' forever is worse than a bad draft: the customer is
-    waiting and no queue shows them.
-    """
+    """One pipeline run. Nothing may escape: a ticket stuck at 'received' is the worst outcome."""
     structlog.contextvars.bind_contextvars(ticket_id=ticket_id)
     try:
         graph = build_graph(await get_checkpointer())
@@ -155,19 +139,7 @@ PIPELINE_NODES = ("classify", "retrieve", "draft", "score", "route")
 
 @router.get("/tickets/{ticket_id}/progress")
 async def ticket_progress(ticket_id: str) -> dict[str, Any]:
-    """How far a running pipeline has got. Public, like the other reads.
-
-    POST /tickets returns 202 and works in the background, so for 40-odd seconds
-    a ticket exists with no run attached: agent_runs is written once, after the
-    graph finishes. Polling GET /tickets/{id} during that window shows only
-    status 'received' and a row of nulls.
-
-    The per-node truth is already durable. LangGraph checkpoints state after
-    every node, and each node appends its own name to node_timings_ms via the
-    @timed decorator, so the checkpoint carries an ordered list of exactly which
-    nodes have completed. This reads that back rather than inferring progress
-    from elapsed time.
-    """
+    """How far a running pipeline has got, read from the LangGraph checkpoint, not guessed."""
     _validate_uuid(ticket_id)
 
     detail = await repo.get_ticket_detail(ticket_id)
@@ -177,9 +149,7 @@ async def ticket_progress(ticket_id: str) -> dict[str, Any]:
     status = str(detail["status"])
     checkpointer = await get_checkpointer()
 
-    # Without a checkpointer the graph falls back to a per-run in-memory saver
-    # that this request cannot see. Say so rather than reporting no progress,
-    # which would look like a stalled pipeline.
+    # The in-memory fallback saver is invisible to this request; say so instead of showing a stall.
     if checkpointer is None:
         return {
             "status": status,
@@ -198,9 +168,7 @@ async def ticket_progress(ticket_id: str) -> dict[str, Any]:
     completed = [t["node"] for t in values.get("node_timings_ms", []) if t.get("node")]
     classification = values.get("classification")
 
-    # A ticket that could not be classified skips retrieve, draft and score by
-    # design. Reporting them as skipped stops a client from waiting on nodes
-    # that are never going to run.
+    # An unclassified ticket skips retrieve/draft/score, so don't let a client wait on them.
     skipped: list[str] = []
     if "classify" in completed and classification is None:
         skipped = [n for n in ("retrieve", "draft", "score") if n not in completed]

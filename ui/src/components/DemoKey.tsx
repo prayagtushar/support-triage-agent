@@ -2,14 +2,7 @@ import { useState } from "react";
 
 import { getDemoKey, setDemoKey } from "../lib/api";
 
-/**
- * Key entry for the write endpoints.
- *
- * Browsing the queues, drafts, citations and audit trail needs nothing. Only
- * recording a review does, because that mutates the audit trail. The key is
- * kept in localStorage rather than compiled into the bundle: a key baked into
- * a static build is public the moment someone opens devtools.
- */
+/** Key entry for the write endpoints. Kept in localStorage, not compiled into the bundle. */
 export default function DemoKey() {
   const [value, setValue] = useState(getDemoKey());
   const [saved, setSaved] = useState(false);

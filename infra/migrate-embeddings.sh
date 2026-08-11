@@ -1,31 +1,8 @@
 #!/usr/bin/env bash
-# Move the deployed corpus off Gemini embeddings and onto the provider local
-# already uses, without topping up the Gemini balance.
+# Move the deployed corpus onto the provider local uses. Re-embed first, deploy second.
 #
 #   DATABASE_URL='<supabase session pooler url>' infra/migrate-embeddings.sh
 #   DATABASE_URL='...' infra/migrate-embeddings.sh --check     # inspect only
-#
-# Why this exists
-# ---------------
-# Production retrieval has been dead since 2026-08-06: the deployed Gemini key
-# ran out of prepaid credits, so every retrieve node returns HTTP 429 and hands
-# the router an empty case list. Nothing else looks wrong -- no request fails, no
-# ticket stalls, the health endpoint stays green -- which is why it went unnoticed.
-#
-# Local already runs embeddings through OpenRouter and works. This aligns
-# production with it, and in doing so removes the coupling that caused the
-# outage: embedding the corpus and embedding live queries no longer share one
-# prepaid quota.
-#
-# The order is load-bearing
-# -------------------------
-# Re-embed FIRST, then change the deployed env vars. Vectors from different
-# models are not comparable, so serving queries from one model against a corpus
-# embedded by another produces no error at all -- just silently meaningless
-# neighbours. A loud 429 is recoverable. Quiet nonsense is not.
-#
-# That is also why this script writes the corpus before it prints the deploy
-# step, and refuses to do them in one go.
 
 set -euo pipefail
 
@@ -80,26 +57,11 @@ if [[ "${CHECK_ONLY}" == true ]]; then
   exit 0
 fi
 
-# Re-embedding is idempotent per row but costs real requests, so make the
-# operator say yes to a number rather than to a vague prompt.
+# Re-embedding costs real requests, so make the operator say yes first.
 read -r -p "Re-embed the whole corpus through ${TARGET_PROVIDER}? [y/N] " reply
 [[ "${reply}" == "y" || "${reply}" == "Y" ]] || { echo "aborted"; exit 1; }
 
-# Clearing the old vectors is what makes the next step do anything at all.
-#
-# embed_corpus.py claims only rows WHERE embedding IS NULL, deliberately: that is
-# what lets a run interrupted by a rate limit resume instead of starting over. It
-# also means that against a fully embedded corpus it does nothing and reports
-# "every case already has an embedding" -- which, on the first attempt at this
-# migration, looked exactly like success. The verify step then passed too, because
-# every row did have a vector. They were the Gemini vectors this migration exists
-# to replace, and deploying on top of that is the silent-nonsense case the header
-# warns about, reached by way of two green checks.
-#
-# The corpus is briefly half-embedded while this runs. That is safe here and only
-# here: the deployed query path is still on the old provider and retrieval is
-# already returning nothing, so there is no working state to damage, and the
-# verify gate below refuses to print the deploy step unless every row came back.
+# Clear first: embed_corpus.py only claims WHERE embedding IS NULL, so stale vectors survive.
 echo
 echo "==> Step 1/4: clearing the old ${TARGET_DIM}-dim vectors"
 uv run python - <<'PY'

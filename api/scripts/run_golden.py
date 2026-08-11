@@ -1,9 +1,6 @@
 """Run the whole golden set through the pipeline and record what happened.
 
-    uv run python scripts/run_golden.py [--label pipeline] [--limit 10]
-
-This is the core the eval suite builds on. It records raw outcomes; scoring
-and calibration live in run_evals.py.
+uv run python scripts/run_golden.py [--label pipeline] [--limit 10]
 """
 
 from __future__ import annotations

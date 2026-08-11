@@ -1,7 +1,4 @@
-# Working docs stay local: the build guide, sprint plan, scratch notes, and
-# docs/study/ (interview prep and talking points) are for me, not readers.
-# The deployment runbook and the failure analysis are published, because the
-# README points at them and they are part of what makes the project reviewable.
+# Working docs stay local; the runbook and failure analysis are published.
 docs/*
 !docs/DEPLOY.md
 !docs/failure_analysis.md

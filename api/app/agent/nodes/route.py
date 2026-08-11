@@ -1,10 +1,4 @@
-"""The routing policy. Pure Python over model-produced scores.
-
-The LLM proposes, deterministic code disposes. Order is the policy: each rule
-short-circuits, so reading top to bottom tells you exactly which conditions win
-over which. Thresholds come from Settings, so a policy change is a config
-change.
-"""
+"""The routing policy: pure Python over model scores. Rules short-circuit, so order matters."""
 
 from __future__ import annotations
 

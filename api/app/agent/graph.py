@@ -112,11 +112,7 @@ async def route_node(state: TriageState) -> dict[str, Any]:
 
 
 def after_classify(state: TriageState) -> str:
-    """Skip the expensive nodes when there is no intent to retrieve against.
-
-    Spending drafter tokens on a ticket we could not classify is waste with
-    extra risk: the router will send it to a human either way.
-    """
+    """Skip the expensive nodes when there is no intent; these go to a human anyway."""
     return "route" if state.get("classification") is None else "retrieve"
 
 

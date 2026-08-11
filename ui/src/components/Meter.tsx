@@ -1,19 +1,6 @@
 import type { Policy } from "../lib/types";
 
-/**
- * The confidence meter, and the one visual idea this interface is built around.
- *
- * A bare number tells a reviewer what the model said. It does not tell them the
- * thing that actually decided the ticket: how far the score sat from the line.
- * 0.89 and 0.91 look nearly identical as text and mean opposite outcomes, so
- * the threshold is drawn as a notch on the track and the fill is coloured by
- * the band it landed in. Distance from the boundary becomes the thing you see
- * first, which is the whole argument of the system -- a model proposes a score,
- * fixed policy disposes of it.
- *
- * The threshold comes from /policy, never from a constant here, so the notch
- * cannot drift away from the policy actually in force.
- */
+/** The confidence meter: distance from the threshold is what actually decided the ticket. */
 export function ConfidenceMeter({
   value,
   policy,
@@ -49,8 +36,7 @@ export function ConfidenceMeter({
           className={`absolute inset-y-0 left-0 ${fill}`}
           style={{ width: `${pct}%` }}
         />
-        {/* The line the score is measured against. Sits above the fill so it
-            stays visible when the bar runs past it. */}
+        {/* The line the score is measured against, above the fill so it stays visible. */}
         <span
           className="absolute inset-y-0 w-[1.5px] bg-ink/55"
           style={{ left: `${auto * 100}%` }}
@@ -63,13 +49,7 @@ export function ConfidenceMeter({
   );
 }
 
-/**
- * A 0-5 judge sub-score as five ticks.
- *
- * Counting marks is faster than reading "3/5" and comparing it to "5/5" one
- * line up, and the three sub-scores are almost always read against each other
- * rather than in isolation.
- */
+/** A 0-5 judge sub-score as five ticks: counting marks beats comparing "3/5" to "5/5". */
 export function ScoreTicks({ value, tone }: { value: number; tone: "teal" | "mustard" | "rust" }) {
   const color =
     tone === "teal" ? "bg-teal-fill" : tone === "mustard" ? "bg-mustard-fill" : "bg-rust-fill";

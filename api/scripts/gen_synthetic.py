@@ -1,9 +1,6 @@
 """Generate resolved cases for the two intents Bitext does not cover.
 
-    uv run python scripts/gen_synthetic.py [--per-topic 10] [--reset]
-
-Bitext is consumer commerce and contains no bug_report or feature_request
-cases, which would leave both intents permanently weak on retrieval.
+uv run python scripts/gen_synthetic.py [--per-topic 10] [--reset]
 """
 
 from __future__ import annotations
@@ -75,8 +72,7 @@ async def generate_all(per_topic: int, concurrency: int) -> list[tuple[str, str,
     jobs = [("bug_report", t) for t in BUG_REPORT_TOPICS]
     jobs += [("feature_request", t) for t in FEATURE_REQUEST_TOPICS]
 
-    # Groq's free tier binds on tokens per minute, not requests, and these are
-    # long responses.
+    # Groq's free tier binds on tokens per minute, and these are long responses.
     semaphore = asyncio.Semaphore(concurrency)
 
     async def run(intent: str, topic: str) -> list[tuple[str, str, str]]:

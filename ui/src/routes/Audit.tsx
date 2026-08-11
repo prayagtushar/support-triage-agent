@@ -12,10 +12,7 @@ const ACTION_TONE: Record<string, string> = {
   reject: "text-rust",
 };
 
-// Deliberately a ledger. Auditability is a feature whose UI should look boring:
-// one row per decision, in the order they were made, with the score that was on
-// screen at the time. Nothing here is aggregated, because the value of an audit
-// trail is that it has not been summarised.
+// Deliberately a ledger: one row per decision, unaggregated, in the order they happened.
 export default function Audit() {
   const { data, isPending, error } = useQuery({ queryKey: ["audit"], queryFn: listAudit });
   const { data: policy } = useQuery({ queryKey: ["policy"], queryFn: getPolicy });

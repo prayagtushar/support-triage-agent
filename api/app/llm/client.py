@@ -43,8 +43,7 @@ class CallStats:
 
 def _backoff(attempt: int, retry_after: float | None) -> float:
     base = retry_after if retry_after is not None else min(2.0**attempt, 8.0)
-    # A provider can ask for minutes. Capping keeps a throttle from looking
-    # like a hang; the retry budget then fails the call visibly instead.
+    # Cap it, so a provider asking for minutes fails visibly instead of looking like a hang.
     return min(base, settings.llm_max_backoff_seconds) + random.uniform(0, 0.5)  # noqa: S311
 
 
@@ -69,8 +68,7 @@ async def _call(
     client = get_client(provider)
     limiter = limiter_for(provider, config.rpm, config.tpm)
 
-    # Rough, and deliberately so: pacing needs an estimate before the call,
-    # and four characters per token is close enough to keep us under a cap.
+    # Rough on purpose: pacing needs a number before the call, and 4 chars/token is close enough.
     estimated_tokens = sum(len(m["content"]) for m in messages) // 4 + (max_tokens or 0)
 
     kwargs: dict[str, Any] = {"model": model, "messages": messages, "temperature": temperature}
@@ -85,8 +83,7 @@ async def _call(
         try:
             response = await client.chat.completions.create(**kwargs)
         except APIStatusError as exc:
-            # A provider that rejects response_format is a capability gap, not a
-            # transient fault; the schema is in the prompt regardless.
+            # Rejecting response_format is a capability gap, not a fault. Retry without it.
             if json_mode and exc.status_code == 400 and "response_format" in str(exc).lower():
                 kwargs.pop("response_format", None)
                 json_mode = False

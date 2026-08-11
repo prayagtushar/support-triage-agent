@@ -1,18 +1,6 @@
 import evals from "../data/evals.json";
 
-/**
- * The measurement page.
- *
- * Everything here is a build-time import of a real eval report, not a live
- * query: a report describes a run that happened, against a corpus and a
- * threshold that were true at the time. Regenerate with `make ui-evals`.
- *
- * The ordering is deliberate. Auto-reply precision missed its target, and it is
- * the first thing on the page rather than something a reader has to dig for.
- * The whole argument of the project is that the handoff decision is the feature,
- * so a page that led with the flattering numbers would be arguing against
- * itself.
- */
+/** The measurement page. Build-time imports of a real report; regenerate with `make ui-evals`. */
 
 type Sweep = {
   threshold: number;
@@ -70,11 +58,7 @@ export default function Evals() {
   const runs = evals.runs;
   const ablation = evals.ablation;
 
-  // The two stored runs were measured at different thresholds -- 0.85 and 0.90 --
-  // so their headline figures are not a repeatability comparison. Re-reading each
-  // run's own sweep at the threshold now in force is the honest way to compare
-  // them, and it is what makes the spread a statement about variance rather than
-  // about policy.
+  // The stored runs used different thresholds, so compare each at the one now in force.
   const matched = runs
     .map((r) => (r.sweep as Sweep[]).find((s) => s.threshold === threshold))
     .filter((s): s is Sweep => Boolean(s));
