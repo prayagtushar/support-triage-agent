@@ -25,7 +25,7 @@ the pipeline and strand the ticket at status `received` forever. The deployment
 runs with **`--no-cpu-throttling`** so the CPU keeps running between requests.
 
 This is the single most important flag in `infra/deploy-api.sh`. Removing it
-does not produce an error — it produces tickets that never leave the queue.
+does not produce an error. It produces tickets that never leave the queue.
 
 Google does not contractually guarantee post-response work completes;
 scale-down is best-effort. In practice the idle window is minutes and a run is
@@ -47,7 +47,7 @@ consumes that score as truth. Keep `DRAFTER_PROVIDER=sarvam` and
 Supabase project `support-triage` in `ap-south-1`, the same region as Cloud Run.
 
 **Use the session pooler, not the direct connection.** The direct host
-`db.<ref>.supabase.co` resolves to **IPv6 only** — it has no A record — and
+`db.<ref>.supabase.co` resolves to **IPv6 only**, having no A record, and
 Cloud Run has no IPv6 egress, so the API cannot reach it. The working host is:
 
 ```
@@ -80,7 +80,7 @@ reset the idle counter.
 **Google Frontend intercepts `/healthz` before it reaches the container.** That
 exact path returns Google's own HTML 404 page; every other unrouted path,
 `/healthz2` and `/xhealthz` included, returns this app's JSON `{"detail":"Not
-Found"}`. The container is fine — the request never arrives.
+Found"}`. The container is fine. The request never arrives.
 
 Liveness is therefore served at **`/livez`**, with `/healthz` kept as an alias
 for the in-container Docker `HEALTHCHECK` and any host not behind Google
@@ -90,13 +90,13 @@ container.
 
 ### Embedding quota
 
-Embedding the corpus is the single largest provider spend in a deployment —
-one pass over ~3,500 cases — and it runs against the same Gemini key the live
+Embedding the corpus is the single largest provider spend in a deployment, at
+one pass over ~3,500 cases, and it runs against the same Gemini key the live
 `/tickets` path uses to embed each incoming query. Exhausting it during setup
 takes retrieval down for every subsequent request:
 
 ```
-429 RESOURCE_EXHAUSTED — "Your prepayment credits are depleted."
+429 RESOURCE_EXHAUSTED: "Your prepayment credits are depleted."
 ```
 
 Check the Gemini balance in AI Studio **before** re-embedding, not after. The
@@ -107,7 +107,7 @@ score in `judge_scores` is the signature.
 
 The corpus is embedded at 1536 dimensions. `_embed_openai_compatible` in
 `app/llm/embeddings.py` also supports 1536 natively, so OpenAI's
-`text-embedding-3-small` is a drop-in alternative provider — but switching
+`text-embedding-3-small` is a drop-in alternative provider, but switching
 means re-embedding every row, since vectors from different models are not
 comparable.
 
@@ -124,12 +124,12 @@ empty case list. Confirmed on both production tickets:
 
 **Nothing looked wrong.** `/readyz` was fine, no request 500'd, no ticket was
 stuck, the dashboard rendered without a console error, and the router behaved
-correctly — `retrieval_weak` is a hard rule, so every ticket went to a human.
+correctly, because `retrieval_weak` is a hard rule, so every ticket went to a human.
 The only outward symptom was that the auto-reply and escalate lanes stayed
 empty, which reads as "quiet demo" rather than "retrieval is down".
 
 `scripts/check_stuck.py` cannot see this: those tickets finished.
-**`scripts/check_degraded.py` (`make degraded`) is the check that can** — it
+**`scripts/check_degraded.py` (`make degraded`) is the check that can.** It
 reports node-error rate, empty-retrieval rate, and route distribution over
 recent runs, and exits non-zero when a rate is above threshold.
 
@@ -137,9 +137,9 @@ recent runs, and exits non-zero when a rate is above threshold.
 
 Local `.env` has drifted to `openrouter` / `openai/text-embedding-3-small`,
 while `infra/deploy-api.sh` still deploys `EMBEDDING_PROVIDER=gemini` and
-`EMBEDDING_MODEL=gemini-embedding-001`. Each side is internally consistent —
-its corpus and its queries use the same model — so retrieval works locally and
-is merely out of credit in production.
+`EMBEDDING_MODEL=gemini-embedding-001`. Each side is internally consistent,
+because its corpus and its queries use the same model, so retrieval works
+locally and is merely out of credit in production.
 
 **The order of operations in fixing this is load-bearing.** Changing the
 deployed `EMBEDDING_*` variables without re-embedding first is worse than the
@@ -169,13 +169,13 @@ Two ways out:
 
 ## Access model
 
-Reads are public — queues, ticket detail, drafts, judge reasoning, citations
-and the audit log — so the project can be evaluated without signing up.
+Reads are public, covering queues, ticket detail, drafts, judge reasoning,
+citations and the audit log, so the project can be evaluated without signing up.
 
 Writes need `X-Demo-Key`:
 
-- `POST /tickets` — spends a pipeline run
-- `POST /tickets/{id}/review` — writes to the audit trail
+- `POST /tickets` spends a pipeline run
+- `POST /tickets/{id}/review` writes to the audit trail
 
 The key lives in Secret Manager as `triage-demo-write-key` and is entered in
 the dashboard header, which stores it in `localStorage`. It is deliberately
@@ -184,7 +184,7 @@ readable by anyone who opens devtools.
 
 Treat the key as a speed bump, not authentication. The real ceiling is
 `MAX_TICKETS_PER_DAY` (50, rolling 24h), enforced server-side and applied
-whether or not a key is configured — a cap that only bound authenticated
+whether or not a key is configured. A cap that only bound authenticated
 callers would bound nothing, since the key is meant to be handed out.
 
 An empty `DEMO_WRITE_KEY` disables the gate. That is the local-dev default and
@@ -200,8 +200,8 @@ infra/deploy-api.sh              # builds and deploys, tag defaults to latest
 `CORS_ORIGINS` no longer needs exporting: the deployed dashboard's origin is the
 default in `deploy-api.sh`. It used to be listed here as something to remember,
 and on 2026-08-10 a deploy that forgot it narrowed production to a localhost
-origin — `--set-env-vars` replaces the whole environment — so every request from
-the live dashboard failed preflight. The page still rendered; only its data
+origin, because `--set-env-vars` replaces the whole environment, so every
+request from the live dashboard failed preflight. The page still rendered; only its data
 disappeared, under "Could not reach the API". Override only for a different
 frontend:
 
@@ -236,7 +236,7 @@ Two IAM grants are required, and both failed silently when first configured:
   The latter does not include `resourcemanager.projects.get`, which
   `getBillingInfo` needs, so the function 403s.
 
-Neither failure is visible from the console — the function shows as healthy.
+Neither failure is visible from the console. The function shows as healthy.
 **Test the kill switch after any change to it**, ideally while nothing is
 deployed:
 
@@ -250,7 +250,7 @@ gcloud billing projects link triage-agent-prayag --billing-account=<account>
 support-triage-agent lives in **its own GCP project** so that cost is
 attributable per app and this kill switch cannot take down anything else.
 
-Note the budget must be denominated in **INR** — the billing account's
+Note the budget must be denominated in **INR**, the billing account's
 currency. A USD budget is rejected with a bare `INVALID_ARGUMENT`.
 
 ## Recovering from a kill-switch trip

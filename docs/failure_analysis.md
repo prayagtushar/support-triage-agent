@@ -13,8 +13,8 @@ had weak retrieval. The drafter declared itself ungrounded five times more
 often than retrieval said it should.
 
 **Owner: the data, not the drafter.** Bitext's "resolutions" are largely
-templates — *"Please provide your account details and I'll look it up"*,
-*"I'd be delighted to assist you in discovering our delivery methods"*. They
+templates, along the lines of *"Please provide your account details and I'll look
+it up"* or *"I'd be delighted to assist you in discovering our delivery methods"*. They
 describe a support interaction rather than containing an answer. Retrieval
 correctly finds a topically similar case; the case then turns out to say
 nothing the drafter can stand on.
@@ -74,9 +74,9 @@ bucket is the one to attack first: a −0.62 gap on 7 tickets is not noise, it i
 a band where the system is systematically wrong about itself.
 
 **Measured, 2026-08-08.** `scripts/ablate_judge.py` re-routes both stored eval
-runs under reweighted composites — offline, no API calls, and gated by a
-fidelity check that replays the shipped weights and requires all 60 recorded
-routes back before reporting anything.
+runs under reweighted composites. It runs offline, makes no API calls, and is
+gated by a fidelity check that replays the shipped weights and requires all 60
+recorded routes back before reporting anything.
 
 Best achievable auto-reply precision, per arm, across the threshold sweep:
 
@@ -98,14 +98,14 @@ better starting point than 0.5.
 looks *better* than shipped in v1 and clearly worse in v2, and its v1 figure
 rests on 5 auto-replies. The same n=60 instability described in failure 7
 swamps this comparison too, so "removing the judge costs precision" is not yet
-supported by the numbers — only by the three interceptions in failure 4. The
+supported by the numbers. It rests only on the three interceptions in failure 4. The
 ablation is free to re-run, so it should be the first thing re-measured once the
 golden set passes 100.
 
 One caveat on what was measured: the no-judge arm zeroes the judge's *weight*
 while leaving the pipeline intact. It does not set `judge=None`, which would
 trip the upstream-failure guard in `decide_route` and route everything to a
-human — measuring the guard rather than the judge.
+human, which would measure the guard rather than the judge.
 
 ---
 
@@ -114,10 +114,10 @@ human — measuring the guard rather than the judge.
 **What happened.** Three separate times during development the drafter invented
 something and the judge caught it precisely:
 
-- *"the cancellation link is usually included in your confirmation email"* —
-  invented, cited nothing. Groundedness 1.
-- *"Humne aapki transaction check ki hai"* (we have checked your transaction) —
-  the agent has no account access. Groundedness 2.
+- *"the cancellation link is usually included in your confirmation email"*.
+  Invented, cited nothing. Groundedness 1.
+- *"Humne aapki transaction check ki hai"* (we have checked your transaction).
+  The agent has no account access. Groundedness 2.
 - a refund reversal with a timeline attached, unsupported by any case.
   Groundedness 2.
 
@@ -182,7 +182,7 @@ across both runs; that contrast is the whole lesson.
 
 **Sized, 2026-08-08.** `scripts/golden_coverage.py` computes the target rather
 than rounding to 100. The denominator that matters is not the count of tickets
-labelled `auto_reply` (32 of 60) — it is the count the system *sends*, which at
+labelled `auto_reply` (32 of 60). It is the count the system *sends*, which at
 threshold 0.90 is 10, or 17% of the set. Resolving precision to ±0.05 needs a
 denominator of 20, so the target is **~120 tickets**, roughly double.
 
