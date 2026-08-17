@@ -14,7 +14,7 @@ IMAGE="asia-south1-docker.pkg.dev/${PROJECT_ID}/triage/api:${TAG}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Defaulted, not remembered: --set-env-vars replaces the whole set, so omitting this broke CORS.
-DEFAULT_CORS_ORIGINS='["https://support-triage-sigma.vercel.app","http://localhost:5173"]'
+DEFAULT_CORS_ORIGINS='["https://support-triage.prayagtushar.xyz","https://support-triage-sigma.vercel.app","http://localhost:5173"]'
 
 echo "Building ${IMAGE}..."
 gcloud builds submit "${REPO_ROOT}/api" \

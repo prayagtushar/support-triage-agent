@@ -2,7 +2,7 @@
 
 [![ci](https://github.com/prayagtushar/support-triage-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/prayagtushar/support-triage-agent/actions/workflows/ci.yml)
 
-**[Live review queue →](https://support-triage-sigma.vercel.app)** The queues, drafts, judge scores, retrieved cases and audit log are open, with no signup. Submitting a ticket or recording a review needs a key, because those spend a pipeline run and write to the audit trail.
+**[Live review queue →](https://support-triage.prayagtushar.xyz)** The queues, drafts, judge scores, retrieved cases and audit log are open, with no signup. Submitting a ticket or recording a review needs a key, because those spend a pipeline run and write to the audit trail.
 
 An LLM agent that triages inbound customer support tickets end to end. Each ticket is classified by intent and urgency, matched against similar resolved cases, answered with a grounded draft reply, scored by a second model, and then routed by deterministic code. Confident, well-grounded drafts go to an auto-reply queue. Everything else lands in a human review queue with the full context attached.
 
