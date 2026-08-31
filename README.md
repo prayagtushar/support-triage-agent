@@ -1,4 +1,4 @@
-# Support Triage Agent
+# Customer Support Triage Agent
 
 [![ci](https://github.com/prayagtushar/support-triage-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/prayagtushar/support-triage-agent/actions/workflows/ci.yml)
 

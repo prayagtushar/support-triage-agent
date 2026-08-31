@@ -1,4 +1,4 @@
-# Deploying the Support Triage Agent
+# Deploying the Customer Support Triage Agent
 
 The deployed system is three pieces: a FastAPI container on Cloud Run, a static
 React build on Vercel, and Postgres with pgvector on Supabase.

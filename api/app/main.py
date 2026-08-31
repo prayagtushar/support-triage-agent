@@ -31,7 +31,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         await repo.close_pool()
 
 
-app = FastAPI(title="Support Triage Agent API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Customer Support Triage Agent API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
