@@ -1,20 +1,46 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { ErrorNote, Skeleton } from "../components/Async";
 import { IntentBadge, LanguageBadge, RouteBadge, UrgencyBadge } from "../components/Badges";
 import { Composite } from "../components/Composite";
+import { Diff } from "../components/Diff";
 import { ConfidenceMeter, ScoreTicks, scoreTone } from "../components/Meter";
 import { Pipeline } from "../components/Pipeline";
-import { getPolicy, getTicket, submitReview } from "../lib/api";
+import { getTicket, listTickets, submitReview } from "../lib/api";
 import { timestamp } from "../lib/format";
-import type { ReviewPayload } from "../lib/types";
+import type { RejectReason, ReviewPayload, TicketStatus } from "../lib/types";
+import { useHotkeys } from "../lib/useHotkeys";
+import { usePolicy } from "../lib/usePolicy";
 
 const SCORE_LABELS = {
   groundedness: "grounded",
   completeness: "complete",
   tone: "tone",
 } as const;
+
+/** Free text records what one reviewer thought; these are what the eval suite can count. */
+const REJECT_REASONS: { key: RejectReason; label: string; hint: string }[] = [
+  { key: "hallucinated", label: "hallucinated", hint: "Asserted something no cited case supports" },
+  { key: "wrong_intent", label: "wrong intent", hint: "Classified as the wrong kind of ticket" },
+  { key: "wrong_tone", label: "wrong tone", hint: "Accurate, but not sendable as written" },
+  { key: "missing_info", label: "missing info", hint: "Correct so far as it goes, does not answer" },
+  {
+    key: "not_answerable",
+    label: "not answerable",
+    hint: "No draft could be right; needs a human with access",
+  },
+  { key: "other", label: "other", hint: "Something else — say what in the note" },
+];
+
+const SHORTCUTS = [
+  ["a", "approve"],
+  ["e", "save edit"],
+  ["r", "reject"],
+  ["j / k", "next / previous in lane"],
+  ["?", "this list"],
+];
 
 function Section({
   title,
@@ -38,20 +64,37 @@ function Section({
 
 export default function TicketReview() {
   const { id = "" } = useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+
   const { data, isPending, error } = useQuery({
     queryKey: ["ticket", id],
     queryFn: () => getTicket(id),
   });
-  const { data: policy } = useQuery({ queryKey: ["policy"], queryFn: getPolicy });
+  const policy = usePolicy();
 
   const [text, setText] = useState("");
   const [note, setNote] = useState("");
   const [openCase, setOpenCase] = useState<number | null>(null);
+  const [rejecting, setRejecting] = useState(false);
+  const [showDiff, setShowDiff] = useState(false);
+  const [showKeys, setShowKeys] = useState(false);
 
   useEffect(() => {
     if (data?.draft) setText(data.draft);
   }, [data?.draft]);
+
+  // The lane this ticket sits in, so j/k and auto-advance move through actual neighbours.
+  const lane = useQuery({
+    queryKey: ["tickets", data?.status as TicketStatus],
+    queryFn: () => listTickets(data!.status),
+    enabled: Boolean(data?.status),
+  });
+
+  const siblings = lane.data?.tickets ?? [];
+  const position = siblings.findIndex((t) => t.id === id);
+  const next = position >= 0 ? siblings[position + 1] : undefined;
+  const previous = position > 0 ? siblings[position - 1] : undefined;
 
   const review = useMutation({
     mutationFn: (payload: ReviewPayload) => submitReview(id, payload),
@@ -59,23 +102,77 @@ export default function TicketReview() {
       queryClient.invalidateQueries({ queryKey: ["ticket", id] });
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
       queryClient.invalidateQueries({ queryKey: ["audit"] });
+      // A reviewer clearing a queue wants the next one, not the one they just finished.
+      navigate(next ? `/tickets/${next.id}` : "/");
     },
   });
 
-  if (isPending) return <p className="text-sm text-ink-3">Loading…</p>;
-  if (error) return <p className="text-sm text-rust">{String(error)}</p>;
+  const edited = text.trim() !== (data?.draft ?? "").trim();
+  const settled = data?.status === "resolved" || data?.status === "escalated";
+  const mine = data?.reviewable ?? false;
+  const busy = review.isPending;
+
+  const approve = () => review.mutate({ action: "approve", note: note || undefined });
+  const saveEdit = () =>
+    review.mutate({ action: "edit", final_text: text, note: note || undefined });
+  const reject = (reason: RejectReason) =>
+    review.mutate({ action: "reject", reason, note: note || undefined });
+
+  useHotkeys({
+    a: mine && !settled && !busy && !edited ? approve : undefined,
+    e: mine && !settled && !busy && edited ? saveEdit : undefined,
+    r: mine && !settled && !busy ? () => setRejecting(true) : undefined,
+    j: next ? () => navigate(`/tickets/${next.id}`) : undefined,
+    k: previous ? () => navigate(`/tickets/${previous.id}`) : undefined,
+    "?": () => setShowKeys((v) => !v),
+    Escape: () => {
+      setRejecting(false);
+      setShowKeys(false);
+    },
+  });
+
+  if (isPending) return <Skeleton rows={8} />;
+  if (error) return <ErrorNote error={error} what="this ticket" />;
   if (!data) return null;
 
   const cases = data.retrieval?.cases ?? [];
   const cited = new Set(data.draft_citations ?? []);
-  const edited = text.trim() !== (data.draft ?? "").trim();
-  const settled = data.status === "resolved" || data.status === "escalated";
 
   return (
     <div className="space-y-8">
-      <Link to="/" className="text-xs text-ink-3 underline-offset-2 hover:text-ink hover:underline">
-        ← queues
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link
+          to="/"
+          className="text-xs text-ink-3 underline-offset-2 hover:text-ink hover:underline"
+        >
+          ← queues
+        </Link>
+        {position >= 0 && (
+          <span className="flex items-center gap-3 text-[11px] text-ink-3">
+            <span className="tabular-nums">
+              {position + 1} of {siblings.length} in this lane
+            </span>
+            <button
+              onClick={() => setShowKeys((v) => !v)}
+              aria-expanded={showKeys}
+              className="underline-offset-2 hover:text-ink hover:underline"
+            >
+              shortcuts
+            </button>
+          </span>
+        )}
+      </div>
+
+      {showKeys && (
+        <dl className="grid gap-x-6 gap-y-1 rounded-[2px] border border-rule bg-paper-2 p-3 text-[11px] sm:grid-cols-2">
+          {SHORTCUTS.map(([key, what]) => (
+            <div key={key} className="flex items-baseline gap-2">
+              <dt className="rounded-[2px] bg-paper-3 px-1.5 py-0.5 text-ink-2">{key}</dt>
+              <dd className="text-ink-3">{what}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
 
       <header className="space-y-3">
         <h1 className="prose-human text-xl font-semibold tracking-tight">{data.subject}</h1>
@@ -85,7 +182,7 @@ export default function TicketReview() {
           <LanguageBadge language={data.classification?.language ?? null} />
           <RouteBadge route={data.route} />
           <ConfidenceMeter value={data.composite_confidence} policy={policy} width="w-24" />
-          <span className="ml-auto tabular-nums text-ink-3">{timestamp(data.created_at)}</span>
+          <span className="tabular-nums text-ink-3 sm:ml-auto">{timestamp(data.created_at)}</span>
         </div>
         <p className="prose-human rounded-[2px] border-l-2 border-rule-2 bg-paper-2 p-3 text-sm whitespace-pre-wrap">
           {data.body}
@@ -109,12 +206,31 @@ export default function TicketReview() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_21rem]">
         <div className="space-y-8">
           {/* No safe-fallback flag: agent_runs never persists it, and route_reason cannot tell. */}
-          <Section title="draft reply">
+          <Section
+            title="draft reply"
+            aside={
+              edited ? (
+                <button
+                  onClick={() => setShowDiff((v) => !v)}
+                  aria-expanded={showDiff}
+                  className="text-[11px] text-ink-3 underline-offset-2 hover:text-ink hover:underline"
+                >
+                  {showDiff ? "hide what changed" : "what changed"}
+                </button>
+              ) : undefined
+            }
+          >
+            {showDiff && edited && (
+              <div className="mb-2">
+                <Diff before={data.draft ?? ""} after={text} />
+              </div>
+            )}
+
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               rows={12}
-              disabled={settled}
+              disabled={settled || !mine}
               aria-label="Draft reply"
               className="w-full rounded-[2px] border border-rule bg-paper-2 p-3 text-sm leading-relaxed disabled:opacity-60"
             />
@@ -122,7 +238,7 @@ export default function TicketReview() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Note — why you approved, edited, or rejected"
-              disabled={settled}
+              disabled={settled || !mine}
               className="prose-human mt-2 w-full rounded-[2px] border border-rule bg-paper-2 p-2 text-sm disabled:opacity-60"
             />
 
@@ -130,35 +246,74 @@ export default function TicketReview() {
               <p className="prose-human mt-3 text-sm text-ink-2">
                 Already {data.status}. Reviewed tickets are not re-decided here.
               </p>
+            ) : !mine ? (
+              <p className="prose-human mt-3 rounded-[2px] border border-rule bg-paper-2 p-3 text-sm text-ink-2">
+                This one is from the seeded corpus, so it stays where it is and the next
+                visitor finds a queue with something in it. {" "}
+                <Link to="/submit" className="text-teal underline-offset-2 hover:underline">
+                  Send your own ticket
+                </Link>{" "}
+                and you can approve, edit or reject the reply it drafts for you.
+              </p>
+            ) : rejecting ? (
+              <div className="mt-3 space-y-2 rounded-[2px] border border-rust/40 bg-rust-bg p-3">
+                <p className="prose-human text-xs text-rust">
+                  What was wrong with it? A reject without this is a comment; with it, it is a
+                  labelled example the golden set does not have yet.
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {REJECT_REASONS.map((r) => (
+                    <button
+                      key={r.key}
+                      onClick={() => reject(r.key)}
+                      disabled={busy}
+                      title={r.hint}
+                      className="rounded-[2px] border border-rust/50 bg-paper px-2 py-1 text-[11px] text-rust transition-colors hover:bg-rust-bg disabled:opacity-40"
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setRejecting(false)}
+                  className="text-[11px] text-ink-3 underline-offset-2 hover:text-ink hover:underline"
+                >
+                  cancel
+                </button>
+              </div>
             ) : (
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
-                  onClick={() => review.mutate({ action: "approve", note: note || undefined })}
-                  disabled={review.isPending || edited}
-                  title={edited ? "The draft has been changed — use Save edit" : undefined}
+                  onClick={approve}
+                  disabled={busy || edited}
+                  title={edited ? "The draft has been changed — use Save edit" : "a"}
                   className="rounded-[2px] bg-teal px-3 py-1.5 text-xs font-medium text-paper transition-opacity disabled:opacity-40"
                 >
                   Approve
                 </button>
                 <button
-                  onClick={() =>
-                    review.mutate({ action: "edit", final_text: text, note: note || undefined })
-                  }
-                  disabled={review.isPending || !edited}
+                  onClick={saveEdit}
+                  disabled={busy || !edited}
+                  title="e"
                   className="rounded-[2px] border border-rule-2 px-3 py-1.5 text-xs text-ink transition-colors hover:border-ink-3 disabled:opacity-40"
                 >
                   Save edit
                 </button>
                 <button
-                  onClick={() => review.mutate({ action: "reject", note: note || undefined })}
-                  disabled={review.isPending}
+                  onClick={() => setRejecting(true)}
+                  disabled={busy}
+                  title="r"
                   className="rounded-[2px] border border-rust/50 px-3 py-1.5 text-xs text-rust transition-colors hover:bg-rust-bg disabled:opacity-40"
                 >
                   Reject
                 </button>
               </div>
             )}
-            {review.isError && <p className="mt-2 text-xs text-rust">{String(review.error)}</p>}
+            {review.isError && (
+              <div className="mt-2">
+                <ErrorNote error={review.error} what="that decision — it was not recorded" />
+              </div>
+            )}
           </Section>
 
           <Section
@@ -275,7 +430,6 @@ export default function TicketReview() {
               </p>
             </Section>
           )}
-
         </aside>
       </div>
 

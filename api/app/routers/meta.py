@@ -41,8 +41,9 @@ async def status(last: int = Query(default=50, ge=1, le=200)) -> dict[str, Any]:
     """Whether recent runs worked, not merely finished. Keyed on empty retrieval, not errors."""
     health = await repo.recent_run_health(last)
     total = int(health["total"])
+    last_run = await repo.last_run_at()
     if total == 0:
-        return {"runs": 0, "degraded": False, "reason": "no runs recorded yet"}
+        return {"runs": 0, "degraded": False, "reason": "no runs recorded yet", "last_run_at": None}
 
     empty_rate = int(health["empty_retrieval"]) / total
     error_rate = int(health["with_errors"]) / total
@@ -60,4 +61,6 @@ async def status(last: int = Query(default=50, ge=1, le=200)) -> dict[str, Any]:
         "error_rate": round(error_rate, 4),
         "routes": health["routes"],
         "tickets_last_24h": await repo.count_tickets_last_24h(),
+        "last_run_at": last_run,
+        "reject_reasons": await repo.reject_reason_counts(),
     }

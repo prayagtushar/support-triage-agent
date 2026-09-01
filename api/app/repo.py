@@ -91,6 +91,23 @@ async def count_tickets_last_24h() -> int:
     return int(row["n"]) if row else 0
 
 
+async def ticket_visitor(ticket_id: str) -> str | None:
+    """Who sent this ticket, by the id their browser generated. Not an identity, and not
+    a rate limit: it decides only whether they may review the reply they were sent."""
+    row = await _fetch_one(
+        "SELECT customer_meta ->> 'visitor' AS visitor FROM tickets WHERE id = %(id)s::uuid",
+        {"id": ticket_id},
+    )
+    return str(row["visitor"]) if row and row["visitor"] else None
+
+
+async def last_run_at() -> str | None:
+    """Heartbeat. A dashboard that only speaks up when broken looks the same as an abandoned one."""
+    row = await _fetch_one("SELECT max(created_at) AS at FROM agent_runs")
+    at = row["at"] if row else None
+    return at.isoformat() if at else None
+
+
 async def recent_run_health(last: int) -> dict[str, Any]:
     """Recent-run aggregate for /status. Empty retrieval is counted apart from raised errors."""
     row = await _fetch_one(
@@ -217,12 +234,22 @@ async def get_run(run_id: str) -> dict[str, Any] | None:
 
 
 async def insert_review_action(
-    *, run_id: str, action: str, final_text: str | None, note: str | None, reviewer: str
+    *,
+    run_id: str,
+    action: str,
+    final_text: str | None,
+    note: str | None,
+    reviewer: str,
+    reason: str | None = None,
+    original_text: str | None = None,
 ) -> str:
     row = await _fetch_one(
         """
-        INSERT INTO review_actions (run_id, action, final_text, note, reviewer)
-        VALUES (%(run_id)s::uuid, %(action)s, %(final_text)s, %(note)s, %(reviewer)s)
+        INSERT INTO review_actions
+            (run_id, action, final_text, note, reviewer, reason, original_text)
+        VALUES
+            (%(run_id)s::uuid, %(action)s, %(final_text)s, %(note)s, %(reviewer)s,
+             %(reason)s, %(original_text)s)
         RETURNING id::text
         """,
         {
@@ -231,6 +258,8 @@ async def insert_review_action(
             "final_text": final_text,
             "note": note,
             "reviewer": reviewer,
+            "reason": reason,
+            "original_text": original_text,
         },
     )
     assert row is not None
@@ -240,7 +269,8 @@ async def insert_review_action(
 async def list_review_actions(limit: int, offset: int) -> list[dict[str, Any]]:
     return await _fetch(
         """
-        SELECT ra.id::text, ra.action, ra.reviewer, ra.note, ra.created_at,
+        SELECT ra.id::text, ra.action, ra.reviewer, ra.note, ra.reason, ra.created_at,
+               ra.final_text, ra.original_text,
                r.id::text AS run_id, r.route, r.composite_confidence,
                t.id::text AS ticket_id, t.subject
         FROM review_actions ra
@@ -251,6 +281,20 @@ async def list_review_actions(limit: int, offset: int) -> list[dict[str, Any]]:
         """,
         {"limit": limit, "offset": offset},
     )
+
+
+async def reject_reason_counts() -> dict[str, int]:
+    """Reject reasons, counted. These are the cheapest new eval labels this project gets."""
+    rows = await _fetch(
+        """
+        SELECT reason, count(*) AS n
+        FROM review_actions
+        WHERE reason IS NOT NULL
+        GROUP BY reason
+        ORDER BY n DESC
+        """
+    )
+    return {str(r["reason"]): int(r["n"]) for r in rows}
 
 
 async def queue_counts() -> dict[str, int]:

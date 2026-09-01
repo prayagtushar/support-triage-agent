@@ -118,8 +118,28 @@ def test_review_approve_resolves_the_ticket(client):
 
 def test_review_reject_escalates(client):
     client.state["detail"] = {"run_id": RUN_ID}
-    response = client.post(f"/tickets/{TICKET_ID}/review", json={"action": "reject"})
+    response = client.post(
+        f"/tickets/{TICKET_ID}/review",
+        json={"action": "reject", "reason": "hallucinated"},
+    )
     assert response.json()["status"] == "escalated"
+
+
+def test_reject_without_a_reason_is_refused(client):
+    """A reject with only free text is a comment. The reason is what the eval set counts."""
+    client.state["detail"] = {"run_id": RUN_ID}
+    response = client.post(
+        f"/tickets/{TICKET_ID}/review", json={"action": "reject", "note": "no good"}
+    )
+    assert response.status_code == 422
+
+
+def test_reject_reason_must_be_in_the_taxonomy(client):
+    client.state["detail"] = {"run_id": RUN_ID}
+    response = client.post(
+        f"/tickets/{TICKET_ID}/review", json={"action": "reject", "reason": "vibes"}
+    )
+    assert response.status_code == 422
 
 
 def test_edit_without_text_is_rejected(client):

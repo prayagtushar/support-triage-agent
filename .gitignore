@@ -2,6 +2,7 @@
 docs/*
 !docs/DEPLOY.md
 !docs/failure_analysis.md
+!docs/EVAL_CARD.md
 
 # Environment files
 .env

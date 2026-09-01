@@ -40,9 +40,3 @@ export function RouteBadge({ route }: { route: Route | null }) {
   if (!route) return <span className={`${base} bg-paper-3 text-ink-3`}>pending</span>;
   return <span className={`${base} ${ROUTE_STYLE[route]}`}>{route.replace(/_/g, " ")}</span>;
 }
-
-export function Confidence({ value }: { value: number | null }) {
-  if (value === null || value === undefined)
-    return <span className="tabular-nums text-ink-3">—</span>;
-  return <span className="tabular-nums">{value.toFixed(2)}</span>;
-}

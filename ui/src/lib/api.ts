@@ -8,22 +8,10 @@ import type {
   TicketProgress,
   TicketStatus,
 } from "./types";
+import { ownerKey } from "./ownerKey";
+import { visitorId } from "./visitor";
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
-
-const DEMO_KEY_STORAGE = "triage-demo-key";
-
-/** The key for the two endpoints that cost money. In localStorage, not the bundle. */
-export function getDemoKey(): string {
-  return localStorage.getItem(DEMO_KEY_STORAGE) ?? "";
-}
-
-export function setDemoKey(key: string): void {
-  if (key) localStorage.setItem(DEMO_KEY_STORAGE, key);
-  else localStorage.removeItem(DEMO_KEY_STORAGE);
-}
-
-export class WriteKeyError extends Error {}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   // Merge rather than overwrite: spreading init last would drop these headers.
@@ -32,22 +20,25 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...((init?.headers as Record<string, string>) ?? {}),
   };
 
-  const key = getDemoKey();
+  headers["X-Visitor"] = visitorId();
+
+  const key = ownerKey();
   if (key) headers["X-Demo-Key"] = key;
 
   const response = await fetch(`${BASE}${path}`, { ...init, headers });
 
   if (!response.ok) {
     const detail = await response.text();
-    if (response.status === 401) {
-      throw new WriteKeyError(
-        "This action needs a demo key. Reading the queues is open to everyone; " +
-          "submitting tickets and recording reviews is not.",
+    if (response.status === 403) {
+      throw new Error(
+        "You can review the reply to a ticket you sent. The seeded queue is left as it is, " +
+          "so the next visitor finds something in it.",
       );
     }
     if (response.status === 429) {
       throw new Error(
-        "The daily demo limit has been reached. It resets on a rolling 24-hour window.",
+        "The demo has reached its cap of tickets for today. It resets on a rolling " +
+          "24-hour window; reading everything else still works.",
       );
     }
     throw new Error(`${response.status} ${response.statusText}: ${detail.slice(0, 200)}`);

@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
+import { ErrorNote, Skeleton } from "../components/Async";
 import { RouteBadge } from "../components/Badges";
 import { ConfidenceMeter } from "../components/Meter";
-import { getPolicy, listAudit } from "../lib/api";
+import { getStatus, listAudit } from "../lib/api";
 import { timestamp } from "../lib/format";
+import { usePolicy } from "../lib/usePolicy";
 
 const ACTION_TONE: Record<string, string> = {
   approve: "text-teal",
@@ -15,10 +17,11 @@ const ACTION_TONE: Record<string, string> = {
 // Deliberately a ledger: one row per decision, unaggregated, in the order they happened.
 export default function Audit() {
   const { data, isPending, error } = useQuery({ queryKey: ["audit"], queryFn: listAudit });
-  const { data: policy } = useQuery({ queryKey: ["policy"], queryFn: getPolicy });
+  const status = useQuery({ queryKey: ["status"], queryFn: getStatus });
+  const policy = usePolicy();
 
-  if (isPending) return <p className="text-sm text-ink-3">Loading…</p>;
-  if (error) return <p className="text-sm text-rust">{String(error)}</p>;
+  if (isPending) return <Skeleton />;
+  if (error) return <ErrorNote error={error} what="the audit trail" />;
 
   if (!data || data.actions.length === 0) {
     return (
@@ -31,6 +34,8 @@ export default function Audit() {
     );
   }
 
+  const reasons = Object.entries(status.data?.reject_reasons ?? {});
+
   return (
     <div className="space-y-4">
       <header className="space-y-1">
@@ -40,6 +45,24 @@ export default function Audit() {
           made. Append-only.
         </p>
       </header>
+
+      {reasons.length > 0 && (
+        <div className="card p-3">
+          <p className="eyebrow">why drafts were rejected</p>
+          <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs">
+            {reasons.map(([reason, n]) => (
+              <li key={reason} className="text-ink-2">
+                {reason.replace(/_/g, " ")} <span className="tabular-nums text-ink-3">{n}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="prose-human mt-2 max-w-2xl text-[11px] leading-relaxed text-ink-3">
+            These are the cheapest labelled examples this project gets. The golden set is 60
+            tickets and every headline metric is limited by that, so a reviewer picking a reason
+            is doing eval work, not filing a complaint.
+          </p>
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
@@ -62,8 +85,13 @@ export default function Audit() {
                   {timestamp(a.created_at)}
                 </td>
                 <td className="py-2 pr-4 text-ink-2">{a.reviewer}</td>
-                <td className={`py-2 pr-4 font-medium ${ACTION_TONE[a.action] ?? ""}`}>
+                <td className={`whitespace-nowrap py-2 pr-4 font-medium ${ACTION_TONE[a.action] ?? ""}`}>
                   {a.action}
+                  {a.reason && (
+                    <span className="ml-1.5 font-normal text-ink-3">
+                      {a.reason.replace(/_/g, " ")}
+                    </span>
+                  )}
                 </td>
                 <td className="max-w-[18rem] py-2 pr-4">
                   <Link

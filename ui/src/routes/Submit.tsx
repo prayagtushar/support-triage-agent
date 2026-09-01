@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { IntentBadge, LanguageBadge, UrgencyBadge } from "../components/Badges";
-import { createTicket, getProgress, getTicket, setDemoKey, WriteKeyError } from "../lib/api";
+import { ErrorNote } from "../components/Async";
+import { createTicket, getProgress, getTicket } from "../lib/api";
 import type { TicketProgress } from "../lib/types";
 
 /** Mirrors TicketIn on the server, so bad input fails here instead of as a 422. */
@@ -109,16 +110,10 @@ export default function Submit() {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [ticketId, setTicketId] = useState<string | null>(null);
-  const [needsKey, setNeedsKey] = useState(false);
-  const [key, setKey] = useState("");
 
   const submit = useMutation({
     mutationFn: () => createTicket(subject.trim(), body.trim()),
-    onSuccess: (res) => {
-      setTicketId(res.ticket_id);
-      setNeedsKey(false);
-    },
-    onError: (err) => setNeedsKey(err instanceof WriteKeyError),
+    onSuccess: (res) => setTicketId(res.ticket_id),
   });
 
   // Stop once status leaves 'received': that is set after the run row is written.
@@ -173,7 +168,7 @@ export default function Submit() {
               to={`/tickets/${ticketId}`}
               className="inline-block rounded-[2px] border border-rule-2 px-3 py-1.5 text-xs transition-colors hover:border-ink-3"
             >
-              See how the agent handled it →
+              Review it the way an agent would →
             </Link>
           </div>
         )}
@@ -203,8 +198,13 @@ export default function Submit() {
       <header className="space-y-2">
         <h1 className="text-lg font-semibold tracking-tight">Contact support</h1>
         <p className="prose-human text-sm text-ink-2">
-          Send a ticket the way a customer would. It runs through the real pipeline, so it
-          takes about 40 seconds and you can watch each step.
+          Send a ticket the way a customer would — your own, ideally, rather than one of the
+          examples. It runs through the real pipeline, so it takes about 40 seconds and you can
+          watch each step.
+        </p>
+        <p className="prose-human text-xs text-ink-3">
+          No account and no key. When it finishes you can approve, edit or reject the reply it
+          drafted for you, the same way a support agent would.
         </p>
       </header>
 
@@ -252,36 +252,8 @@ export default function Submit() {
           />
         </label>
 
-        {needsKey && (
-          <div className="space-y-2 rounded-[2px] border border-mustard/40 bg-mustard-bg p-3">
-            <p className="prose-human text-xs leading-relaxed text-mustard">
-              This is a public demo, so sending a ticket needs a key — each one spends a real
-              pipeline run against three model providers.
-            </p>
-            <div className="flex gap-2">
-              <input
-                value={key}
-                onChange={(e) => setKey(e.target.value)}
-                type="password"
-                placeholder="demo key"
-                className="flex-1 rounded-[2px] border border-rule bg-paper p-1.5 text-xs"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  setDemoKey(key);
-                  submit.mutate();
-                }}
-                className="rounded-[2px] bg-mustard px-3 py-1.5 text-xs font-medium text-paper"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        )}
-
-        {submit.isError && !needsKey && (
-          <p className="prose-human text-xs text-rust">{String(submit.error)}</p>
+        {submit.isError && (
+          <ErrorNote error={submit.error} what="that ticket — it was not sent" />
         )}
 
         <button

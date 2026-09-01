@@ -172,23 +172,34 @@ Two ways out:
 Reads are public, covering queues, ticket detail, drafts, judge reasoning,
 citations and the audit log, so the project can be evaluated without signing up.
 
-Writes need `X-Demo-Key`:
+**Sending a ticket is open.** `POST /tickets` takes no key. Someone putting their own
+ticket through the pipeline is the point of a public demo, and there is no per-visitor
+throttle either. The ceiling is `MAX_TICKETS_PER_DAY` (50, rolling 24h), enforced
+server-side and applied whether or not a key is configured. That is the right place for
+it: a key can be handed out or leak, and a leaked key with no cap behind it is a bill.
 
-- `POST /tickets` spends a pipeline run
-- `POST /tickets/{id}/review` writes to the audit trail
+**Reviewing is scoped to the ticket you sent.** `POST /tickets/{id}/review` costs
+nothing, but it appends to the audit trail and moves the ticket out of the review lane,
+so an open endpoint lets one visitor leave the next with an empty queue. The dashboard
+generates a random id, keeps it in `localStorage` and sends it as `X-Visitor`; the server
+stores it in `customer_meta` at submit and compares on review. It is ownership, not
+identity, and no IP is recorded anywhere.
 
-The key lives in Secret Manager as `triage-demo-write-key` and is entered in
-the dashboard header, which stores it in `localStorage`. It is deliberately
-**not** baked into the Vercel build: a key compiled into a static SPA is
-readable by anyone who opens devtools.
+`X-Demo-Key` overrides that and reviews anything. The key lives in Secret Manager as
+`triage-demo-write-key` and is **not** baked into the Vercel build — a key compiled into
+a static SPA is readable by anyone who opens devtools. There is no field for it in the
+dashboard either. Claim it once by visiting:
 
-Treat the key as a speed bump, not authentication. The real ceiling is
-`MAX_TICKETS_PER_DAY` (50, rolling 24h), enforced server-side and applied
-whether or not a key is configured. A cap that only bound authenticated
-callers would bound nothing, since the key is meant to be handed out.
+```
+https://support-triage.prayagtushar.xyz/?key=<the-key>
+```
 
-An empty `DEMO_WRITE_KEY` disables the gate. That is the local-dev default and
-what the offline test suite runs against.
+which stores it and strips the parameter from the URL. `GET /tickets/{id}` returns a
+`reviewable` flag computed from both rules, so the dashboard shows the situation instead
+of offering buttons that 403.
+
+An empty `DEMO_WRITE_KEY` disables the override entirely, which means every ticket is
+reviewable. That is the local-dev default and what the offline test suite runs against.
 
 ## Deploying
 
@@ -278,7 +289,7 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST "$API/tickets" \
   -H 'Content-Type: application/json' -d '{"subject":"x","body":"y"}'   # 401
 
 # with the key: expect 202, then confirm the pipeline actually ran
-curl -s -X POST "$API/tickets" -H "X-Demo-Key: $KEY" \
+curl -s -X POST "$API/tickets" \
   -H 'Content-Type: application/json' \
   -d '{"subject":"charged twice","body":"I was billed twice this month"}'
 sleep 60

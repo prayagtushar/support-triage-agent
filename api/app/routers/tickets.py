@@ -17,13 +17,8 @@ log = structlog.get_logger()
 router = APIRouter(tags=["tickets"])
 
 
-async def require_write_key(x_demo_key: str | None = Header(default=None)) -> None:
-    """Gates the endpoints that cost something. An unset key means local dev, not lockout."""
-    expected = settings.demo_write_key
-    if not expected:
-        return
-    if x_demo_key != expected:
-        raise HTTPException(status_code=401, detail="a demo key is required for this action")
+def is_owner(x_demo_key: str | None) -> bool:
+    return not settings.demo_write_key or x_demo_key == settings.demo_write_key
 
 
 async def enforce_daily_cap() -> None:
@@ -57,10 +52,16 @@ class TicketAccepted(BaseModel):
     status: str
 
 
+RejectReason = Literal[
+    "hallucinated", "wrong_intent", "wrong_tone", "missing_info", "not_answerable", "other"
+]
+
+
 class ReviewIn(BaseModel):
     action: Literal["approve", "edit", "reject"]
     final_text: str | None = None
     note: str | None = None
+    reason: RejectReason | None = None
     reviewer: str = "prayag"
 
 
@@ -101,14 +102,22 @@ async def process_ticket(ticket_id: str, payload: TicketIn) -> None:
     "/tickets",
     status_code=202,
     response_model=TicketAccepted,
-    dependencies=[Depends(require_write_key), Depends(enforce_daily_cap)],
+    dependencies=[Depends(enforce_daily_cap)],
 )
-async def create_ticket(payload: TicketIn, background: BackgroundTasks) -> TicketAccepted:
+async def create_ticket(
+    payload: TicketIn,
+    background: BackgroundTasks,
+    x_visitor: str | None = Header(default=None),
+) -> TicketAccepted:
+    meta = dict(payload.customer_meta)
+    if x_visitor:
+        meta["visitor"] = x_visitor[:64]
+
     ticket_id = await repo.insert_ticket(
         subject=payload.subject,
         body=payload.body,
         channel=payload.channel,
-        customer_meta=payload.customer_meta,
+        customer_meta=meta,
         external_ref=payload.external_ref,
     )
     background.add_task(process_ticket, ticket_id, payload)
@@ -126,11 +135,19 @@ async def list_tickets(
 
 
 @router.get("/tickets/{ticket_id}")
-async def get_ticket(ticket_id: str) -> dict[str, Any]:
+async def get_ticket(
+    ticket_id: str,
+    x_demo_key: str | None = Header(default=None),
+    x_visitor: str | None = Header(default=None),
+) -> dict[str, Any]:
     _validate_uuid(ticket_id)
     detail = await repo.get_ticket_detail(ticket_id)
     if detail is None:
         raise HTTPException(status_code=404, detail="ticket not found")
+
+    # So the dashboard can say who may act here instead of offering buttons that 403.
+    sender = (detail.get("customer_meta") or {}).get("visitor")
+    detail["reviewable"] = is_owner(x_demo_key) or bool(sender and sender == x_visitor)
     return detail
 
 
@@ -184,13 +201,25 @@ async def ticket_progress(ticket_id: str) -> dict[str, Any]:
     }
 
 
-@router.post(
-    "/tickets/{ticket_id}/review",
-    status_code=201,
-    dependencies=[Depends(require_write_key)],
-)
-async def review_ticket(ticket_id: str, payload: ReviewIn) -> dict[str, Any]:
+@router.post("/tickets/{ticket_id}/review", status_code=201)
+async def review_ticket(
+    ticket_id: str,
+    payload: ReviewIn,
+    x_demo_key: str | None = Header(default=None),
+    x_visitor: str | None = Header(default=None),
+) -> dict[str, Any]:
     _validate_uuid(ticket_id)
+
+    # Anyone may review the ticket they sent. The seeded queue is left alone, so the
+    # next visitor still finds something to look at.
+    if not is_owner(x_demo_key):
+        sender = await repo.ticket_visitor(ticket_id)
+        if not sender or sender != x_visitor:
+            raise HTTPException(
+                status_code=403,
+                detail="you can review the reply to a ticket you sent, not this one",
+            )
+
     detail = await repo.get_ticket_detail(ticket_id)
     if detail is None:
         raise HTTPException(status_code=404, detail="ticket not found")
@@ -199,13 +228,17 @@ async def review_ticket(ticket_id: str, payload: ReviewIn) -> dict[str, Any]:
 
     if payload.action == "edit" and not (payload.final_text or "").strip():
         raise HTTPException(status_code=422, detail="an edit must carry final_text")
+    if payload.action == "reject" and payload.reason is None:
+        raise HTTPException(status_code=422, detail="a reject must carry a reason")
 
     action_id = await repo.insert_review_action(
         run_id=str(detail["run_id"]),
         action=payload.action,
         final_text=payload.final_text,
         note=payload.note,
+        reason=payload.reason,
         reviewer=payload.reviewer,
+        original_text=detail.get("draft") if payload.action == "edit" else None,
     )
     new_status = "escalated" if payload.action == "reject" else "resolved"
     await repo.update_ticket_status(ticket_id, new_status)

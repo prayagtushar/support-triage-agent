@@ -60,8 +60,16 @@ def _status_client(monkeypatch, health: dict[str, Any], last_24h: int = 3):
     async def fake_count() -> int:
         return last_24h
 
+    async def fake_last_run() -> str | None:
+        return "2026-08-31T10:00:00+00:00"
+
+    async def fake_reasons() -> dict[str, int]:
+        return {"hallucinated": 2}
+
     monkeypatch.setattr(repo, "recent_run_health", fake_health)
     monkeypatch.setattr(repo, "count_tickets_last_24h", fake_count)
+    monkeypatch.setattr(repo, "last_run_at", fake_last_run)
+    monkeypatch.setattr(repo, "reject_reason_counts", fake_reasons)
     return TestClient(app)
 
 
@@ -108,6 +116,18 @@ def test_status_says_nothing_is_wrong_before_any_runs_exist(monkeypatch):
 
     assert body["degraded"] is False
     assert body["runs"] == 0
+    assert body["last_run_at"] is None
+
+
+def test_status_carries_a_heartbeat_when_runs_exist(monkeypatch):
+    """Silence is ambiguous. A healthy system has to say when it last did anything."""
+    with _status_client(
+        monkeypatch,
+        {"total": 5, "with_errors": 0, "empty_retrieval": 0, "routes": {"human_review": 5}},
+    ) as c:
+        body = c.get("/status").json()
+
+    assert body["last_run_at"] == "2026-08-31T10:00:00+00:00"
 
 
 # --- ticket progress -------------------------------------------------------

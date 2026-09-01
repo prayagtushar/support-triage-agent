@@ -1,4 +1,6 @@
+import { ReliabilityChart, SweepChart } from "../components/Charts";
 import evals from "../data/evals.json";
+import { formatInterval } from "../lib/stats";
 
 /** The measurement page. Build-time imports of a real report; regenerate with `make ui-evals`. */
 
@@ -55,6 +57,7 @@ function Bar({ value, tone }: { value: number; tone: string }) {
 
 export default function Evals() {
   const sweep = report.threshold_sweep as Sweep[];
+  const atThreshold = sweep.find((s) => s.threshold === threshold);
   const runs = evals.runs;
   const ablation = evals.ablation;
 
@@ -65,7 +68,7 @@ export default function Evals() {
 
   return (
     <div className="space-y-10">
-      <header className="space-y-2">
+      <header className="space-y-3">
         <h1 className="text-lg font-semibold tracking-tight">Evaluation</h1>
         <p className="prose-human max-w-2xl text-sm text-ink-2">
           Golden set <span className="tabular-nums">{report.golden}</span>,{" "}
@@ -73,6 +76,29 @@ export default function Evals() {
           auto-reply threshold <span className="tabular-nums">{threshold}</span>. These are
           the numbers the design is accountable to, including the one it misses.
         </p>
+        <p className="text-[11px] tabular-nums text-ink-3">
+          run {report.label} · measured {new Date(report.timestamp).toISOString().slice(0, 10)} ·
+          not recomputed since
+        </p>
+
+        <details className="max-w-2xl rounded-[2px] border border-rule bg-paper-2 p-3">
+          <summary className="cursor-pointer text-xs text-ink-2">
+            How to read this page
+          </summary>
+          <div className="prose-human mt-2 space-y-2 text-xs leading-relaxed text-ink-2">
+            <p>
+              The lead metric misses its target, and it is at the top on purpose. This system
+              is a handoff: it decides which tickets a human sees, so the question is not how
+              often it is right but what it costs to be wrong. A bad auto-reply reaches a
+              customer. A ticket sent to a human for no reason costs a few minutes.
+            </p>
+            <p>
+              Precision here is measured over the tickets the agent chose to answer, which at
+              this threshold is about a sixth of the set. That denominator is small enough that
+              the interval printed under each number matters more than the number.
+            </p>
+          </div>
+        </details>
       </header>
 
       <section className="space-y-3">
@@ -85,19 +111,24 @@ export default function Evals() {
           <Stat
             label="auto-reply precision"
             value={report.auto_reply_precision.toFixed(3)}
-            detail={report.auto_reply_precision_detail}
+            detail={`${report.auto_reply_precision_detail} · ${
+              formatInterval(report.auto_reply_precision_detail) ?? ""
+            }`}
             tone="rust"
             target="Target was 0.95. Not met — see below."
           />
           <Stat
             label="review recall"
             value={report.review_recall.toFixed(3)}
-            detail={report.review_recall_detail}
+            detail={`${report.review_recall_detail} · ${
+              formatInterval(report.review_recall_detail) ?? ""
+            }`}
             tone="teal"
           />
           <Stat
             label="routing accuracy"
             value={report.routing_accuracy.toFixed(3)}
+            detail={`n=${report.tickets}`}
             tone="mustard"
           />
           <Stat
@@ -155,6 +186,72 @@ export default function Evals() {
       </section>
 
       <section className="space-y-3">
+        <h2 className="eyebrow">against the alternatives</h2>
+        <p className="prose-human max-w-2xl text-xs text-ink-2">
+          A routing number means nothing on its own. These are the same tickets under the
+          policies this one has to beat to be worth running.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="rule-row text-left">
+                <th className="eyebrow py-1.5 pr-4 font-medium">policy</th>
+                <th className="eyebrow py-1.5 pr-4 font-medium">auto-reply precision</th>
+                <th className="eyebrow py-1.5 pr-4 font-medium">review recall</th>
+                <th className="eyebrow py-1.5 font-medium">answers sent</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="rule-row">
+                <td className="py-1.5 pr-4 text-ink-2">every ticket to a human</td>
+                <td className="py-1.5 pr-4 text-ink-3">never answers</td>
+                <td className="py-1.5 pr-4 tabular-nums">1.000</td>
+                <td className="py-1.5 tabular-nums text-ink-3">0</td>
+              </tr>
+              <tr className="rule-row bg-paper-2">
+                <td className="py-1.5 pr-4">
+                  shipped composite at {threshold}
+                  <span className="ml-2 text-[10px] text-teal">in force</span>
+                </td>
+                <td className="py-1.5 pr-4 tabular-nums">
+                  {report.auto_reply_precision.toFixed(3)}
+                </td>
+                <td className="py-1.5 pr-4 tabular-nums">{report.review_recall.toFixed(3)}</td>
+                <td className="py-1.5 tabular-nums text-ink-3">
+                  {atThreshold?.auto_replied ?? "—"}
+                </td>
+              </tr>
+              {ablation &&
+                Object.entries(ablation.arms)
+                  .filter(([name]) => name !== "full")
+                  .map(([name, arm]) => (
+                    <tr key={name} className="rule-row">
+                      <td className="py-1.5 pr-4 text-ink-2">
+                        {name.replace(/_/g, " ")}, best threshold
+                      </td>
+                      <td className="py-1.5 pr-4 tabular-nums">
+                        {arm.best ? arm.best.auto_reply_precision.toFixed(3) : "—"}
+                      </td>
+                      <td className="py-1.5 pr-4 tabular-nums">
+                        {arm.best ? arm.best.review_recall.toFixed(3) : "—"}
+                      </td>
+                      <td className="py-1.5 tabular-nums text-ink-3">
+                        {arm.best ? arm.best.auto_replied : "—"}
+                      </td>
+                    </tr>
+                  ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="prose-human max-w-2xl text-xs leading-relaxed text-ink-2">
+          Routing every ticket to a human has perfect recall and answers nothing, which is the
+          honest floor: this system only earns its place by the answers it sends, and it is
+          sending them at {report.auto_reply_precision.toFixed(2)} rather than the 0.95 it was
+          designed for. On this corpus the floor is still the safer policy.
+        </p>
+      </section>
+
+      <section className="space-y-3">
         <h2 className="eyebrow">component accuracy</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Stat label="intent" value={report.intent_accuracy.toFixed(3)} tone="teal" />
@@ -176,9 +273,10 @@ export default function Evals() {
       <section className="space-y-3">
         <h2 className="eyebrow">calibration</h2>
         <p className="prose-human max-w-2xl text-xs text-ink-2">
-          Stated confidence against observed correctness. Bars below the line are
+          Stated confidence against observed correctness. Anything below the line is
           overconfidence, which is where it is dangerous.
         </p>
+        <ReliabilityChart buckets={report.reliability} />
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -217,6 +315,7 @@ export default function Evals() {
           band moves. Raising the threshold buys safety and costs coverage, and shrinks the
           denominator that precision is measured on.
         </p>
+        <SweepChart sweep={sweep} threshold={threshold} target={0.95} />
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>

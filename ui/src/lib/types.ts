@@ -87,13 +87,25 @@ export interface TicketDetail {
     }
   > | null;
   langfuse_trace_id: string | null;
+  reviewable: boolean;
 }
+
+export type RejectReason =
+  | "hallucinated"
+  | "wrong_intent"
+  | "wrong_tone"
+  | "missing_info"
+  | "not_answerable"
+  | "other";
 
 export interface AuditRow {
   id: string;
   action: "approve" | "edit" | "reject";
   reviewer: string;
   note: string | null;
+  reason: RejectReason | null;
+  final_text: string | null;
+  original_text: string | null;
   created_at: string;
   run_id: string;
   route: Route | null;
@@ -106,6 +118,7 @@ export interface ReviewPayload {
   action: "approve" | "edit" | "reject";
   final_text?: string;
   note?: string;
+  reason?: RejectReason;
 }
 
 export interface Policy {
@@ -131,6 +144,8 @@ export interface SystemStatus {
   error_rate?: number;
   routes?: Record<string, number>;
   tickets_last_24h?: number;
+  last_run_at?: string | null;
+  reject_reasons?: Record<string, number>;
 }
 
 export interface TicketProgress {

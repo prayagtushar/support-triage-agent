@@ -1,12 +1,12 @@
-.PHONY: help up down db-shell migrate seed seed-local api ui test lint types check eval calibrate ablate coverage ui-evals degraded gate clean-state
+.PHONY: help up down db-shell migrate run demo seed seed-local api ui test lint types check eval calibrate ablate coverage ui-evals readme-metrics degraded gate clean-state
 
 COMPOSE := docker compose -f infra/docker-compose.yml
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t22
 
-up:  ## start Postgres
-	$(COMPOSE) up -d db
+up:  ## start Postgres, waiting until it accepts connections
+	$(COMPOSE) up -d --wait db
 
 down:  ## stop everything
 	$(COMPOSE) down
@@ -16,6 +16,25 @@ db-shell:  ## psql into the local database
 
 migrate:  ## apply pending migrations
 	cd api && uv run python scripts/migrate.py
+
+run: up migrate  ## database, API and dashboard in one command; ctrl-c stops both
+	@echo
+	@echo "  api   http://localhost:8000"
+	@echo "  ui    http://localhost:5173"
+	@echo
+	@trap 'kill 0' INT TERM; \
+	$(MAKE) api & \
+	$(MAKE) ui & \
+	wait
+
+demo:  ## database, corpus, embeddings and a seeded queue, from nothing
+	$(MAKE) up
+	$(MAKE) migrate
+	cd api && uv run python scripts/load_corpus.py
+	cd api && uv run python scripts/gen_synthetic.py
+	cd api && uv run python scripts/gen_hinglish.py
+	cd api && uv run python scripts/embed_corpus.py
+	$(MAKE) seed-local
 
 seed:  ## submit demo tickets through the running API
 	cd api && uv run python scripts/seed_demo.py
@@ -49,6 +68,9 @@ coverage:  ## where the golden set is too thin to support its claims
 
 ui-evals:  ## regenerate the dashboard's eval data from the latest report
 	cd api && uv run python scripts/export_ui_evals.py
+
+readme-metrics:  ## rewrite the README's metrics block from the same export
+	cd api && uv run python scripts/export_readme_metrics.py
 
 seed-local:  ## run the golden set through the pipeline into the local queues
 	cd api && uv run python scripts/seed_local.py
