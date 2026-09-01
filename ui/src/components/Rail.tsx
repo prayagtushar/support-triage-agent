@@ -87,6 +87,8 @@ export default function Rail() {
         </NavLink>
       </Group>
 
+      <div className="mt-auto" />
+
       <Group label="is it any good?">
         <NavLink to="/evals" className={itemClass}>
           evals
@@ -104,7 +106,6 @@ export default function Rail() {
         </a>
       </Group>
 
-      <div className="mt-auto" />
       <Heartbeat />
     </nav>
   );
