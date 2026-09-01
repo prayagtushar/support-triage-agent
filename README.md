@@ -9,6 +9,8 @@
 
 An LLM agent that triages inbound customer support tickets end to end. Each ticket is classified by intent and urgency, matched against similar resolved cases, answered with a grounded draft reply, scored by a second model, and then routed by deterministic code. Confident, well-grounded drafts go to an auto-reply queue. Everything else lands in a human review queue with the full context attached.
 
+The tickets are a **consumer e-commerce mobile app's**: order tracking, refunds, double charges, account lockouts, app crashes and feature requests, in English and Hinglish. That domain is named because the eight intents only cohere under it — a pure retailer never gets a feature request, a pure SaaS product never ships a package — and because it was not chosen first. It was inherited from the corpus, which is a mistake worth reading about in the [eval card](docs/EVAL_CARD.md) before copying the taxonomy.
+
 Ticket triage is one of the most widely deployed production uses of LLM agents, because the agent does not need to resolve every ticket. It needs to understand each ticket well enough to classify it, draft a response when the evidence supports one, and know when to hand off. This project treats that handoff as the feature: a deterministic routing policy, a human review queue, an audit trail, and an eval suite that measures whether the handoff decision is any good.
 
 ![Review screen](assets/review.png)
@@ -209,6 +211,8 @@ The judge earns its place. Three times during development the drafter invented s
 3,400 resolved cases: 3,000 from the [Bitext customer support dataset](https://huggingface.co/datasets/bitext/Bitext-customer-support-llm-chatbot-training-dataset) mapped from 27 intents onto 8, plus 400 generated. Bitext contains no `bug_report` or `feature_request` cases at all, so those two intents are synthetic. 80 Hinglish cases are also generated, and are marked `source='synthetic'` in the schema. Rows containing Bitext's `{{Order Number}}`-style template placeholders were dropped rather than filled with invented values.
 
 The Hinglish set has not yet been reviewed by a native speaker, so this README does not describe it as hand-verified.
+
+The split is uneven in a way the per-intent table cannot show. Six intents carry 500 real Bitext cases each; `bug_report` and `feature_request` carry **none** and are made entirely of the 340 generated ones. Drafts for those two retrieve generated cases to answer generated tickets and are graded by a third model, so `feature_request` reporting a perfect 1.000 F1 on a support of 6 measures how alike two generation processes are, not competence. Treat both intents as untested.
 
 ## Data handling
 
