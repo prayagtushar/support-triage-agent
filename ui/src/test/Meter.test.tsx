@@ -5,6 +5,7 @@ import { ConfidenceMeter, ScoreTicks, scoreTone } from "../components/Meter";
 import type { Policy } from "../lib/types";
 
 const policy: Policy = {
+  domain: "a consumer online shopping service",
   thresholds: { auto_reply: 0.9, review: 0.55, weak_retrieval_floor: 0.4 },
   composite_weights: { judge: 0.5, classifier: 0.3, retrieval: 0.2 },
   models: {},

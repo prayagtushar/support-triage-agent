@@ -29,6 +29,7 @@ async def draft_reply(
                 urgency=urgency,
                 sentiment=sentiment,
                 retrieval_weak=retrieval_weak,
+                domain=settings.domain,
             ),
             user="Write the reply now.",
             schema=Draft,

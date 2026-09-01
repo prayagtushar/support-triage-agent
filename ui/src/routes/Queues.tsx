@@ -18,7 +18,7 @@ const URGENCY_RANK = { P1: 0, P2: 1, P3: 2, P4: 3 } as const;
 const INTRO_KEY = "triage-intro-dismissed";
 
 /** One screen of orientation for someone who arrived from a link and has read nothing. */
-function Intro({ startAt }: { startAt: string | undefined }) {
+function Intro({ startAt, domain }: { startAt: string | undefined; domain: string | undefined }) {
   const [hidden, setHidden] = useState(() => {
     try {
       return window.localStorage.getItem(INTRO_KEY) === "1";
@@ -34,8 +34,11 @@ function Intro({ startAt }: { startAt: string | undefined }) {
       <div className="flex items-start justify-between gap-4">
         <div className="prose-human max-w-2xl space-y-2 text-sm text-ink-2">
           <p>
-            These are a consumer shopping app's tickets — orders, refunds, double charges,
-            lockouts, app crashes — in English and Hinglish. Each was classified, matched
+            These are the tickets of {domain ?? "a consumer online shopping service"} —
+            orders, refunds, double charges, lockouts, app crashes — in English and Hinglish.
+            The domain is a setting, not an assumption baked into a prompt, because “my order
+            has not arrived” means something different to a retailer and a bank. Each ticket
+            was classified, matched
             against resolved cases, answered with a drafted reply and graded by a second model
             on a different vendor. Fixed policy then put it in one of three lanes. Nothing below
             was written for display: it is what the pipeline recorded.
@@ -123,7 +126,7 @@ export default function Queues({ lane }: { lane: Lane }) {
 
   return (
     <div>
-      {lane.status === "in_review" && <Intro startAt={startAt} />}
+      {lane.status === "in_review" && <Intro startAt={startAt} domain={policy?.domain} />}
 
       <header className="mb-4 space-y-1">
         <h1 className="flex items-center gap-2 text-lg font-semibold tracking-tight">

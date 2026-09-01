@@ -17,6 +17,7 @@ class TriageState(TypedDict, total=False):
     retrieved_cases: list[dict[str, Any]]
     retrieval_weak: bool
     retrieval_similarity: float
+    retrieval_synthetic_only: bool
 
     draft: str | None
     draft_citations: list[int]

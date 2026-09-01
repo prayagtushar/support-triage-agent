@@ -223,3 +223,13 @@ def test_progress_rejects_a_malformed_id(monkeypatch):
     """422, matching the other id-taking routes, rather than a 500 from uuid.UUID."""
     with _progress_client(monkeypatch, None, FakeCheckpointer(None)) as c:
         assert c.get("/tickets/not-a-uuid/progress").status_code == 422
+
+
+def test_policy_states_the_domain_the_numbers_were_measured_under():
+    """The classifier and drafter both work from it, so a reader of /policy should see the
+    assumption rather than infer it from the intent list."""
+    with TestClient(app) as c:
+        body = c.get("/policy").json()
+
+    assert body["domain"] == settings.domain
+    assert body["domain"]

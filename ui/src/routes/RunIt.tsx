@@ -189,7 +189,9 @@ export default function RunIt() {
         </p>
         {policy ? (
           <pre className="overflow-x-auto rounded-[2px] border border-rule bg-paper-2 p-3 text-xs leading-relaxed">
-{`thresholds:
+{`domain: ${policy.domain}   # who the classifier and drafter think they work for
+
+thresholds:
   auto_reply:            ${pad(policy.thresholds.auto_reply)}# answer without a human above this
   review:                ${pad(policy.thresholds.review)}# below this a human owns it outright
   weak_retrieval_floor:  ${pad(policy.thresholds.weak_retrieval_floor)}# cosine below this counts as no evidence

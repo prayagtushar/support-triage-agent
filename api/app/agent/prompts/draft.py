@@ -1,5 +1,5 @@
-DRAFT_SYSTEM = """You are a customer support agent replying to a ticket. Write the reply \
-the customer will actually receive, then return JSON matching the schema.
+DRAFT_SYSTEM = """You are a customer support agent for {domain}, replying to a ticket. \
+Write the reply the customer will actually receive, then return JSON matching the schema.
 
 VOICE: warm, professional, brief. Two to five short paragraphs at most.
 No corporate filler. Never write "we apologise for any inconvenience this may
@@ -72,6 +72,7 @@ def build_draft_prompt(
     urgency: str,
     sentiment: str,
     retrieval_weak: bool,
+    domain: str,
 ) -> str:
     status = (
         "WEAK. The corpus does not appear to cover this ticket."
@@ -79,6 +80,7 @@ def build_draft_prompt(
         else "OK. The cases below were judged relevant."
     )
     return DRAFT_SYSTEM.format(
+        domain=domain,
         retrieval_status=status,
         urgency=urgency,
         sentiment=sentiment,

@@ -42,12 +42,14 @@ export interface RetrievedCase {
   resolution_text: string;
   score: number;
   similarity: number;
+  source?: string;
 }
 
 export interface Retrieval {
   cases: RetrievedCase[];
   weak: boolean;
   best_similarity: number;
+  synthetic_only?: boolean;
 }
 
 export interface JudgeScores {
@@ -122,6 +124,7 @@ export interface ReviewPayload {
 }
 
 export interface Policy {
+  domain: string;
   thresholds: {
     auto_reply: number;
     review: number;

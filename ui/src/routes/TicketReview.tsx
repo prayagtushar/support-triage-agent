@@ -45,10 +45,12 @@ const SHORTCUTS = [
 function Section({
   title,
   aside,
+  below,
   children,
 }: {
   title: string;
   aside?: React.ReactNode;
+  below?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -58,6 +60,7 @@ function Section({
         {aside}
       </div>
       {children}
+      {below}
     </section>
   );
 }
@@ -325,6 +328,15 @@ export default function TicketReview() {
                 </span>
               ) : undefined
             }
+            below={
+              data.retrieval?.synthetic_only ? (
+                <p className="prose-human mt-2 rounded-[2px] border border-mustard/40 bg-mustard-bg p-2 text-xs leading-relaxed text-mustard">
+                  Every case cited here was generated, not resolved by a person. Two of the
+                  eight intents have no real cases in the corpus, so a draft for one of them is
+                  machine text grounded in machine text. Judge it accordingly.
+                </p>
+              ) : undefined
+            }
           >
             {cases.length === 0 ? (
               <p className="prose-human text-sm text-ink-2">
@@ -347,6 +359,11 @@ export default function TicketReview() {
                         {cited.has(n) && (
                           <span className="rounded-[2px] bg-olive-bg px-1 text-[10px] font-medium text-olive">
                             cited
+                          </span>
+                        )}
+                        {c.source === "synthetic" && (
+                          <span className="rounded-[2px] bg-mustard-bg px-1 text-[10px] font-medium text-mustard">
+                            generated
                           </span>
                         )}
                         <span className="prose-human truncate text-ink-2">{c.customer_text}</span>

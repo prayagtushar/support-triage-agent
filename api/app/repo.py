@@ -165,6 +165,7 @@ async def insert_run(ticket_id: str, state: dict[str, Any], trace_id: str | None
                     "cases": state.get("retrieved_cases", []),
                     "weak": state.get("retrieval_weak"),
                     "best_similarity": state.get("retrieval_similarity"),
+                    "synthetic_only": state.get("retrieval_synthetic_only", False),
                 }
             ),
             "draft": state.get("draft"),

@@ -16,6 +16,7 @@ router = APIRouter(tags=["meta"])
 async def policy() -> dict[str, Any]:
     """The routing policy in force, as numbers the dashboard can draw."""
     return {
+        "domain": settings.domain,
         "thresholds": {
             "auto_reply": settings.route_auto_reply_threshold,
             "review": settings.route_review_threshold,

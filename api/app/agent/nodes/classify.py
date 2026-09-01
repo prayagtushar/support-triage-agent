@@ -15,7 +15,7 @@ async def classify_ticket(
         classification, stats = await complete_json(
             provider=settings.classifier_provider,
             model=settings.classifier_model,
-            system=build_classify_prompt(),
+            system=build_classify_prompt(settings.domain),
             user=build_ticket_user_message(subject, body),
             schema=Classification,
             temperature=settings.classifier_temperature,

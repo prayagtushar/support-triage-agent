@@ -40,6 +40,7 @@ async def retrieve_node(state: TriageState) -> dict[str, Any]:
         "retrieved_cases": [c.model_dump() for c in result.cases],
         "retrieval_weak": result.weak,
         "retrieval_similarity": result.best_similarity,
+        "retrieval_synthetic_only": result.synthetic_only,
     }
     if error:
         update["errors"] = [error]

@@ -1,5 +1,5 @@
-CLASSIFY_SYSTEM = """You are a support ticket triage classifier for a consumer online \
-shopping service. Read the ticket and return a single JSON object matching the schema.
+CLASSIFY_SYSTEM = """You are a support ticket triage classifier for {domain}. \
+Read the ticket and return a single JSON object matching the schema.
 Return JSON only. No explanation outside the JSON.
 
 INTENT DEFINITIONS. Choose exactly one:
@@ -92,8 +92,8 @@ Output:
  information to place this in any specific category."}"""
 
 
-def build_classify_prompt() -> str:
-    return f"{CLASSIFY_SYSTEM}\n\n{CLASSIFY_EXAMPLES}"
+def build_classify_prompt(domain: str) -> str:
+    return f"{CLASSIFY_SYSTEM.format(domain=domain)}\n\n{CLASSIFY_EXAMPLES}"
 
 
 def build_ticket_user_message(subject: str, body: str) -> str:

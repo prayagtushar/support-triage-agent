@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     demo_write_key: str = ""
     max_tickets_per_day: int = 50
 
+    # What business these tickets belong to. The classifier and the drafter both need it:
+    # "my order has not arrived" means something different to a retailer and a bank. It is
+    # a setting rather than a phrase inside a prompt so that adopting this is a config
+    # change, and so that /policy can state the assumption the numbers were measured under.
+    domain: str = "a consumer online shopping service"
+
     database_url: str = "postgresql://postgres:postgres@localhost:5432/triage"
 
     sarvam_api_key: str = ""

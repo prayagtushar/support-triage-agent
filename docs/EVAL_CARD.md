@@ -24,8 +24,20 @@ taxonomy and then had to be generated, because nothing in Bitext answers them:
 | `bug_report` | **0** | 180 |
 | `feature_request` | **0** | 160 |
 
-Anyone adopting this should pick the domain first and let the taxonomy and the corpus follow
-from it, rather than inheriting a taxonomy from whichever dataset was convenient.
+The domain is now a setting (`DOMAIN`) rather than a phrase inside one prompt. Both the
+classifier and the drafter are told what business they are working for, because "my order has
+not arrived" means different things to a retailer and a bank, and the drafter was never told
+at all. `GET /policy` reports it, so the assumption the numbers were measured under is
+readable rather than inferred.
+
+Retrieval also reports the provenance of its own evidence. A result whose every case was
+generated sets `synthetic_only`, which reaches the reviewer as a warning on the ticket and
+marks each generated case in the evidence list. It deliberately does **not** change the route:
+doing that would alter the policy the numbers on this card were measured under, and it should
+be a hard rule only after a run that measures it.
+
+Anyone adopting this should still pick the domain first and let the taxonomy and the corpus
+follow from it, rather than inheriting a taxonomy from whichever dataset was convenient.
 
 ## What the system decides
 

@@ -18,17 +18,22 @@ class RetrievedCase(BaseModel):
     resolution_text: str
     score: float
     similarity: float
+    source: str = "bitext"
 
 
 class RetrievalResult(BaseModel):
     cases: list[RetrievedCase] = Field(default_factory=list)
     weak: bool = True
+    # True when every case behind a draft was generated rather than resolved by a person.
+    # Two of the eight intents have no real cases at all, so without this the drafter cites
+    # machine-written answers and nothing downstream can tell.
+    synthetic_only: bool = False
     best_similarity: float = 0.0
     method_scores: dict[str, Any] = Field(default_factory=dict)
 
 
 _VECTOR_SQL = """
-SELECT id::text, intent, language, customer_text, resolution_text,
+SELECT id::text, intent, language, customer_text, resolution_text, source,
        1 - (embedding <=> %(query)s::vector) AS similarity
 FROM resolved_cases
 WHERE embedding IS NOT NULL
@@ -38,7 +43,7 @@ LIMIT %(k)s
 """
 
 _LEXICAL_SQL = """
-SELECT id::text, intent, language, customer_text, resolution_text,
+SELECT id::text, intent, language, customer_text, resolution_text, source,
        ts_rank_cd(fts, websearch_to_tsquery('english', %(q)s)) AS rank
 FROM resolved_cases
 WHERE fts @@ websearch_to_tsquery('english', %(q)s)
@@ -127,6 +132,7 @@ async def find_similar_cases(
             resolution_text=by_id[case_id]["resolution_text"],
             score=round(score / highest, 4) if highest else 0.0,
             similarity=round(similarity.get(case_id, 0.0), 4),
+            source=by_id[case_id].get("source") or "bitext",
         )
         for case_id, score in ordered
     ]
@@ -137,6 +143,7 @@ async def find_similar_cases(
     return RetrievalResult(
         cases=cases,
         weak=best_similarity < settings.weak_retrieval_floor,
+        synthetic_only=bool(cases) and all(c.source == "synthetic" for c in cases),
         best_similarity=round(best_similarity, 4),
         method_scores={
             "vector_rank": {r["id"]: i + 1 for i, r in enumerate(vector_rows)},
