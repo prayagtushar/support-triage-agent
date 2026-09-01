@@ -34,10 +34,11 @@ function Intro({ startAt }: { startAt: string | undefined }) {
       <div className="flex items-start justify-between gap-4">
         <div className="prose-human max-w-2xl space-y-2 text-sm text-ink-2">
           <p>
-            Every ticket here was classified, matched against resolved cases, answered with a
-            drafted reply and graded by a second model on a different vendor. Fixed policy then
-            put it in one of three lanes. Nothing below was written for display: it is what the
-            pipeline recorded.
+            These are a consumer shopping app's tickets — orders, refunds, double charges,
+            lockouts, app crashes — in English and Hinglish. Each was classified, matched
+            against resolved cases, answered with a drafted reply and graded by a second model
+            on a different vendor. Fixed policy then put it in one of three lanes. Nothing below
+            was written for display: it is what the pipeline recorded.
           </p>
           <p>
             The bar in the confidence column has a notch on it. That notch is the threshold

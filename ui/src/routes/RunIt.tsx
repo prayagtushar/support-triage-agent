@@ -91,7 +91,9 @@ function Calculator() {
       </dl>
 
       <p className="prose-human max-w-2xl text-xs leading-relaxed text-ink-2">
-        The deflection figure assumes your tickets behave like this corpus, and they will not.
+        This corpus is a consumer e-commerce app's — orders, refunds, billing, account access,
+        with app bug reports and feature requests on top. The deflection figure assumes your
+        tickets behave like it, and they will not.
         It also assumes every auto-reply is a good one, which on the measured numbers is true{" "}
         {(report.auto_reply_precision * 100).toFixed(0)}% of the time — below the 95% this system
         was designed against. Treat the spend column as reliable and the other two as an upper

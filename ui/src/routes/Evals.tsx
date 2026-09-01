@@ -141,7 +141,7 @@ export default function Evals() {
 
       <section className="space-y-3">
         <h2 className="eyebrow">what the table is not saying on its own</h2>
-        <div className="grid gap-3 lg:grid-cols-3">
+        <div className="grid gap-3 lg:grid-cols-2">
           <div className="card space-y-1.5 p-3">
             <p className="text-xs font-medium text-rust">The bar is missed, not moved.</p>
             <p className="prose-human text-xs leading-relaxed text-ink-2">
@@ -172,6 +172,16 @@ export default function Evals() {
               Intent accuracy, measured across all{" "}
               <span className="tabular-nums">{report.tickets}</span>, held to three decimals
               across both.
+            </p>
+          </div>
+          <div className="card space-y-1.5 p-3">
+            <p className="text-xs font-medium text-rust">Two intents are not really measured.</p>
+            <p className="prose-human text-xs leading-relaxed text-ink-2">
+              The corpus is a storefront's, so <span className="tabular-nums">bug report</span>{" "}
+              and <span className="tabular-nums">feature request</span> have no real cases behind
+              them at all. Drafts for those retrieve generated text to answer generated tickets,
+              graded by a third model. Whatever they score is a family resemblance between
+              generators, not competence.
             </p>
           </div>
           <div className="card space-y-1.5 p-3">
