@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -60,11 +61,26 @@ def _to_vector_literal(values: list[float]) -> str:
     return f"[{','.join(f'{v:.6f}' for v in values)}]"
 
 
-def _fetch(sql: str, params: dict[str, Any]) -> list[dict[str, Any]]:
+def _fetch_blocking(sql: str, params: dict[str, Any]) -> list[dict[str, Any]]:
     with connect() as conn, conn.cursor() as cur:
         cur.execute(sql, params)
         columns = [c.name for c in cur.description or []]
         return [dict(zip(columns, row, strict=True)) for row in cur.fetchall()]
+
+
+async def _fetch(sql: str, params: dict[str, Any]) -> list[dict[str, Any]]:
+    """psycopg here is synchronous, so it runs off the loop; the API serves polls mid-run."""
+    return await asyncio.to_thread(_fetch_blocking, sql, params)
+
+
+async def _both_legs(
+    query_vector: str, text: str, intent: str | None, depth: int
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """The two legs are independent, so pay for the slower one rather than their sum."""
+    return await asyncio.gather(
+        _fetch(_VECTOR_SQL, {"query": query_vector, "intent": intent, "k": depth}),
+        _fetch(_LEXICAL_SQL, {"q": text, "intent": intent, "k": depth}),
+    )
 
 
 async def find_similar_cases(
@@ -75,13 +91,11 @@ async def find_similar_cases(
 
     query_vector = _to_vector_literal(await embed_query(text))
 
-    vector_rows = _fetch(_VECTOR_SQL, {"query": query_vector, "intent": intent, "k": depth})
-    lexical_rows = _fetch(_LEXICAL_SQL, {"q": text, "intent": intent, "k": depth})
+    vector_rows, lexical_rows = await _both_legs(query_vector, text, intent, depth)
 
     # Degraded beats dead: an intent filter that matched nothing falls back to the whole corpus.
     if intent is not None and not vector_rows and not lexical_rows:
-        vector_rows = _fetch(_VECTOR_SQL, {"query": query_vector, "intent": None, "k": depth})
-        lexical_rows = _fetch(_LEXICAL_SQL, {"q": text, "intent": None, "k": depth})
+        vector_rows, lexical_rows = await _both_legs(query_vector, text, None, depth)
 
     by_id: dict[str, dict[str, Any]] = {}
     similarity: dict[str, float] = {}
