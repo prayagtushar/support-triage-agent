@@ -9,6 +9,7 @@ import StatusBanner from "./components/StatusBanner";
 import ThemeToggle from "./components/ThemeToggle";
 import { LANES } from "./lib/lanes";
 import { REPO_URL } from "./lib/links";
+import { usePolicy } from "./lib/usePolicy";
 import Audit from "./routes/Audit";
 import Evals from "./routes/Evals";
 import Queues from "./routes/Queues";
@@ -20,10 +21,16 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
 });
 
+/** "a consumer online shopping service" reads as a label once the article is gone. */
+function withoutArticle(domain: string): string {
+  return domain.replace(/^(a|an|the)\s+/i, "");
+}
+
 function Shell({ children }: { children: React.ReactNode }) {
   // Reviewing a ticket is the one screen where someone is working rather than navigating,
   // and it already carries a sidebar of its own. It gets the full width.
   const focused = useLocation().pathname.startsWith("/tickets/");
+  const policy = usePolicy();
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -37,6 +44,11 @@ function Shell({ children }: { children: React.ReactNode }) {
               <span className="h-1.5 w-[3px] bg-rust-fill" />
             </span>
             <span className="text-sm font-semibold tracking-tight">support triage</span>
+            {policy?.domain && (
+              <span className="hidden text-xs text-ink-3 sm:inline">
+                <span aria-hidden>·</span> {withoutArticle(policy.domain)}
+              </span>
+            )}
           </Link>
 
           <span className="ml-auto flex items-center gap-3">
@@ -91,9 +103,10 @@ function Shell({ children }: { children: React.ReactNode }) {
 
       <footer className="mx-auto max-w-7xl px-4 pb-10 pt-4 sm:px-6">
         <p className="prose-human max-w-3xl text-xs text-ink-3">
-          An LLM agent triages each ticket, a second model on a different vendor grades the
-          draft, and fixed policy decides who handles it. Everything here is readable without
-          an account.{" "}
+          The tickets are {policy?.domain ?? "a consumer online shopping service"}'s, in
+          English and Hinglish. An LLM agent triages each one, a second model on a different
+          vendor grades the draft, and fixed policy decides who handles it. Everything here is
+          readable without an account.{" "}
           <a href={REPO_URL} target="_blank" rel="noreferrer" className="hover:text-ink">
             Source
           </a>
