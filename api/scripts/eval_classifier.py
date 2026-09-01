@@ -31,7 +31,7 @@ async def classify_one(
         result, stats = await complete_json(
             provider=provider,  # type: ignore[arg-type]
             model=model,
-            system=build_classify_prompt(),
+            system=build_classify_prompt(settings.domain),
             user=build_ticket_user_message(ticket.subject, ticket.body),
             schema=Classification,
             temperature=settings.classifier_temperature,
