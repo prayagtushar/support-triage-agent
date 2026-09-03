@@ -327,6 +327,55 @@ Both numbers above are n=1 and the four-arm comparison has not been run yet.
 [`docs/VOICE.md`](docs/VOICE.md) has the full budget, what each cut costs, and what was
 deliberately left out.
 
+## The second desk, measured
+
+The tech desk exists to show the architecture is per desk. Measuring it turned out to
+say something about the routing policy instead.
+
+24 hand-labelled tickets, written around the boundaries the prompt teaches rather than
+sampled: scope separating `outage` from `software_bug`, speed separating `performance`
+from `software_bug`, and the evidence over the user's own theory when they blame an
+update for a battery that will not charge.
+
+| Metric | Tech | E-commerce | n |
+|---|---|---|---|
+| Intent accuracy | 0.917 | 0.950 | 24 / 60 |
+| Language accuracy | 1.000 | 1.000 | 24 / 60 |
+| Urgency accuracy | 0.708 | 0.767 | 24 / 60 |
+| Routing accuracy | 0.667 | 0.433 | 24 / 60 |
+| Auto-reply precision | 0.333 (3/9) | 0.500 (5/10) | 24 / 60 |
+| Review recall | 0.700 (14/20) | 0.821 (23/28) | 24 / 60 |
+
+Classification transfers. `hardware`, `performance`, `how_to` and `feature_request` all
+score 1.000 F1, and a taxonomy the model had never seen before this month is read almost
+as accurately as the one the prompt was tuned on.
+
+**Routing does not transfer, and that is the finding.** Six of the nine disagreements are
+the same shape: a ticket that should have gone to a person was answered automatically.
+The clearest is a customer who lost the phone holding their authenticator codes, sent
+without a human at 0.95 confidence. Identity recovery is the exact case a support desk
+must never automate, and nothing in the policy knows that, because the thresholds and
+composite weights are still global. They were fitted on a shop and applied to an IT desk,
+and `route_auto_reply_threshold` is one number for both. Per-desk policy is the obvious
+next change and is deliberately not in this release: the thresholds should be re-fitted
+against a desk's own outcomes rather than guessed a second time.
+
+**The set was built to catch overconfidence and caught it.** One ticket reads, in full,
+"nothing works pls fix". It names no product, device or symptom, and its note in the
+golden set says a confident call here would be overconfidence. The classifier called it
+`outage` at 0.80 and the router escalated it to P1. That is the calibration problem the
+e-commerce reliability table already reports, reproduced on a desk with different words.
+
+One taxonomy gap: an SSO login loop was read as `software_bug` rather than
+`account_access`. The prompt's boundary rules separate `account_access` from `outage`
+and say nothing about a broken sign-in that is genuinely a defect. That is a prompt fix,
+not a model failure.
+
+Read all of it against the corpus. Every case behind this desk was generated, so a draft
+here is machine text grounded in machine text and graded by a third machine, and the
+labels are the author's rather than a support team's. It measures whether routing works
+per desk. It is not evidence of quality on tech support.
+
 ## Data
 
 3,400 resolved cases: 3,000 from the [Bitext customer support dataset](https://huggingface.co/datasets/bitext/Bitext-customer-support-llm-chatbot-training-dataset) mapped from 27 intents onto 8, plus 400 generated. Bitext contains no `bug_report` or `feature_request` cases at all, so those two intents are synthetic. 80 Hinglish cases are also generated, and are marked `source='synthetic'` in the schema. Rows containing Bitext's `{{Order Number}}`-style template placeholders were dropped rather than filled with invented values.
