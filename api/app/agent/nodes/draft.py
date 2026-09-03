@@ -11,6 +11,7 @@ from app.llm import CallStats, complete_json
 
 async def draft_reply(
     *,
+    domain: str,
     subject: str,
     body: str,
     cases: list[dict[str, Any]],
@@ -29,7 +30,7 @@ async def draft_reply(
                 urgency=urgency,
                 sentiment=sentiment,
                 retrieval_weak=retrieval_weak,
-                domain=settings.domain,
+                domain=domain,
             ),
             user="Write the reply now.",
             schema=Draft,

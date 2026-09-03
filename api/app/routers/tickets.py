@@ -11,6 +11,9 @@ from app import repo
 from app.agent.checkpoint import get_checkpointer
 from app.agent.graph import build_graph
 from app.config import settings
+from app.domains import UnknownDomain
+from app.domains import default_id as default_domain
+from app.domains import get as get_domain
 from app.observability import flush, trace_run
 
 log = structlog.get_logger()
@@ -43,6 +46,9 @@ class TicketIn(BaseModel):
     subject: str = Field(min_length=1, max_length=500)
     body: str = Field(min_length=1, max_length=20_000)
     channel: Literal["web", "email", "chat"] = "web"
+    # Which desk. Resolved to the first configured domain when the caller names none,
+    # so an existing integration posting without it keeps landing where it always did.
+    domain_id: str | None = None
     customer_meta: dict[str, Any] = Field(default_factory=dict)
     external_ref: str | None = None
 
@@ -65,7 +71,7 @@ class ReviewIn(BaseModel):
     reviewer: str = "prayag"
 
 
-async def process_ticket(ticket_id: str, payload: TicketIn) -> None:
+async def process_ticket(ticket_id: str, payload: TicketIn, domain_id: str) -> None:
     """One pipeline run. Nothing may escape: a ticket stuck at 'received' is the worst outcome."""
     structlog.contextvars.bind_contextvars(ticket_id=ticket_id)
     try:
@@ -74,6 +80,7 @@ async def process_ticket(ticket_id: str, payload: TicketIn) -> None:
             final = await graph.ainvoke(
                 {
                     "ticket_id": ticket_id,
+                    "domain_id": domain_id,
                     "subject": payload.subject,
                     "body": payload.body,
                     "channel": payload.channel,
@@ -113,25 +120,33 @@ async def create_ticket(
     if x_visitor:
         meta["visitor"] = x_visitor[:64]
 
+    domain_id = payload.domain_id or await default_domain()
+    try:
+        await get_domain(domain_id)
+    except UnknownDomain as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
     ticket_id = await repo.insert_ticket(
         subject=payload.subject,
         body=payload.body,
         channel=payload.channel,
         customer_meta=meta,
         external_ref=payload.external_ref,
+        domain_id=domain_id,
     )
-    background.add_task(process_ticket, ticket_id, payload)
+    background.add_task(process_ticket, ticket_id, payload, domain_id)
     return TicketAccepted(ticket_id=ticket_id, status="received")
 
 
 @router.get("/tickets")
 async def list_tickets(
     status: str | None = None,
+    domain: str | None = None,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ) -> dict[str, Any]:
-    rows = await repo.list_tickets_by_status(status, limit, offset)
-    return {"tickets": rows, "limit": limit, "offset": offset}
+    rows = await repo.list_tickets_by_status(status, limit, offset, domain)
+    return {"tickets": rows, "limit": limit, "offset": offset, "domain": domain}
 
 
 @router.get("/tickets/{ticket_id}")

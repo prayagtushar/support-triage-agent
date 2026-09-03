@@ -8,6 +8,7 @@ from typing_extensions import TypedDict
 
 class TriageState(TypedDict, total=False):
     ticket_id: str
+    domain_id: str
     subject: str
     body: str
     channel: str

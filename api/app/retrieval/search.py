@@ -37,6 +37,7 @@ SELECT id::text, intent, language, customer_text, resolution_text, source,
        1 - (embedding <=> %(query)s::vector) AS similarity
 FROM resolved_cases
 WHERE embedding IS NOT NULL
+  AND domain_id = %(domain)s
   AND (%(intent)s::text IS NULL OR intent = %(intent)s)
 ORDER BY embedding <=> %(query)s::vector
 LIMIT %(k)s
@@ -47,6 +48,7 @@ SELECT id::text, intent, language, customer_text, resolution_text, source,
        ts_rank_cd(fts, websearch_to_tsquery('english', %(q)s)) AS rank
 FROM resolved_cases
 WHERE fts @@ websearch_to_tsquery('english', %(q)s)
+  AND domain_id = %(domain)s
   AND (%(intent)s::text IS NULL OR intent = %(intent)s)
 ORDER BY rank DESC
 LIMIT %(k)s
@@ -79,28 +81,33 @@ async def _fetch(sql: str, params: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 async def _both_legs(
-    query_vector: str, text: str, intent: str | None, depth: int
+    query_vector: str, text: str, domain: str, intent: str | None, depth: int
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """The two legs are independent, so pay for the slower one rather than their sum."""
     return await asyncio.gather(
-        _fetch(_VECTOR_SQL, {"query": query_vector, "intent": intent, "k": depth}),
-        _fetch(_LEXICAL_SQL, {"q": text, "intent": intent, "k": depth}),
+        _fetch(
+            _VECTOR_SQL, {"query": query_vector, "domain": domain, "intent": intent, "k": depth}
+        ),
+        _fetch(_LEXICAL_SQL, {"q": text, "domain": domain, "intent": intent, "k": depth}),
     )
 
 
 async def find_similar_cases(
-    *, text: str, intent: str | None, k: int | None = None
+    *, text: str, intent: str | None, domain: str, k: int | None = None
 ) -> RetrievalResult:
     top_k = k or settings.retrieval_top_k
     depth = settings.retrieval_candidates
 
     query_vector = _to_vector_literal(await embed_query(text))
 
-    vector_rows, lexical_rows = await _both_legs(query_vector, text, intent, depth)
+    vector_rows, lexical_rows = await _both_legs(query_vector, text, domain, intent, depth)
 
-    # Degraded beats dead: an intent filter that matched nothing falls back to the whole corpus.
+    # Degraded beats dead: an intent filter that matched nothing falls back to the rest of
+    # the domain. Never past it. A laptop that will not boot answered from a refund policy
+    # is worse than no evidence at all, because the drafter cannot tell it is in the wrong
+    # business and the judge is grading groundedness rather than relevance to the desk.
     if intent is not None and not vector_rows and not lexical_rows:
-        vector_rows, lexical_rows = await _both_legs(query_vector, text, None, depth)
+        vector_rows, lexical_rows = await _both_legs(query_vector, text, domain, None, depth)
 
     by_id: dict[str, dict[str, Any]] = {}
     similarity: dict[str, float] = {}
