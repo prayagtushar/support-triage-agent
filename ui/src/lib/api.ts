@@ -1,5 +1,6 @@
 import type {
   AuditRow,
+  DomainList,
   Policy,
   QueueRow,
   ReviewPayload,
@@ -46,9 +47,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function listTickets(status?: TicketStatus) {
-  const query = status ? `?status=${status}` : "";
-  return request<{ tickets: QueueRow[] }>(`/tickets${query}`);
+/**
+ * `domain` is required rather than optional, and that is the point: when it was
+ * optional a caller could omit it and get every desk's tickets back looking entirely
+ * normal. The review screen did exactly that, so j/k walked out of a refund and into a
+ * laptop that would not charge. A queue that quietly mixes desks is worse than an empty
+ * one, because every row looks legitimate. Pass "" deliberately to span every desk.
+ */
+export function listTickets(status: TicketStatus | undefined, domain: string) {
+  const query = new URLSearchParams();
+  if (status) query.set("status", status);
+  if (domain) query.set("domain", domain);
+  const suffix = query.toString() ? `?${query}` : "";
+  return request<{ tickets: QueueRow[] }>(`/tickets${suffix}`);
 }
 
 export function getTicket(id: string) {
@@ -66,11 +77,15 @@ export function listAudit() {
   return request<{ actions: AuditRow[] }>("/audit");
 }
 
-export function createTicket(subject: string, body: string) {
+export function createTicket(subject: string, body: string, domain?: string) {
   return request<{ ticket_id: string }>("/tickets", {
     method: "POST",
-    body: JSON.stringify({ subject, body }),
+    body: JSON.stringify({ subject, body, domain_id: domain }),
   });
+}
+
+export function listDomains() {
+  return request<DomainList>("/domains");
 }
 
 export function getPolicy() {

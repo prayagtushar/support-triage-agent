@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { IntentBadge, LanguageBadge, UrgencyBadge } from "../components/Badges";
 import { ErrorNote } from "../components/Async";
 import { createTicket, getProgress, getTicket } from "../lib/api";
+import { useDomain } from "../lib/domain";
 import type { TicketProgress } from "../lib/types";
 
 /** Mirrors TicketIn on the server, so bad input fails here instead of as a 422. */
@@ -111,8 +112,10 @@ export default function Submit() {
   const [body, setBody] = useState("");
   const [ticketId, setTicketId] = useState<string | null>(null);
 
+  const { id: domainId, domain, domains, setDomain } = useDomain();
+
   const submit = useMutation({
-    mutationFn: () => createTicket(subject.trim(), body.trim()),
+    mutationFn: () => createTicket(subject.trim(), body.trim(), domainId),
     onSuccess: (res) => setTicketId(res.ticket_id),
   });
 
@@ -231,6 +234,32 @@ export default function Submit() {
         }}
         className="space-y-4"
       >
+        <label className="block space-y-1.5">
+          <span className="eyebrow">which desk</span>
+          <select
+            value={domainId}
+            onChange={(e) => setDomain(e.target.value)}
+            className="w-full rounded-[2px] border border-rule bg-paper-2 p-2 text-sm"
+          >
+            {domains.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+                {d.provenance === "synthetic" ? " (generated corpus)" : ""}
+                {d.ready ? "" : " — no evidence"}
+              </option>
+            ))}
+          </select>
+          {/* The taxonomy is per desk, so this changes which intents the classifier may
+              even return. Worth saying before someone reads the result as a mistake. */}
+          <span className="block text-[11px] text-ink-3">
+            {domain
+              ? `Classified against ${domain.intents.length} intents: ${domain.intents
+                  .map((i) => domain.intent_labels[i] ?? i)
+                  .join(", ")}.`
+              : ""}
+          </span>
+        </label>
+
         <label className="block space-y-1.5">
           <span className="eyebrow">subject</span>
           <input

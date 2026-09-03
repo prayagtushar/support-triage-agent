@@ -9,6 +9,8 @@ import { Diff } from "../components/Diff";
 import { ConfidenceMeter, ScoreTicks, scoreTone } from "../components/Meter";
 import { Pipeline } from "../components/Pipeline";
 import { getTicket, listTickets, submitReview } from "../lib/api";
+import { reviewToast, useToast } from "../components/Toast";
+import { useDomain, withDomain } from "../lib/domain";
 import { timestamp } from "../lib/format";
 import type { RejectReason, ReviewPayload, TicketStatus } from "../lib/types";
 import { useHotkeys } from "../lib/useHotkeys";
@@ -88,10 +90,14 @@ export default function TicketReview() {
   }, [data?.draft]);
 
   // The lane this ticket sits in, so j/k and auto-advance move through actual neighbours.
+  // Scoped to the TICKET's desk rather than the one being browsed: a ticket reached by
+  // link can belong to another desk, and without this the lane silently mixed them, so
+  // j/k walked from a refund into a laptop that would not charge. The desk is in the
+  // query key too, or this cache entry collides with the queue's own list.
   const lane = useQuery({
-    queryKey: ["tickets", data?.status as TicketStatus],
-    queryFn: () => listTickets(data!.status),
-    enabled: Boolean(data?.status),
+    queryKey: ["tickets", data?.status as TicketStatus, data?.domain_id],
+    queryFn: () => listTickets(data!.status, data!.domain_id),
+    enabled: Boolean(data?.status && data?.domain_id),
   });
 
   const siblings = lane.data?.tickets ?? [];
@@ -99,15 +105,22 @@ export default function TicketReview() {
   const next = position >= 0 ? siblings[position + 1] : undefined;
   const previous = position > 0 ? siblings[position - 1] : undefined;
 
+  const toast = useToast();
+  const { id: domainId, domains } = useDomain();
+  const ticketDomain = domains.find((d) => d.id === data?.domain_id);
+
   const review = useMutation({
     mutationFn: (payload: ReviewPayload) => submitReview(id, payload),
-    onSuccess: () => {
+    onSuccess: (_result, payload) => {
       queryClient.invalidateQueries({ queryKey: ["ticket", id] });
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
       queryClient.invalidateQueries({ queryKey: ["audit"] });
-      // A reviewer clearing a queue wants the next one, not the one they just finished.
-      navigate(next ? `/tickets/${next.id}` : "/");
+      // Acting advances, so the confirmation has to outlive the screen it happened on.
+      toast(reviewToast(payload.action, next?.id));
+      const desk = data?.domain_id ?? domainId;
+      navigate(next ? withDomain(`/tickets/${next.id}`, desk) : withDomain("/", desk));
     },
+    onError: (err) => toast(err instanceof Error ? err.message : "That did not save.", "bad"),
   });
 
   const edited = text.trim() !== (data?.draft ?? "").trim();
@@ -145,7 +158,7 @@ export default function TicketReview() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
-          to="/"
+          to={withDomain("/", data.domain_id)}
           className="text-xs text-ink-3 underline-offset-2 hover:text-ink hover:underline"
         >
           ← queues
@@ -165,6 +178,22 @@ export default function TicketReview() {
           </span>
         )}
       </div>
+
+      {/* A ticket reached by link can belong to another desk, and every other piece of
+          chrome names the desk being browsed. Without this the page reads as an
+          e-commerce ticket about a laptop that will not charge. */}
+      {domainId && data.domain_id !== domainId && (
+        <div
+          role="status"
+          className="rounded-[2px] border border-mustard/40 bg-mustard-bg px-3 py-2 text-xs text-mustard"
+        >
+          <span className="font-medium">Another desk.</span>{" "}
+          <span className="prose-human">
+            This ticket belongs to {ticketDomain?.name ?? data.domain_id}, not the desk you
+            are browsing. Its evidence, taxonomy and neighbours are that desk's.
+          </span>
+        </div>
+      )}
 
       {showKeys && (
         <dl className="grid gap-x-6 gap-y-1 rounded-[2px] border border-rule bg-paper-2 p-3 text-[11px] sm:grid-cols-2">

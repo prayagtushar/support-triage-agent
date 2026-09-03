@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 
 import { getStatus, listTickets } from "../lib/api";
 import { relativeAge } from "../lib/format";
+import { useDomain, withDomain } from "../lib/domain";
 import { LANES } from "../lib/lanes";
 import { REPO_URL } from "../lib/links";
 
@@ -62,10 +63,14 @@ function Heartbeat() {
  * you work in, and the tabs made three of them look like three views of one page.
  */
 export default function Rail() {
+  const { id: domainId } = useDomain();
+
   const counts = useQueries({
     queries: LANES.map((lane) => ({
-      queryKey: ["tickets", lane.status],
-      queryFn: () => listTickets(lane.status),
+      // Scoped to the desk in view. A rail counting another desk's queue is worse than
+      // no count: it looks authoritative and sends someone to an empty lane.
+      queryKey: ["tickets", lane.status, domainId],
+      queryFn: () => listTickets(lane.status, domainId),
       refetchInterval: 10_000,
     })),
   });
@@ -74,7 +79,7 @@ export default function Rail() {
     <nav aria-label="Sections" className="flex h-full flex-col gap-5">
       <Group label="queues">
         {LANES.map((lane, i) => (
-          <NavLink key={lane.path} to={lane.path} end className={itemClass}>
+          <NavLink key={lane.path} to={withDomain(lane.path, domainId)} end className={itemClass}>
             <span className={`h-1.5 w-1.5 rounded-full ${lane.dot}`} aria-hidden />
             {lane.label}
             <span className="ml-auto tabular-nums text-ink-3">
@@ -82,7 +87,8 @@ export default function Rail() {
             </span>
           </NavLink>
         ))}
-        <NavLink to="/audit" className={itemClass}>
+        <NavLink
+          to={withDomain("/audit", domainId)} className={itemClass}>
           audit
         </NavLink>
       </Group>
@@ -90,10 +96,20 @@ export default function Rail() {
       <div className="mt-auto" />
 
       <Group label="is it any good?">
-        <NavLink to="/evals" className={itemClass}>
+        <NavLink
+          to={withDomain("/evals", domainId)} className={itemClass}>
           evals
         </NavLink>
-        <NavLink to="/run-it" className={itemClass}>
+        <NavLink
+          to={withDomain("/desks", domainId)} className={itemClass}>
+          all desks
+        </NavLink>
+        <NavLink
+          to={withDomain("/voice", domainId)} className={itemClass}>
+          say it instead
+        </NavLink>
+        <NavLink
+          to={withDomain("/run-it", domainId)} className={itemClass}>
           run it yourself
         </NavLink>
         <a

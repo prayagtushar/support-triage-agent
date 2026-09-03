@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { ErrorNote, Skeleton } from "../components/Async";
 import { IntentBadge, LanguageBadge, UrgencyBadge } from "../components/Badges";
@@ -10,15 +10,51 @@ import { ageTone, relativeAge } from "../lib/format";
 import type { Lane } from "../lib/lanes";
 import type { QueueRow } from "../lib/types";
 import { usePolicy } from "../lib/usePolicy";
+import { useDomain } from "../lib/domain";
 
 type Sort = "age" | "confidence" | "urgency";
+type Density = "comfortable" | "compact";
+
+const SORTS: readonly Sort[] = ["age", "confidence", "urgency"];
+const DENSITY_KEY = "triage-density";
+
+/** Per-viewer comfort, so it belongs to the browser rather than to the URL. */
+function useDensity(): [Density, (d: Density) => void] {
+  const [density, setDensity] = useState<Density>(() => {
+    try {
+      return window.localStorage.getItem(DENSITY_KEY) === "compact" ? "compact" : "comfortable";
+    } catch {
+      return "comfortable";
+    }
+  });
+
+  return [
+    density,
+    (next: Density) => {
+      setDensity(next);
+      try {
+        window.localStorage.setItem(DENSITY_KEY, next);
+      } catch {
+        // A browser refusing storage is not a reason to refuse the setting.
+      }
+    },
+  ];
+}
 
 const URGENCY_RANK = { P1: 0, P2: 1, P3: 2, P4: 3 } as const;
 
 const INTRO_KEY = "triage-intro-dismissed";
 
 /** One screen of orientation for someone who arrived from a link and has read nothing. */
-function Intro({ startAt, domain }: { startAt: string | undefined; domain: string | undefined }) {
+function Intro({
+  startAt,
+  domain,
+  intents,
+}: {
+  startAt: string | undefined;
+  domain: string | undefined;
+  intents: string[];
+}) {
   const [hidden, setHidden] = useState(() => {
     try {
       return window.localStorage.getItem(INTRO_KEY) === "1";
@@ -34,14 +70,17 @@ function Intro({ startAt, domain }: { startAt: string | undefined; domain: strin
       <div className="flex items-start justify-between gap-4">
         <div className="prose-human max-w-2xl space-y-2 text-sm text-ink-2">
           <p>
-            These are the tickets of {domain ?? "a consumer online shopping service"} —
-            orders, refunds, double charges, lockouts, app crashes — in English and Hinglish.
-            The domain is a setting, not an assumption baked into a prompt, because “my order
-            has not arrived” means something different to a retailer and a bank. Each ticket
-            was classified, matched
-            against resolved cases, answered with a drafted reply and graded by a second model
-            on a different vendor. Fixed policy then put it in one of three lanes. Nothing below
-            was written for display: it is what the pipeline recorded.
+            These are the tickets of {domain ?? "a consumer online shopping service"}
+            {/* Drawn from the desk rather than listed in prose. The old copy named orders
+                and refunds, which stopped being true the moment a second desk existed. */}
+            {intents.length > 0 && <> — {intents.join(", ")}</>} — in English and Hinglish.
+            The desk is a row in the database, not an assumption baked into a prompt, because
+            “my order has not arrived” means something different to a retailer and a bank, and
+            each desk carries its own cases, its own intents and its own worked examples. Each
+            ticket was classified, matched against resolved cases from this desk only, answered
+            with a drafted reply and graded by a second model on a different vendor. Fixed
+            policy then put it in one of three lanes. Nothing below was written for display: it
+            is what the pipeline recorded.
           </p>
           <p>
             The bar in the confidence column has a notch on it. That notch is the threshold
@@ -91,13 +130,32 @@ function sortRows(rows: QueueRow[], sort: Sort): QueueRow[] {
 }
 
 export default function Queues({ lane }: { lane: Lane }) {
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<Sort>("age");
+  // Filter and sort live in the URL: a lane filtered down to the two tickets worth
+  // arguing about is the thing an operator wants to send someone, and useState made
+  // that unshareable and lost it on reload.
+  const [params, setParams] = useSearchParams();
+  const query = params.get("q") ?? "";
+  const sortParam = params.get("sort");
+  const sort: Sort = SORTS.includes(sortParam as Sort) ? (sortParam as Sort) : "age";
+
+  const setParam = (key: string, value: string, fallback: string) => {
+    const next = new URLSearchParams(params);
+    if (!value || value === fallback) next.delete(key);
+    else next.set(key, value);
+    setParams(next, { replace: true });
+  };
+
+  const [density, setDensity] = useDensity();
+  const rowPad = density === "compact" ? "py-1" : "py-2.5";
   const policy = usePolicy();
+  const { id: domainId, domain } = useDomain();
 
   const { data, error, isPending } = useQuery({
-    queryKey: ["tickets", lane.status],
-    queryFn: () => listTickets(lane.status),
+    // The desk is part of the key, so switching desks refetches rather than showing the
+    // previous desk's rows under the new desk's name.
+    queryKey: ["tickets", lane.status, domainId],
+    queryFn: () => listTickets(lane.status, domainId),
+    enabled: Boolean(domainId),
     refetchInterval: 10_000,
   });
 
@@ -126,7 +184,41 @@ export default function Queues({ lane }: { lane: Lane }) {
 
   return (
     <div>
-      {lane.status === "in_review" && <Intro startAt={startAt} domain={policy?.domain} />}
+      {lane.status === "in_review" && (
+        <Intro
+          startAt={startAt}
+          domain={domain?.description ?? policy?.domain}
+          intents={(domain?.intents ?? []).map((i) => domain?.intent_labels[i] ?? i)}
+        />
+      )}
+
+      {domain && !domain.ready && (
+        <div
+          role="status"
+          className="mb-6 rounded-[2px] border border-rust/40 bg-rust-bg px-3 py-2 text-xs text-rust"
+        >
+          <span className="font-medium">{domain.name} has no evidence behind it.</span>{" "}
+          <span className="prose-human">
+            No resolved cases are embedded for this desk, so retrieval returns nothing and
+            every draft would be ungrounded. Tickets sent here are routed to a human by
+            hard rule, which is correct, and tells you nothing about the agent.
+          </span>
+        </div>
+      )}
+
+      {domain?.provenance === "synthetic" && domain.ready && (
+        <div
+          role="status"
+          className="mb-6 rounded-[2px] border border-mustard/40 bg-mustard-bg px-3 py-2 text-xs text-mustard"
+        >
+          <span className="font-medium">Generated desk.</span>{" "}
+          <span className="prose-human">
+            Every case behind {domain.name} was written by a model, so drafts here are
+            machine text grounded in machine text and graded by a third machine. It shows
+            the routing works per desk. It is not evidence of quality on this domain.
+          </span>
+        </div>
+      )}
 
       <header className="mb-4 space-y-1">
         <h1 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
@@ -141,7 +233,7 @@ export default function Queues({ lane }: { lane: Lane }) {
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => setParam("q", e.target.value, "")}
             type="search"
             placeholder="filter by subject, intent or urgency"
             aria-label="Filter tickets"
@@ -151,7 +243,7 @@ export default function Queues({ lane }: { lane: Lane }) {
             sort
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value as Sort)}
+              onChange={(e) => setParam("sort", e.target.value, "age")}
               className="rounded-[2px] border border-rule bg-paper-2 px-1.5 py-1 text-[11px] text-ink"
             >
               <option value="age">newest</option>
@@ -164,6 +256,30 @@ export default function Queues({ lane }: { lane: Lane }) {
               {visible.length} of {rows.length}
             </span>
           )}
+
+          {/* Clearing a lane is the job, so someone working one wants rows on screen
+              rather than air between them. */}
+          <div
+            role="group"
+            aria-label="Row density"
+            className="ml-auto hidden overflow-hidden rounded-[2px] border border-rule sm:flex"
+          >
+            {(["comfortable", "compact"] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setDensity(option)}
+                aria-pressed={density === option}
+                className={`px-2 py-1 text-[11px] transition-colors ${
+                  density === option
+                    ? "bg-paper-3 text-ink"
+                    : "bg-paper-2 text-ink-3 hover:text-ink-2"
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -228,7 +344,7 @@ export default function Queues({ lane }: { lane: Lane }) {
               <tbody>
                 {visible.map((t) => (
                   <tr key={t.id} className="rule-row group transition-colors hover:bg-paper-2">
-                    <td className="max-w-[22rem] py-2.5 pr-4">
+                    <td className={`max-w-[22rem] pr-4 ${rowPad}`}>
                       <Link
                         to={`/tickets/${t.id}`}
                         className="prose-human flex items-center gap-1.5 truncate underline-offset-2 hover:underline"
@@ -242,19 +358,19 @@ export default function Queues({ lane }: { lane: Lane }) {
                         </span>
                       </Link>
                     </td>
-                    <td className="py-2.5 pr-4">
+                    <td className={`pr-4 ${rowPad}`}>
                       <IntentBadge intent={t.intent} />
                     </td>
-                    <td className="py-2.5 pr-4">
+                    <td className={`pr-4 ${rowPad}`}>
                       <UrgencyBadge urgency={t.urgency} />
                     </td>
-                    <td className="py-2.5 pr-4">
+                    <td className={`pr-4 ${rowPad}`}>
                       <LanguageBadge language={t.language} />
                     </td>
-                    <td className="py-2.5 pr-4">
+                    <td className={`pr-4 ${rowPad}`}>
                       <ConfidenceMeter value={t.composite_confidence} policy={policy} />
                     </td>
-                    <td className={`py-2.5 tabular-nums ${ageTone(t.created_at, t.urgency)}`}>
+                    <td className={`tabular-nums ${rowPad} ${ageTone(t.created_at, t.urgency)}`}>
                       {relativeAge(t.created_at)}
                     </td>
                   </tr>
