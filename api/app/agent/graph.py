@@ -13,12 +13,14 @@ from app.agent.nodes.route import RouteSignals, composite_confidence, decide_rou
 from app.agent.nodes.score import score_draft
 from app.agent.state import TriageState
 from app.agent.timing import timed
+from app.domains import get as get_domain
 
 
 @timed("classify")
 async def classify_node(state: TriageState) -> dict[str, Any]:
+    domain = await get_domain(state["domain_id"])
     classification, stats, error = await classify_ticket(
-        state.get("subject", ""), state.get("body", "")
+        state.get("subject", ""), state.get("body", ""), domain
     )
     update: dict[str, Any] = {
         "classification": classification.model_dump() if classification else None
@@ -35,7 +37,9 @@ async def retrieve_node(state: TriageState) -> dict[str, Any]:
     classification = state.get("classification")
     intent = classification.get("intent") if classification else None
 
-    result, error = await retrieve_cases(state.get("subject", ""), state.get("body", ""), intent)
+    result, error = await retrieve_cases(
+        state.get("subject", ""), state.get("body", ""), intent, state["domain_id"]
+    )
     update: dict[str, Any] = {
         "retrieved_cases": [c.model_dump() for c in result.cases],
         "retrieval_weak": result.weak,
@@ -50,7 +54,9 @@ async def retrieve_node(state: TriageState) -> dict[str, Any]:
 @timed("draft")
 async def draft_node(state: TriageState) -> dict[str, Any]:
     classification = state.get("classification") or {}
+    domain = await get_domain(state["domain_id"])
     draft, stats, error = await draft_reply(
+        domain=domain.description,
         subject=state.get("subject", ""),
         body=state.get("body", ""),
         cases=state.get("retrieved_cases", []),
@@ -115,6 +121,27 @@ async def route_node(state: TriageState) -> dict[str, Any]:
 def after_classify(state: TriageState) -> str:
     """Skip the expensive nodes when there is no intent; these go to a human anyway."""
     return "route" if state.get("classification") is None else "retrieve"
+
+
+def build_voice_graph(checkpointer: Any | None = None) -> CompiledStateGraph[Any, Any, Any, Any]:
+    """classify and retrieve only.
+
+    Drafting is streamed by the caller so audio can start before the reply is finished,
+    and scoring runs after the caller has already heard it. Neither can sit inside the
+    graph without also sitting on the critical path, which for a phone call is the
+    whole problem. Same nodes, fewer edges.
+    """
+    builder = StateGraph(TriageState)
+    builder.add_node("classify", classify_node)
+    builder.add_node("retrieve", retrieve_node)
+
+    builder.add_edge(START, "classify")
+    builder.add_conditional_edges(
+        "classify", after_classify, {"retrieve": "retrieve", "route": END}
+    )
+    builder.add_edge("retrieve", END)
+
+    return builder.compile(checkpointer=checkpointer or InMemorySaver())
 
 
 def build_graph(checkpointer: Any | None = None) -> CompiledStateGraph[Any, Any, Any, Any]:

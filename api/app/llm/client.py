@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import random
 import time
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Any
 
@@ -208,3 +209,133 @@ async def complete_json[T: BaseModel](
             )
 
     raise AssertionError("unreachable")
+
+
+class TextStream:
+    """A streamed completion.
+
+    Yields text chunks as they arrive. `text` and `stats` are complete once the
+    iteration ends.
+
+        stream = stream_text(provider=..., model=..., system=..., user=...)
+        async for chunk in stream:
+            speak(chunk)
+        store(stream.text, stream.stats)
+
+    Retries stop at the first chunk. Before that a failure is invisible and can be
+    retried; after it the caller has already spoken half a sentence, so re-running
+    the call would say it twice.
+    """
+
+    def __init__(
+        self,
+        *,
+        provider: Provider,
+        model: str,
+        messages: list[dict[str, str]],
+        temperature: float,
+        max_tokens: int | None,
+    ) -> None:
+        self._provider = provider
+        self._model = model
+        self._messages = messages
+        self._temperature = temperature
+        self._max_tokens = max_tokens
+        self.text = ""
+        self.stats: CallStats | None = None
+        self.first_token_ms: int | None = None
+
+    async def __aiter__(self) -> AsyncIterator[str]:
+        config = get_provider(self._provider)
+        client = get_client(self._provider)
+        limiter = limiter_for(self._provider, config.rpm, config.tpm)
+        estimated_tokens = sum(len(m["content"]) for m in self._messages) // 4 + (
+            self._max_tokens or 0
+        )
+
+        kwargs: dict[str, Any] = {
+            "model": self._model,
+            "messages": self._messages,
+            "temperature": self._temperature,
+            "stream": True,
+            # Not universal. Dropped on the first provider that rejects it.
+            "stream_options": {"include_usage": True},
+        }
+        if self._max_tokens is not None:
+            kwargs["max_tokens"] = self._max_tokens
+
+        started = time.monotonic()
+        last_error: Exception | None = None
+
+        for attempt in range(settings.llm_max_transport_retries + 1):
+            await limiter.acquire(tokens=estimated_tokens)
+            try:
+                response = await client.chat.completions.create(**kwargs)
+                async for event in response:
+                    usage = getattr(event, "usage", None)
+                    if usage is not None:
+                        self._prompt_tokens = usage.prompt_tokens
+                        self._completion_tokens = usage.completion_tokens
+                    if not event.choices:
+                        continue
+                    piece = event.choices[0].delta.content
+                    if not piece:
+                        continue
+                    if self.first_token_ms is None:
+                        self.first_token_ms = int((time.monotonic() - started) * 1000)
+                    self.text += piece
+                    yield piece
+            except APIStatusError as exc:
+                if "stream_options" in str(exc).lower() and "stream_options" in kwargs:
+                    kwargs.pop("stream_options")
+                    last_error = exc
+                    continue
+                if self.text or exc.status_code not in _RETRYABLE_STATUS:
+                    raise ProviderUnavailable(
+                        f"{self._provider}/{self._model} returned {exc.status_code}"
+                    ) from exc
+                last_error = exc
+                await asyncio.sleep(_backoff(attempt, _retry_after_seconds(exc)))
+            except (APIConnectionError, APITimeoutError) as exc:
+                if self.text:
+                    raise ProviderUnavailable(
+                        f"{self._provider}/{self._model} died mid-stream after "
+                        f"{len(self.text)} characters"
+                    ) from exc
+                last_error = exc
+                await asyncio.sleep(_backoff(attempt, None))
+            else:
+                self.stats = _stats(
+                    self._provider,
+                    self._model,
+                    started,
+                    getattr(self, "_prompt_tokens", 0),
+                    # Providers that omit usage on streams still have to be costed.
+                    getattr(self, "_completion_tokens", 0) or len(self.text) // 4,
+                    attempt + 1,
+                )
+                return
+
+        raise ProviderUnavailable(
+            f"{self._provider}/{self._model} failed after "
+            f"{settings.llm_max_transport_retries + 1} attempts: "
+            f"{type(last_error).__name__}: {last_error}"
+        ) from last_error
+
+
+def stream_text(
+    *,
+    provider: Provider,
+    model: str,
+    system: str,
+    user: str,
+    temperature: float = 0.0,
+    max_tokens: int | None = None,
+) -> TextStream:
+    return TextStream(
+        provider=provider,
+        model=model,
+        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+        temperature=temperature,
+        max_tokens=max_tokens,
+    )
