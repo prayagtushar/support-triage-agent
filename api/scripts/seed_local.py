@@ -34,6 +34,7 @@ def reset() -> None:
 
 async def run_one(graph: Any, ticket: GoldenTicket) -> str | None:
     ticket_id = await repo.insert_ticket(
+        domain_id="ecom",
         subject=ticket.subject,
         body=ticket.body,
         channel="web",

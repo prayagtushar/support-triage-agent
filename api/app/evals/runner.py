@@ -10,11 +10,17 @@ from app.agent.graph import build_graph
 from app.evals.golden import GoldenTicket
 
 
-async def run_one(graph: Any, ticket: GoldenTicket) -> dict[str, Any]:
+async def run_one(graph: Any, ticket: GoldenTicket, domain_id: str = "ecom") -> dict[str, Any]:
     thread = str(uuid.uuid4())
     try:
         final = await graph.ainvoke(
-            {"ticket_id": thread, "subject": ticket.subject, "body": ticket.body, "channel": "web"},
+            {
+                "ticket_id": thread,
+                "domain_id": domain_id,
+                "subject": ticket.subject,
+                "body": ticket.body,
+                "channel": "web",
+            },
             config={"configurable": {"thread_id": thread}},
         )
     except Exception as exc:
@@ -52,7 +58,7 @@ async def run_one(graph: Any, ticket: GoldenTicket) -> dict[str, Any]:
 
 
 async def run_over_golden(
-    tickets: list[GoldenTicket], concurrency: int, on_done: Any = None
+    tickets: list[GoldenTicket], concurrency: int, on_done: Any = None, domain_id: str = "ecom"
 ) -> list[dict[str, Any]]:
     graph = build_graph()
     semaphore = asyncio.Semaphore(concurrency)
@@ -61,7 +67,7 @@ async def run_over_golden(
     async def guarded(t: GoldenTicket) -> dict[str, Any]:
         nonlocal completed
         async with semaphore:
-            row = await run_one(graph, t)
+            row = await run_one(graph, t, domain_id)
             completed += 1
             if on_done:
                 on_done(completed, len(tickets), row)

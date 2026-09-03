@@ -1,19 +1,42 @@
 {
-  "auto_reply_precision": 0.5,
-  "review_recall": 0.8214,
-  "routing_accuracy": 0.4167,
-  "intent_accuracy": 0.95,
-  "blessed_from": "2026-08-01T06:15:53.048317+00:00",
-  "golden": "v0",
-  "models": {
-    "classifier": "openrouter/meta-llama/llama-3.3-70b-instruct",
-    "drafter": "sarvam/sarvam-105b",
-    "judge": "openrouter/google/gemini-2.5-flash-lite",
-    "embedding": "openrouter/openai/text-embedding-3-small"
-  },
-  "thresholds": {
-    "auto_reply": 0.9,
-    "review": 0.55,
-    "weak_retrieval_floor": 0.4
+  "domains": {
+    "ecom": {
+      "auto_reply_precision": 0.5,
+      "review_recall": 0.8214,
+      "routing_accuracy": 0.4167,
+      "intent_accuracy": 0.95,
+      "blessed_from": "2026-08-01T06:15:53.048317+00:00",
+      "golden": "v0",
+      "models": {
+        "classifier": "openrouter/meta-llama/llama-3.3-70b-instruct",
+        "drafter": "sarvam/sarvam-105b",
+        "judge": "openrouter/google/gemini-2.5-flash-lite",
+        "embedding": "openrouter/openai/text-embedding-3-small"
+      },
+      "thresholds": {
+        "auto_reply": 0.9,
+        "review": 0.55,
+        "weak_retrieval_floor": 0.4
+      }
+    },
+    "tech": {
+      "auto_reply_precision": 0.3333,
+      "review_recall": 0.7,
+      "routing_accuracy": 0.6667,
+      "intent_accuracy": 0.9167,
+      "blessed_from": "2026-09-03T18:26:15.098642+00:00",
+      "golden": "tech_v0",
+      "models": {
+        "classifier": "openrouter/meta-llama/llama-3.3-70b-instruct",
+        "drafter": "sarvam/sarvam-105b",
+        "judge": "openrouter/google/gemini-2.5-flash-lite",
+        "embedding": "openrouter/openai/text-embedding-3-small"
+      },
+      "thresholds": {
+        "auto_reply": 0.9,
+        "review": 0.55,
+        "weak_retrieval_floor": 0.4
+      }
+    }
   }
 }

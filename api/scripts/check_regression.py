@@ -1,19 +1,23 @@
-"""Fail if the latest eval report is worse than the blessed baseline.
+"""Fail if the latest eval report for a desk is worse than that desk's baseline.
 
-uv run python scripts/check_regression.py            # check
-uv run python scripts/check_regression.py --bless    # adopt the latest report
+uv run python scripts/check_regression.py                      # check ecom
+uv run python scripts/check_regression.py --domain tech        # check tech
+uv run python scripts/check_regression.py --bless              # adopt the latest report
+
+Baselines are per desk. They have to be: the first run after a second desk existed
+compared a tech report against an e-commerce baseline and reported three regressions
+that were nothing but two different businesses being different.
 """
 
 from __future__ import annotations
 
 import argparse
-import glob
 import json
 import sys
 from pathlib import Path
 from typing import Any
 
-from app.evals.golden import REPORTS_DIR
+from app.evals.golden import latest_report_for
 
 BASELINE = Path(__file__).resolve().parent.parent / "evals" / "baseline.json"
 
@@ -28,23 +32,33 @@ GUARDED = [
 ]
 
 
-def latest_report() -> dict[str, Any] | None:
-    reports = sorted(glob.glob(str(REPORTS_DIR / "report_*.json")))
-    if not reports:
-        return None
-    with open(reports[-1], encoding="utf-8") as fh:
-        return dict(json.load(fh))
+def latest_report(domain_id: str) -> dict[str, Any] | None:
+    path = latest_report_for(domain_id)
+    return dict(json.loads(path.read_text(encoding="utf-8"))) if path else None
+
+
+def load_baselines() -> dict[str, Any]:
+    """Per-desk baselines, migrating the single-desk file on first read."""
+    if not BASELINE.exists():
+        return {}
+    stored = json.loads(BASELINE.read_text(encoding="utf-8"))
+    return stored if "domains" not in stored else dict(stored["domains"])
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--bless", action="store_true", help="adopt the latest report as baseline")
+    parser.add_argument("--domain", default="ecom", help="which desk to gate")
     args = parser.parse_args()
 
-    report = latest_report()
+    report = latest_report(args.domain)
     if report is None:
-        print("no eval report found; run scripts/run_evals.py first")
+        print(f"no eval report found for {args.domain}; run scripts/run_evals.py first")
         return 1
+
+    stored = json.loads(BASELINE.read_text(encoding="utf-8")) if BASELINE.exists() else {}
+    # The old file was one desk's metrics at the top level. Keep it as ecom's.
+    baselines = dict(stored.get("domains") or ({"ecom": stored} if stored else {}))
 
     if args.bless:
         blessed = {k: report[k] for k in GUARDED}
@@ -52,18 +66,22 @@ def main() -> int:
         blessed["golden"] = report["golden"]
         blessed["models"] = report["models"]
         blessed["thresholds"] = report["thresholds"]
-        BASELINE.write_text(json.dumps(blessed, indent=2), encoding="utf-8")
-        print(f"baseline written from {report['timestamp']}")
+        baselines[args.domain] = blessed
+        BASELINE.write_text(json.dumps({"domains": baselines}, indent=2), encoding="utf-8")
+        print(f"baseline for {args.domain} written from {report['timestamp']}")
         for k in GUARDED:
             print(f"  {k:24s} {report[k]:.4f}")
         return 0
 
-    if not BASELINE.exists():
-        print("no baseline yet; run with --bless once you are happy with the numbers")
+    baseline = baselines.get(args.domain)
+    if baseline is None:
+        print(f"no baseline for {args.domain} yet; run with --bless --domain {args.domain}")
         return 1
 
-    baseline = json.loads(BASELINE.read_text(encoding="utf-8"))
-    print(f"comparing {report['timestamp']} against baseline {baseline['blessed_from']}")
+    print(
+        f"{args.domain}: comparing {report['timestamp']} "
+        f"against baseline {baseline['blessed_from']}"
+    )
 
     failed = []
     for metric in GUARDED:

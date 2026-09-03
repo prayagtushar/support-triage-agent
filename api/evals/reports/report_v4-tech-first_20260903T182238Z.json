@@ -1,0 +1,1139 @@
+{
+  "label": "v4-tech-first",
+  "timestamp": "2026-09-03T18:26:15.098642+00:00",
+  "golden": "tech_v0",
+  "domain": "tech",
+  "elapsed_seconds": 217.1,
+  "tickets": 24,
+  "fatal": 0,
+  "tickets_with_errors": 0,
+  "models": {
+    "classifier": "openrouter/meta-llama/llama-3.3-70b-instruct",
+    "drafter": "sarvam/sarvam-105b",
+    "judge": "openrouter/google/gemini-2.5-flash-lite",
+    "embedding": "openrouter/openai/text-embedding-3-small"
+  },
+  "budgets": {
+    "classifier_max_tokens": 1024,
+    "drafter_max_tokens": 16384,
+    "judge_max_tokens": 2048
+  },
+  "thresholds": {
+    "auto_reply": 0.9,
+    "review": 0.55,
+    "weak_retrieval_floor": 0.4
+  },
+  "auto_reply_precision": 0.3333,
+  "auto_reply_precision_detail": "3/9",
+  "review_recall": 0.7,
+  "review_recall_detail": "14/20",
+  "routing_accuracy": 0.6667,
+  "intent_accuracy": 0.9167,
+  "intent_macro_f1": 0.9254,
+  "urgency_accuracy": 0.7083,
+  "language_accuracy": 1.0,
+  "intent_accuracy_english": 0.9048,
+  "intent_accuracy_hinglish": 1.0,
+  "safe_fallback_rate": 0.0833,
+  "weak_retrieval_rate": 0.0417,
+  "latency": {
+    "mean_ms": 34531.3,
+    "p50_ms": 31581.5,
+    "p95_ms": 50595.0
+  },
+  "cost_inr_total": 2.4132,
+  "cost_inr_per_ticket": 0.100552,
+  "reliability": [
+    {
+      "lower": 0.7,
+      "upper": 0.8,
+      "n": 4,
+      "mean_confidence": 0.7912,
+      "observed_correct": 0.75
+    },
+    {
+      "lower": 0.8,
+      "upper": 0.9,
+      "n": 10,
+      "mean_confidence": 0.8585,
+      "observed_correct": 0.9
+    },
+    {
+      "lower": 0.9,
+      "upper": 1.0,
+      "n": 10,
+      "mean_confidence": 0.9179,
+      "observed_correct": 0.4
+    }
+  ],
+  "threshold_sweep": [
+    {
+      "threshold": 0.6,
+      "auto_reply_precision": 0.2222,
+      "auto_replied": 18,
+      "review_recall": 0.3,
+      "needed_review": 20,
+      "routing_accuracy": 0.375
+    },
+    {
+      "threshold": 0.65,
+      "auto_reply_precision": 0.2222,
+      "auto_replied": 18,
+      "review_recall": 0.3,
+      "needed_review": 20,
+      "routing_accuracy": 0.375
+    },
+    {
+      "threshold": 0.7,
+      "auto_reply_precision": 0.2222,
+      "auto_replied": 18,
+      "review_recall": 0.3,
+      "needed_review": 20,
+      "routing_accuracy": 0.375
+    },
+    {
+      "threshold": 0.75,
+      "auto_reply_precision": 0.2222,
+      "auto_replied": 18,
+      "review_recall": 0.3,
+      "needed_review": 20,
+      "routing_accuracy": 0.375
+    },
+    {
+      "threshold": 0.8,
+      "auto_reply_precision": 0.1765,
+      "auto_replied": 17,
+      "review_recall": 0.3,
+      "needed_review": 20,
+      "routing_accuracy": 0.3333
+    },
+    {
+      "threshold": 0.85,
+      "auto_reply_precision": 0.2,
+      "auto_replied": 15,
+      "review_recall": 0.4,
+      "needed_review": 20,
+      "routing_accuracy": 0.4167
+    },
+    {
+      "threshold": 0.9,
+      "auto_reply_precision": 0.3333,
+      "auto_replied": 9,
+      "review_recall": 0.7,
+      "needed_review": 20,
+      "routing_accuracy": 0.6667
+    },
+    {
+      "threshold": 0.95,
+      "auto_reply_precision": 0.0,
+      "auto_replied": 0,
+      "review_recall": 1.0,
+      "needed_review": 20,
+      "routing_accuracy": 0.75
+    }
+  ],
+  "per_intent": [
+    {
+      "intent": "account_access",
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.857,
+      "support": 4
+    },
+    {
+      "intent": "feature_request",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 1
+    },
+    {
+      "intent": "hardware",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 4
+    },
+    {
+      "intent": "how_to",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 2
+    },
+    {
+      "intent": "other",
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.857,
+      "support": 4
+    },
+    {
+      "intent": "outage",
+      "precision": 0.667,
+      "recall": 1.0,
+      "f1": 0.8,
+      "support": 2
+    },
+    {
+      "intent": "performance",
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 3
+    },
+    {
+      "intent": "software_bug",
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1": 0.889,
+      "support": 4
+    }
+  ],
+  "rows": [
+    {
+      "id": "t001",
+      "language": "en",
+      "expected_intent": "outage",
+      "expected_urgency": "P1",
+      "expected_route": "escalate",
+      "intent": "outage",
+      "urgency": "P1",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5214,
+      "draft": "I’m sorry you and your colleagues are all locked out — we’re prioritising this immediately. Since multiple devices and networks are affected, this looks like an issue beyond your local setup.\n\nCan you try restarting all devices and checking the app status? If that doesn’t resolve it, please share the exact error message you’re seeing and I’ll escalate this to our technical team for immediate investigation.",
+      "citations": [
+        2,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 4,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies the issue as a potential outage and suggests relevant troubleshooting steps based on the evidence. However, it could be more complete by acknowledging the customer's mention of colleagues experiencing the same issue."
+      },
+      "composite_confidence": 0.8226,
+      "route": "escalate",
+      "route_reason": "P1 never auto-replies regardless of confidence",
+      "errors": [],
+      "timings_ms": {
+        "classify": 4752,
+        "retrieve": 543,
+        "draft": 41514,
+        "score": 3646,
+        "route": 0
+      },
+      "total_ms": 50455,
+      "cost_inr": 0.137688
+    },
+    {
+      "id": "t002",
+      "language": "en",
+      "expected_intent": "software_bug",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "software_bug",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6684,
+      "draft": "I’m sorry the app keeps closing when you open settings on your Android 14 device. I don’t have a workaround for this version yet, so I’m flagging it for a specialist.\n\nThey’ll take a look and get back to you.\n\nIn the meantime, could you tell us if you’ve already tried clearing the app’s cache and data, or reinstalling it?",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 3,
+        "completeness": 3,
+        "tone": 5,
+        "notes": "The draft correctly identifies the issue and acknowledges it cannot provide a workaround. However, it does not offer any troubleshooting steps from the evidence cases, which could have been helpful. The tone is appropriate for a frustrated customer."
+      },
+      "composite_confidence": 0.7853,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": {
+        "classify": 8837,
+        "retrieve": 720,
+        "draft": 35134,
+        "score": 2801,
+        "route": 0
+      },
+      "total_ms": 47492,
+      "cost_inr": 0.11708
+    },
+    {
+      "id": "t003",
+      "language": "en",
+      "expected_intent": "performance",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "performance",
+      "urgency": "P3",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.85,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6113,
+      "draft": "Sorry to hear your sync has slowed down to three hours — that’s a big jump from ten minutes for 40k files.\n\nWhile large libraries can take several hours depending on your internet connection and device performance, a sudden slowdown like this is unusual. Please try quitting and restarting the sync app on both devices, then let us know if it still crawls. If it continues, can you share your device types, internet connection, and app version? That’ll help us spot what changed.\n\nLet me know how it goes.",
+      "citations": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8773,
+      "route": "human_review",
+      "route_reason": "composite 0.88 in the review band",
+      "errors": [],
+      "timings_ms": {
+        "classify": 10849,
+        "retrieve": 524,
+        "draft": 28743,
+        "score": 1217,
+        "route": 0
+      },
+      "total_ms": 41333,
+      "cost_inr": 0.095045
+    },
+    {
+      "id": "t004",
+      "language": "en",
+      "expected_intent": "hardware",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "hardware",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7024,
+      "draft": "I’m sorry your laptop won’t power on at all. Since you’ve already tried different cables and outlets, let’s try one more quick step: unplug the power cord, press and hold the power button for 30 seconds, then plug it back in and try turning it on again.\n\nIf it still shows no signs of life, we’ll move ahead with warranty-covered repair or replacement.",
+      "citations": [
+        1,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9255,
+      "route": "auto_reply",
+      "route_reason": "composite 0.93 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": {
+        "classify": 13654,
+        "retrieve": 512,
+        "draft": 19434,
+        "score": 1217,
+        "route": 0
+      },
+      "total_ms": 34817,
+      "cost_inr": 0.0993
+    },
+    {
+      "id": "t005",
+      "language": "en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P2",
+      "expected_route": "escalate",
+      "intent": "account_access",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7661,
+      "draft": "Sorry to hear your phone is lost. Since your account requires the authenticator from that device and there's no way to receive the codes, I'll need to verify your identity before we can remove it.\n\nPlease reply to this email with a brief description of what happened and a phone number where we can reach you. Once we confirm it's you, we can disable the authenticator on the lost device and help you set it up on your new phone.",
+      "citations": [
+        1,
+        2
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9382,
+      "route": "auto_reply",
+      "route_reason": "composite 0.94 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": {
+        "classify": 6504,
+        "retrieve": 659,
+        "draft": 22626,
+        "score": 3087,
+        "route": 0
+      },
+      "total_ms": 32876,
+      "cost_inr": 0.105969
+    },
+    {
+      "id": "t006",
+      "language": "en",
+      "expected_intent": "feature_request",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "feature_request",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7364,
+      "draft": "I’m sorry we don’t have a native Linux client available just yet. I know relying on the web version on Ubuntu isn’t ideal, but it’s the best option we currently offer.\n\nOur team is actively exploring broader platform support, and I’ve logged your request so we can keep you in the loop as things develop.\n\nIn the meantime, would you like a few tips to improve the web experience on your Ubuntu desktop?",
+      "citations": [
+        1,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9323,
+      "route": "auto_reply",
+      "route_reason": "composite 0.93 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": {
+        "classify": 5437,
+        "retrieve": 578,
+        "draft": 13509,
+        "score": 914,
+        "route": 0
+      },
+      "total_ms": 20438,
+      "cost_inr": 0.074586
+    },
+    {
+      "id": "t007",
+      "language": "en",
+      "expected_intent": "how_to",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "how_to",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6489,
+      "draft": "The best way to move your account and files is through the sync app's built-in transfer feature. Make sure you're running the latest version of the sync app on both laptops, then sign in to the app on your old laptop and go to Settings > Account > Transfer Data. Follow the prompts to move everything to your new laptop.\n\nOnce the transfer is done, sign in on your new laptop and verify that all your data is present and correct. If anything is missing, just reply and I'll help you troubleshoot.",
+      "citations": [
+        1,
+        2,
+        3
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9148,
+      "route": "auto_reply",
+      "route_reason": "composite 0.91 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": {
+        "classify": 7213,
+        "retrieve": 471,
+        "draft": 17504,
+        "score": 987,
+        "route": 0
+      },
+      "total_ms": 26175,
+      "cost_inr": 0.095478
+    },
+    {
+      "id": "t008",
+      "language": "hi-en",
+      "expected_intent": "outage",
+      "expected_urgency": "P1",
+      "expected_route": "escalate",
+      "intent": "outage",
+      "urgency": "P1",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.574,
+      "draft": "Iho, sorry ki aapka aur poore office ka sab kuch band ho gaya hai aaj subah se. Yeh clearly ek bade-scale outage lag raha hai, isliye hum isko turant priority pe le rahe hain.\n\nAapke issue ke pattern ko dekhkar, yeh aaj ki maintenance se related ho sakta hai. Technical side pe ab resolution deploy ho gaya hai, aap kuch der baad dobara try karein.\n\nAgar aapko abhi bhi same error aa raha hai ya kuch load nahi ho raha, toh turant contact karein taaki hum aapse specific details leke aapka case agge badh sakein.",
+      "citations": [
+        4,
+        2
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 3,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies the issue as an outage and offers a potential cause based on the evidence. However, it does not explicitly state that a resolution has been deployed, only that it might be related to maintenance and to try again later. The draft correctly identifies the customer's issue and sentiment."
+      },
+      "composite_confidence": 0.7998,
+      "route": "escalate",
+      "route_reason": "P1 never auto-replies regardless of confidence",
+      "errors": [],
+      "timings_ms": {
+        "classify": 10025,
+        "retrieve": 475,
+        "draft": 36058,
+        "score": 4037,
+        "route": 0
+      },
+      "total_ms": 50595,
+      "cost_inr": 0.138864
+    },
+    {
+      "id": "t009",
+      "language": "hi-en",
+      "expected_intent": "hardware",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "hardware",
+      "urgency": "P2",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.91,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.712,
+      "draft": "Sorry aapka laptop kal se charge nahi ho raha, yeh sunke bura laga. Isko immediate attention ke saath lete hue, aapko yeh troubleshooting steps follow karne chahiye.\n\nAapko pehle charger ko verify karna chahiye. Agar charger bilkul theek hai aur phir bhi laptop mein koi light ya charging sign nahi aa raha, to aapko laptop ki charging port ko check karwana hoga. Agar wahan bhi theek rehne par bhi yeh problem rehta hai, to battery ki taraf dekhna hoga.\n\nAapne alag cable aur socket try karke already basic possibilities rule out kar li hain. Warranty mein hai isliye, aapko yeh hardware check karwana chahiye.",
+      "citations": [
+        1
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9154,
+      "route": "auto_reply",
+      "route_reason": "composite 0.92 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": {
+        "classify": 3125,
+        "retrieve": 460,
+        "draft": 43444,
+        "score": 4105,
+        "route": 0
+      },
+      "total_ms": 51134,
+      "cost_inr": 0.150739
+    },
+    {
+      "id": "t010",
+      "language": "en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "account_access",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6624,
+      "draft": "I'm sorry you've had to keep trying this. Even though your billings come through, email providers can sometimes block or delay password reset messages. I'm resending the reset email to your address now—please watch your inbox and spam folder. If it still doesn't arrive, I can set you up with an alternative method, like a temporary reset link or a callback, to get you back in.",
+      "citations": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9175,
+      "route": "auto_reply",
+      "route_reason": "composite 0.92 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": {
+        "classify": 4716,
+        "retrieve": 466,
+        "draft": 20875,
+        "score": 1302,
+        "route": 0
+      },
+      "total_ms": 27359,
+      "cost_inr": 0.098703
+    },
+    {
+      "id": "t011",
+      "language": "en",
+      "expected_intent": "software_bug",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "software_bug",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.85,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6425,
+      "draft": "Sorry the exported zip keeps coming out empty.\n\nCan you try clearing the app's cache and then attempting the export again? Also check that the export path is set correctly, and that you're using the right file format (Cases 1, 5).\n\nIf it's still 0 bytes, please check the app's logs for any errors during export, and try zipping a smaller folder to see if it's specific to that one (Case 3). Let me know what you find.",
+      "citations": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8835,
+      "route": "human_review",
+      "route_reason": "composite 0.88 in the review band",
+      "errors": [],
+      "timings_ms": {
+        "classify": 4779,
+        "retrieve": 423,
+        "draft": 18677,
+        "score": 6408,
+        "route": 0
+      },
+      "total_ms": 30287,
+      "cost_inr": 0.077146
+    },
+    {
+      "id": "t012",
+      "language": "en",
+      "expected_intent": "hardware",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "hardware",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7355,
+      "draft": "Sorry to hear your tablet took a fall. Colourful vertical lines after an impact usually indicate physical screen damage, so this will need professional repair rather than a software fix.\n\nIf your tablet is still under warranty, I can set up an RMA for a repair or replacement.\n\nPlease back up your important data before sending it in—repair work can include a factory reset and may result in data loss.",
+      "citations": [
+        1,
+        2,
+        4
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9321,
+      "route": "auto_reply",
+      "route_reason": "composite 0.93 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": {
+        "classify": 3875,
+        "retrieve": 799,
+        "draft": 23750,
+        "score": 1365,
+        "route": 0
+      },
+      "total_ms": 29789,
+      "cost_inr": 0.085153
+    },
+    {
+      "id": "t013",
+      "language": "en",
+      "expected_intent": "performance",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "performance",
+      "urgency": "P3",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.85,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6325,
+      "draft": "Sorry to hear your Mac is getting hammered like that. The sync app is using far more memory than it should on macOS, and we’re already working on a fix.\n\nIn the meantime, try checking the app’s settings to see if any options are contributing to the high memory usage, and delete the app’s cache to clear out accumulated data. That usually helps free up space.\n\nIf the 8GB spike returns even after those steps, just drop us another line and we’ll dig further with you.",
+      "citations": [
+        1,
+        2
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8815,
+      "route": "human_review",
+      "route_reason": "composite 0.88 in the review band",
+      "errors": [],
+      "timings_ms": {
+        "classify": 8064,
+        "retrieve": 481,
+        "draft": 13984,
+        "score": 4020,
+        "route": 0
+      },
+      "total_ms": 26549,
+      "cost_inr": 0.085655
+    },
+    {
+      "id": "t014",
+      "language": "en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P2",
+      "expected_route": "human_review",
+      "intent": "software_bug",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.85,
+      "retrieval_weak": true,
+      "retrieval_similarity": 0.3558,
+      "draft": "I’m sorry you’re stuck in a login loop with SSO — that’s really frustrating when other apps work fine.\n\nThis redirect behaviour isn’t covered by the steps I have, so a specialist will pick this up for priority review.\n\nCould you share which identity provider you’re using (e.g., Okta, Azure AD) and which app you’re trying to sign into?",
+      "citations": [],
+      "is_safe_fallback": true,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "No significant issues. The agent correctly identified that the provided evidence cases did not cover the specific issue and escalated appropriately."
+      },
+      "composite_confidence": 0.7928,
+      "route": "human_review",
+      "route_reason": "insufficient evidence to answer, drafted a holding reply",
+      "errors": [],
+      "timings_ms": {
+        "classify": 7594,
+        "retrieve": 474,
+        "draft": 27893,
+        "score": 2791,
+        "route": 0
+      },
+      "total_ms": 38752,
+      "cost_inr": 0.098637
+    },
+    {
+      "id": "t015",
+      "language": "en",
+      "expected_intent": "other",
+      "expected_urgency": "P4",
+      "expected_route": "human_review",
+      "intent": "other",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.85,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6376,
+      "draft": "I’m sorry the annual plan isn’t a fit for you. Unfortunately, we can’t process a refund for the remaining time on your current subscription. I can help you switch to a lower plan right away, and you’ll be charged the reduced rate going forward. Just let me know which option you’d prefer and I’ll take care of the change.",
+      "citations": [
+        1,
+        2
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8825,
+      "route": "human_review",
+      "route_reason": "composite 0.88 in the review band",
+      "errors": [],
+      "timings_ms": {
+        "classify": 3062,
+        "retrieve": 591,
+        "draft": 17619,
+        "score": 2494,
+        "route": 0
+      },
+      "total_ms": 23766,
+      "cost_inr": 0.090737
+    },
+    {
+      "id": "t016",
+      "language": "en",
+      "expected_intent": "other",
+      "expected_urgency": "P1",
+      "expected_route": "escalate",
+      "intent": "other",
+      "urgency": "P1",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5772,
+      "draft": "Sorry you've had to worry about this.\n\nYou don't need to share those details here. You can submit your findings securely through our responsible disclosure program on our website, and our security team will review them and take the necessary actions.",
+      "citations": [
+        2,
+        3,
+        4
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9004,
+      "route": "escalate",
+      "route_reason": "P1 never auto-replies regardless of confidence",
+      "errors": [],
+      "timings_ms": {
+        "classify": 6474,
+        "retrieve": 515,
+        "draft": 31396,
+        "score": 5633,
+        "route": 0
+      },
+      "total_ms": 44018,
+      "cost_inr": 0.124197
+    },
+    {
+      "id": "t017",
+      "language": "en",
+      "expected_intent": "software_bug",
+      "expected_urgency": "P4",
+      "expected_route": "human_review",
+      "intent": "software_bug",
+      "urgency": "P3",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.85,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6152,
+      "draft": "Sorry that notifications are coming through three or four times on your phone — that sounds annoying.\n\nSince it’s only happening on the phone app, try force-closing the sync app on your phone and reopening it to see if that stops the duplicates. If it doesn’t, please check that your phone’s operating system and the sync app are both fully updated, as older versions can sometimes cause this.\n\nIf you’re still seeing multiple notifications after that, let us know your phone model and the app version so we can dig a bit deeper.",
+      "citations": [
+        1,
+        2,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.878,
+      "route": "human_review",
+      "route_reason": "composite 0.88 in the review band",
+      "errors": [],
+      "timings_ms": {
+        "classify": 9210,
+        "retrieve": 517,
+        "draft": 17122,
+        "score": 1112,
+        "route": 0
+      },
+      "total_ms": 27961,
+      "cost_inr": 0.091626
+    },
+    {
+      "id": "t018",
+      "language": "en",
+      "expected_intent": "software_bug",
+      "expected_urgency": "P4",
+      "expected_route": "human_review",
+      "intent": "software_bug",
+      "urgency": "P3",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.85,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7389,
+      "draft": "Sorry the dark mode keeps resetting on your Windows 11 setup.\n\nCan you try opening the sync app settings, going to 'Appearance', and making sure the 'Remember my preference' toggle is switched on? If it still resets, try uninstalling and reinstalling the sync app to clear any corrupted settings, and check for any pending Windows updates.\n\nLet us know if either of those steps resolve it, or if the issue persists.",
+      "citations": [
+        1,
+        4
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9028,
+      "route": "auto_reply",
+      "route_reason": "composite 0.90 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": {
+        "classify": 11958,
+        "retrieve": 604,
+        "draft": 12550,
+        "score": 1111,
+        "route": 0
+      },
+      "total_ms": 26223,
+      "cost_inr": 0.078004
+    },
+    {
+      "id": "t019",
+      "language": "en",
+      "expected_intent": "how_to",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "how_to",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "neutral",
+      "classifier_confidence": 0.95,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5761,
+      "draft": "Sorry you're hitting your data allowance. To stop the app from syncing on mobile data, go to the app's Settings, open Sync Options, and select Metered Connection Settings. From there, choose which folders to exclude so nothing syncs while you're on a cellular connection.\n\nIf you've already made that change but it's still using data, try restarting the app and then applying the exclusions again.\n\nIf you're still stuck after that, let me know what device you're using and I can point you to the right screen.",
+      "citations": [
+        1,
+        2,
+        3
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.9002,
+      "route": "auto_reply",
+      "route_reason": "composite 0.90 at or above auto-reply threshold",
+      "errors": [],
+      "timings_ms": {
+        "classify": 7205,
+        "retrieve": 482,
+        "draft": 17802,
+        "score": 3689,
+        "route": 0
+      },
+      "total_ms": 29178,
+      "cost_inr": 0.093578
+    },
+    {
+      "id": "t020",
+      "language": "en",
+      "expected_intent": "hardware",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "hardware",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.85,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.7157,
+      "draft": "Sorry to hear your new docking station is randomly dropping your monitors. Since unplugging only gives you a temporary fix and this started with the new unit, it likely points to a firmware or hardware issue.\n\nCan you try resetting the docking station to its factory default settings and adjusting the display settings on your laptop? If you have a firmware update tool or troubleshooting guide for the dock, running through those steps may help too.\n\nTo narrow this down further, could you share your laptop model, monitor details, and operating system version? If the issue persists after that, we can look at replacing the docking station under warranty.",
+      "citations": [
+        1,
+        2,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 4,
+        "completeness": 4,
+        "tone": 5,
+        "notes": "The draft correctly identifies potential firmware or hardware issues based on the customer's description and the provided evidence. It offers relevant troubleshooting steps and requests necessary information for further diagnosis. However, it implies the agent has access to a firmware update tool or troubleshooting guide for the dock, which is not explicitly stated in the evidence cases."
+      },
+      "composite_confidence": 0.8315,
+      "route": "human_review",
+      "route_reason": "composite 0.83 in the review band",
+      "errors": [],
+      "timings_ms": {
+        "classify": 5880,
+        "retrieve": 496,
+        "draft": 13103,
+        "score": 6297,
+        "route": 0
+      },
+      "total_ms": 25776,
+      "cost_inr": 0.0816
+    },
+    {
+      "id": "t021",
+      "language": "hi-en",
+      "expected_intent": "performance",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "performance",
+      "urgency": "P3",
+      "detected_language": "hi-en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.85,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.5324,
+      "draft": "Sorry yeh hua, update ke baad app ki slowness bilkul samajh aata hai — pehle instant chalna aur ab 2-3 minute lagna bohot irritate karta hai. Shayad update ne koi temporary file ya cache issue chhod diya ho. Aap ek baar app ka cache clear karke aur device ko restart karke dekhiye, shayad wahan se fix ho jaye. Agar problem ab bhi rahe, to humse contact kijiye, hum aapki madad karenge.",
+      "citations": [
+        3
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 4,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "No significant issues."
+      },
+      "composite_confidence": 0.8281,
+      "route": "human_review",
+      "route_reason": "composite 0.83 in the review band",
+      "errors": [],
+      "timings_ms": {
+        "classify": 9049,
+        "retrieve": 554,
+        "draft": 22473,
+        "score": 1165,
+        "route": 0
+      },
+      "total_ms": 33241,
+      "cost_inr": 0.093732
+    },
+    {
+      "id": "t022",
+      "language": "en",
+      "expected_intent": "account_access",
+      "expected_urgency": "P3",
+      "expected_route": "human_review",
+      "intent": "account_access",
+      "urgency": "P2",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.85,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.565,
+      "draft": "Sorry for the trouble. Sometimes the admin panel blocks removing a seat even after a user leaves, which leaves it stuck as occupied.\n\nIf you can share the developer’s email address, I can manually clear the seat and free it up for your new hire. I’ll also send over instructions on managing users in the future so you have them on hand next time.",
+      "citations": [
+        1,
+        2,
+        4
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.868,
+      "route": "human_review",
+      "route_reason": "composite 0.87 in the review band",
+      "errors": [],
+      "timings_ms": {
+        "classify": 28567,
+        "retrieve": 565,
+        "draft": 17857,
+        "score": 1146,
+        "route": 0
+      },
+      "total_ms": 48135,
+      "cost_inr": 0.094268
+    },
+    {
+      "id": "t023",
+      "language": "en",
+      "expected_intent": "other",
+      "expected_urgency": "P4",
+      "expected_route": "auto_reply",
+      "intent": "other",
+      "urgency": "P4",
+      "detected_language": "en",
+      "sentiment": "positive",
+      "classifier_confidence": 0.99,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.6165,
+      "draft": "Thank you so much for taking the time to share your positive experience. We're thrilled to hear that Priya was able to resolve your sync issue so quickly and we'll make sure to pass on your thanks to her.\n\nIf you have any other questions or need further assistance, don't hesitate to reach out.",
+      "citations": [
+        1
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 1,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "The draft incorrectly states that Priya helped the customer, when the evidence does not mention this agent by name. The draft should have acknowledged the customer's feedback without naming a specific agent, as no agent was named in the provided ticket."
+      },
+      "composite_confidence": 0.787,
+      "route": "human_review",
+      "route_reason": "composite 0.79 in the review band",
+      "errors": [],
+      "timings_ms": {
+        "classify": 10911,
+        "retrieve": 520,
+        "draft": 20429,
+        "score": 1356,
+        "route": 0
+      },
+      "total_ms": 33216,
+      "cost_inr": 0.097975
+    },
+    {
+      "id": "t024",
+      "language": "en",
+      "expected_intent": "other",
+      "expected_urgency": "P4",
+      "expected_route": "human_review",
+      "intent": "outage",
+      "urgency": "P1",
+      "detected_language": "en",
+      "sentiment": "frustrated",
+      "classifier_confidence": 0.8,
+      "retrieval_weak": false,
+      "retrieval_similarity": 0.4585,
+      "draft": "I'm sorry this is going so wrong. When the app or service isn't working at all, a few quick resets are usually the first thing to try.\n\nPlease check that your device is on a stable connection and that the app is allowed to use the internet in its settings. Then try resetting the app via Settings > Apps > Sync App > Reset, and restart it. If you're on an iPhone, use the same reset path under Settings > Apps > Sync App > Reset. It also helps to install any available app updates.\n\nTo figure out exactly what's broken, could you share your device model and operating system version? And let me know if you're seeing a specific error like 'offline' or if every page is failing to load.",
+      "citations": [
+        1,
+        2,
+        3,
+        5
+      ],
+      "is_safe_fallback": false,
+      "judge_scores": {
+        "groundedness": 5,
+        "completeness": 5,
+        "tone": 5,
+        "notes": "no significant issues"
+      },
+      "composite_confidence": 0.8317,
+      "route": "escalate",
+      "route_reason": "P1 never auto-replies regardless of confidence",
+      "errors": [],
+      "timings_ms": {
+        "classify": 1854,
+        "retrieve": 490,
+        "draft": 25725,
+        "score": 1118,
+        "route": 0
+      },
+      "total_ms": 29187,
+      "cost_inr": 0.107482
+    }
+  ]
+}

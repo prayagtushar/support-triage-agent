@@ -11,10 +11,13 @@ import json
 import sys
 from datetime import UTC, datetime
 
+from app import repo
 from app.agent.prompts.classify import build_classify_prompt, build_ticket_user_message
-from app.agent.schemas import Classification
+from app.agent.schemas import Classification, classification_for
 from app.config import settings
 from app.corpus import TAXONOMY
+from app.domains import Domain
+from app.domains import get as get_domain
 from app.errors import TriageError
 from app.evals.golden import REPORTS_DIR, GoldenTicket, load_golden
 from app.evals.metrics import accuracy, confusion_matrix, macro_f1, per_label_scores
@@ -25,15 +28,15 @@ LANGUAGES = ["en", "hi-en", "hi", "unknown"]
 
 
 async def classify_one(
-    ticket: GoldenTicket, provider: str, model: str
+    ticket: GoldenTicket, provider: str, model: str, domain: Domain
 ) -> tuple[GoldenTicket, Classification | None, float, str | None]:
     try:
         result, stats = await complete_json(
             provider=provider,  # type: ignore[arg-type]
             model=model,
-            system=build_classify_prompt(settings.domain),
+            system=build_classify_prompt(domain),
             user=build_ticket_user_message(ticket.subject, ticket.body),
-            schema=Classification,
+            schema=classification_for(domain.intents),
             temperature=settings.classifier_temperature,
             max_tokens=settings.classifier_max_tokens,
         )
@@ -43,7 +46,7 @@ async def classify_one(
 
 
 async def run(
-    golden: list[GoldenTicket], provider: str, model: str, concurrency: int
+    golden: list[GoldenTicket], provider: str, model: str, concurrency: int, domain: Domain
 ) -> list[tuple[GoldenTicket, Classification | None, float, str | None]]:
     semaphore = asyncio.Semaphore(concurrency)
 
@@ -51,7 +54,7 @@ async def run(
         ticket: GoldenTicket,
     ) -> tuple[GoldenTicket, Classification | None, float, str | None]:
         async with semaphore:
-            return await classify_one(ticket, provider, model)
+            return await classify_one(ticket, provider, model, domain)
 
     return await asyncio.gather(*(guarded(t) for t in golden))
 
@@ -63,12 +66,23 @@ def main() -> int:
     parser.add_argument("--provider", default=settings.classifier_provider)
     parser.add_argument("--model", default=settings.classifier_model)
     parser.add_argument("--concurrency", type=int, default=4)
+    parser.add_argument("--domain", default="ecom", help="which desk's taxonomy to score against")
     args = parser.parse_args()
 
     golden = load_golden(args.golden)
-    print(f"classifying {len(golden)} tickets with {args.provider}/{args.model}")
+    print(f"classifying {len(golden)} tickets with {args.provider}/{args.model} on {args.domain}")
 
-    results = asyncio.run(run(golden, args.provider, args.model, args.concurrency))
+    async def _go() -> list[tuple[GoldenTicket, Classification | None, float, str | None]]:
+        # The taxonomy lives in the database now, so scoring needs a connection even
+        # though the classifier itself only talks to a model.
+        await repo.open_pool()
+        try:
+            domain = await get_domain(args.domain)
+            return await run(golden, args.provider, args.model, args.concurrency, domain)
+        finally:
+            await repo.close_pool()
+
+    results = asyncio.run(_go())
 
     intent_pairs: list[tuple[str, str]] = []
     urgency_pairs: list[tuple[str, str]] = []

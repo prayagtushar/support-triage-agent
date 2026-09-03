@@ -5,12 +5,13 @@ uv run python scripts/export_ui_evals.py
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
 from typing import Any
 
-from app.evals.golden import REPORTS_DIR
+from app.evals.golden import REPORTS_DIR, latest_report_for, reports_for
 
 UI_DATA = Path(__file__).resolve().parent.parent.parent / "ui" / "src" / "data"
 
@@ -57,21 +58,26 @@ def load(path: Path) -> dict[str, Any]:
 
 
 def main() -> int:
-    report_path = newest("report_*.json")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--domain", default="ecom", help="which desk the dashboard shows")
+    args = parser.parse_args()
+
+    report_path = latest_report_for(args.domain)
     if report_path is None:
-        print(f"no report_*.json in {REPORTS_DIR}; run `make eval` first")
+        print(f"no report for {args.domain} in {REPORTS_DIR}; run `make eval` first")
         return 1
 
     report = load(report_path)
     payload: dict[str, Any] = {
         "source": report_path.name,
+        "domain": args.domain,
         "report": {k: report[k] for k in KEEP if k in report},
         "runs": [],
         "ablation": None,
     }
 
     # Both runs, so the dashboard shows the spread. The instability is the point.
-    for path in sorted(REPORTS_DIR.glob("report_*.json")):
+    for path in reports_for(args.domain):
         run = load(path)
         payload["runs"].append(
             {

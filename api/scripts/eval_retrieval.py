@@ -16,6 +16,9 @@ from app.config import settings
 from app.evals.golden import REPORTS_DIR, GoldenTicket, load_golden
 from app.retrieval.search import find_similar_cases
 
+# Retrieval quality is measured per desk; this script measures the one with real cases.
+DOMAIN_ID = "ecom"
+
 # Tickets the corpus cannot cover: dev API, sales enquiry, empty text, pure Devanagari.
 EXPECTED_WEAK = {"g058", "g040", "g056", "g057"}
 
@@ -32,7 +35,7 @@ class Probe:
 
 async def probe(ticket: GoldenTicket) -> Probe:
     result = await find_similar_cases(
-        text=f"{ticket.subject}\n{ticket.body}", intent=ticket.expected_intent
+        domain=DOMAIN_ID, text=f"{ticket.subject}\n{ticket.body}", intent=ticket.expected_intent
     )
     return Probe(
         id=ticket.id,

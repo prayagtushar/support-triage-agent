@@ -13,8 +13,9 @@ import sys
 from datetime import UTC, datetime
 from typing import Any
 
+from app import repo
 from app.config import settings
-from app.corpus import TAXONOMY
+from app.domains import get as get_domain
 from app.evals.golden import REPORTS_DIR, load_golden
 from app.evals.metrics import macro_f1, per_label_scores
 from app.evals.runner import run_over_golden
@@ -32,7 +33,12 @@ SWEEP = [0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
 
 
 def build_report(
-    rows: list[dict[str, Any]], label: str, golden: str, elapsed: float
+    rows: list[dict[str, Any]],
+    label: str,
+    golden: str,
+    elapsed: float,
+    taxonomy: tuple[str, ...],
+    domain_id: str,
 ) -> dict[str, Any]:
     usable = [r for r in rows if not r.get("fatal")]
     precision, precision_correct, precision_sent = auto_reply_precision(usable)
@@ -41,12 +47,15 @@ def build_report(
     intent_pairs = [
         (str(r["expected_intent"]), str(r["intent"])) for r in usable if r.get("intent")
     ]
-    scores = per_label_scores(intent_pairs, list(TAXONOMY))
+    # The taxonomy is the desk's, not a constant: scoring a tech run against a
+    # shop's eight intents would report perfect recall on labels that cannot occur.
+    scores = per_label_scores(intent_pairs, list(taxonomy))
 
     return {
         "label": label,
         "timestamp": datetime.now(UTC).isoformat(),
         "golden": golden,
+        "domain": domain_id,
         "elapsed_seconds": round(elapsed, 1),
         "tickets": len(rows),
         "fatal": len(rows) - len(usable),
@@ -56,6 +65,14 @@ def build_report(
             "drafter": f"{settings.drafter_provider}/{settings.drafter_model}",
             "judge": f"{settings.judge_provider}/{settings.judge_model}",
             "embedding": f"{settings.embedding_provider}/{settings.embedding_model}",
+        },
+        # The label is typed by hand and the settings come from .env, which overrides the
+        # defaults in config.py. A run once carried a label naming a token budget it had
+        # not used. Record what was actually in force so the two cannot disagree quietly.
+        "budgets": {
+            "classifier_max_tokens": settings.classifier_max_tokens,
+            "drafter_max_tokens": settings.drafter_max_tokens,
+            "judge_max_tokens": settings.judge_max_tokens,
         },
         "thresholds": {
             "auto_reply": settings.route_auto_reply_threshold,
@@ -210,26 +227,94 @@ composite band moves.
     )
 
 
+async def preflight() -> str | None:
+    """One cheap call per configured provider before committing to a 30-minute run.
+
+    A run that loses its drafter at ticket 44 still writes a report, and that report
+    looks like a measurement of a model rather than of an unpaid account. Failing in
+    ten seconds is better than failing in twenty minutes with an artifact that has to
+    be quarantined afterwards.
+    """
+    from app.errors import ModelOutputTruncated, ProviderUnavailable
+    from app.llm import complete_text
+
+    checks = [
+        ("classifier", settings.classifier_provider, settings.classifier_model),
+        ("drafter", settings.drafter_provider, settings.drafter_model),
+        ("judge", settings.judge_provider, settings.judge_model),
+    ]
+    for role, provider, model in checks:
+        try:
+            await complete_text(
+                provider=provider,
+                model=model,
+                system="Reply with: ok",
+                user="ok",
+                max_tokens=8,
+            )
+        except ModelOutputTruncated:
+            # The probe deliberately allows 8 tokens, and a model that reasons before
+            # answering spends all of them thinking. Truncation still proves the thing
+            # preflight is asking: the provider answered and billed, so it is reachable
+            # and paid for. Treating it as a failure grounded every run on this drafter.
+            continue
+        except ProviderUnavailable as exc:
+            return f"{role} ({provider}/{model}) is not answering: {exc}"
+        except Exception as exc:  # a bad key raises before any retry policy applies
+            return f"{role} ({provider}/{model}) is not usable: {type(exc).__name__}: {exc}"
+
+    # Models answering is not the same as the pipeline running. Every node resolves its
+    # desk through the database, and when that failed each of the 60 rows failed the same
+    # way and the run still wrote a full report of zeroes.
+    try:
+        await repo.domain_case_counts()
+    except Exception as exc:
+        return f"the database is not usable: {type(exc).__name__}: {exc}"
+    return None
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--golden", default="v0")
     parser.add_argument("--label", default="v1")
     parser.add_argument("--concurrency", type=int, default=settings.eval_concurrency)
     parser.add_argument("--limit", type=int)
+    parser.add_argument("--domain", default="ecom", help="which desk to evaluate")
     args = parser.parse_args()
 
+    # Every node now resolves its desk through the pool, so the run needs one open. It
+    # used to work without: retrieval opened its own sync connection, and nothing else
+    # touched repo. Without this all 60 rows fail identically and still write a report.
+    await repo.open_pool()
+    try:
+        return await _run(args)
+    finally:
+        await repo.close_pool()
+
+
+async def _run(args: argparse.Namespace) -> int:
+    problem = await preflight()
+    if problem:
+        print(f"preflight failed, not starting: {problem}", file=sys.stderr)
+        print("fix that first; a partial run writes a report that looks real.", file=sys.stderr)
+        return 3
+
+    domain = await get_domain(args.domain)
     tickets = load_golden(args.golden)[: args.limit]
-    print(f"evaluating {len(tickets)} tickets, concurrency {args.concurrency}")
+    print(
+        f"evaluating {len(tickets)} tickets on {domain.id} ({domain.provenance} corpus), "
+        f"concurrency {args.concurrency}"
+    )
 
     def progress(done: int, total: int, row: dict[str, Any]) -> None:
         mark = "!" if row.get("errors") or row.get("fatal") else " "
         print(f"  {done:3d}/{total} {mark} {row['id']} -> {row.get('route')}", flush=True)
 
     started = datetime.now(UTC)
-    rows = await run_over_golden(tickets, args.concurrency, progress)
+    rows = await run_over_golden(tickets, args.concurrency, progress, domain.id)
     elapsed = (datetime.now(UTC) - started).total_seconds()
 
-    report = build_report(rows, args.label, args.golden, elapsed)
+    report = build_report(rows, args.label, args.golden, elapsed, domain.intents, domain.id)
 
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     stamp = started.strftime("%Y%m%dT%H%M%SZ")
