@@ -1,12 +1,13 @@
 {
-  "source": "report_v2-threshold-090_20260801T060943Z.json",
+  "source": "report_v4-ecom-budget16384_20260903T181345Z.json",
+  "domain": "ecom",
   "report": {
-    "label": "v2-threshold-090",
-    "timestamp": "2026-08-01T06:15:53.048317+00:00",
+    "label": "v4-ecom-budget16384",
+    "timestamp": "2026-09-03T18:22:33.106224+00:00",
     "golden": "v0",
     "tickets": 60,
     "fatal": 0,
-    "tickets_with_errors": 0,
+    "tickets_with_errors": 1,
     "models": {
       "classifier": "openrouter/meta-llama/llama-3.3-70b-instruct",
       "drafter": "sarvam/sarvam-105b",
@@ -22,90 +23,90 @@
     "auto_reply_precision_detail": "5/10",
     "review_recall": 0.8214,
     "review_recall_detail": "23/28",
-    "routing_accuracy": 0.4167,
+    "routing_accuracy": 0.4333,
     "intent_accuracy": 0.95,
     "intent_macro_f1": 0.9533,
-    "urgency_accuracy": 0.7667,
+    "urgency_accuracy": 0.8,
     "language_accuracy": 1.0,
     "intent_accuracy_english": 0.9773,
     "intent_accuracy_hinglish": 0.8667,
-    "safe_fallback_rate": 0.2333,
+    "safe_fallback_rate": 0.4167,
     "weak_retrieval_rate": 0.1,
     "latency": {
-      "mean_ms": 24224.0,
-      "p50_ms": 21785.5,
-      "p95_ms": 48100.0
+      "mean_ms": 34277.7,
+      "p50_ms": 32208.0,
+      "p95_ms": 54888.0
     },
-    "cost_inr_per_ticket": 0.049858,
+    "cost_inr_per_ticket": 0.101224,
     "reliability": [
       {
-        "lower": 0.5,
-        "upper": 0.6,
-        "n": 5,
-        "mean_confidence": 0.5798,
-        "observed_correct": 0.4
+        "lower": 0.0,
+        "upper": 0.1,
+        "n": 1,
+        "mean_confidence": 0.0,
+        "observed_correct": 0.0
       },
       {
         "lower": 0.6,
         "upper": 0.7,
-        "n": 6,
-        "mean_confidence": 0.6373,
-        "observed_correct": 0.5
+        "n": 5,
+        "mean_confidence": 0.6281,
+        "observed_correct": 0.6
       },
       {
         "lower": 0.7,
         "upper": 0.8,
-        "n": 13,
-        "mean_confidence": 0.7574,
-        "observed_correct": 0.3846
+        "n": 12,
+        "mean_confidence": 0.7687,
+        "observed_correct": 0.4167
       },
       {
         "lower": 0.8,
         "upper": 0.9,
-        "n": 25,
-        "mean_confidence": 0.8559,
-        "observed_correct": 0.36
+        "n": 31,
+        "mean_confidence": 0.855,
+        "observed_correct": 0.3871
       },
       {
         "lower": 0.9,
         "upper": 1.0,
         "n": 11,
-        "mean_confidence": 0.9159,
+        "mean_confidence": 0.9168,
         "observed_correct": 0.5455
       }
     ],
     "threshold_sweep": [
       {
         "threshold": 0.6,
-        "auto_reply_precision": 0.55,
-        "auto_replied": 40,
-        "review_recall": 0.3571,
+        "auto_reply_precision": 0.5625,
+        "auto_replied": 32,
+        "review_recall": 0.5,
         "needed_review": 28,
         "routing_accuracy": 0.5167
       },
       {
         "threshold": 0.65,
-        "auto_reply_precision": 0.5789,
-        "auto_replied": 38,
-        "review_recall": 0.4286,
+        "auto_reply_precision": 0.5625,
+        "auto_replied": 32,
+        "review_recall": 0.5,
         "needed_review": 28,
-        "routing_accuracy": 0.55
+        "routing_accuracy": 0.5167
       },
       {
         "threshold": 0.7,
-        "auto_reply_precision": 0.5833,
-        "auto_replied": 36,
-        "review_recall": 0.4643,
+        "auto_reply_precision": 0.5625,
+        "auto_replied": 32,
+        "review_recall": 0.5,
         "needed_review": 28,
-        "routing_accuracy": 0.55
+        "routing_accuracy": 0.5167
       },
       {
         "threshold": 0.75,
-        "auto_reply_precision": 0.625,
+        "auto_reply_precision": 0.5625,
         "auto_replied": 32,
-        "review_recall": 0.5714,
+        "review_recall": 0.5,
         "needed_review": 28,
-        "routing_accuracy": 0.5833
+        "routing_accuracy": 0.5167
       },
       {
         "threshold": 0.8,
@@ -113,15 +114,15 @@
         "auto_replied": 26,
         "review_recall": 0.6429,
         "needed_review": 28,
-        "routing_accuracy": 0.55
+        "routing_accuracy": 0.5333
       },
       {
         "threshold": 0.85,
-        "auto_reply_precision": 0.6316,
-        "auto_replied": 19,
-        "review_recall": 0.75,
+        "auto_reply_precision": 0.6087,
+        "auto_replied": 23,
+        "review_recall": 0.6786,
         "needed_review": 28,
-        "routing_accuracy": 0.5
+        "routing_accuracy": 0.5167
       },
       {
         "threshold": 0.9,
@@ -129,7 +130,7 @@
         "auto_replied": 10,
         "review_recall": 0.8214,
         "needed_review": 28,
-        "routing_accuracy": 0.4167
+        "routing_accuracy": 0.4333
       },
       {
         "threshold": 0.95,
@@ -137,30 +138,23 @@
         "auto_replied": 0,
         "review_recall": 1.0,
         "needed_review": 28,
-        "routing_accuracy": 0.4167
+        "routing_accuracy": 0.4333
       }
     ],
     "per_intent": [
-      {
-        "intent": "billing",
-        "precision": 1.0,
-        "recall": 0.875,
-        "f1": 0.933,
-        "support": 8
-      },
-      {
-        "intent": "refund",
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0,
-        "support": 7
-      },
       {
         "intent": "account_access",
         "precision": 0.9,
         "recall": 1.0,
         "f1": 0.947,
         "support": 9
+      },
+      {
+        "intent": "billing",
+        "precision": 1.0,
+        "recall": 0.875,
+        "f1": 0.933,
+        "support": 8
       },
       {
         "intent": "bug_report",
@@ -170,20 +164,6 @@
         "support": 8
       },
       {
-        "intent": "how_to",
-        "precision": 1.0,
-        "recall": 0.75,
-        "f1": 0.857,
-        "support": 8
-      },
-      {
-        "intent": "shipping",
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0,
-        "support": 7
-      },
-      {
         "intent": "feature_request",
         "precision": 1.0,
         "recall": 1.0,
@@ -191,14 +171,35 @@
         "support": 6
       },
       {
+        "intent": "how_to",
+        "precision": 1.0,
+        "recall": 0.75,
+        "f1": 0.857,
+        "support": 8
+      },
+      {
         "intent": "other",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 7
+      },
+      {
+        "intent": "refund",
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 7
+      },
+      {
+        "intent": "shipping",
         "precision": 1.0,
         "recall": 1.0,
         "f1": 1.0,
         "support": 7
       }
     ],
-    "elapsed_seconds": 369.5
+    "elapsed_seconds": 527.2
   },
   "runs": [
     {
@@ -350,6 +351,82 @@
           "review_recall": 1.0,
           "needed_review": 28,
           "routing_accuracy": 0.4167
+        }
+      ]
+    },
+    {
+      "label": "v4-ecom-budget16384",
+      "source": "report_v4-ecom-budget16384_20260903T181345Z.json",
+      "threshold": 0.9,
+      "auto_reply_precision": 0.5,
+      "auto_reply_precision_detail": "5/10",
+      "review_recall": 0.8214,
+      "routing_accuracy": 0.4333,
+      "intent_accuracy": 0.95,
+      "sweep": [
+        {
+          "threshold": 0.6,
+          "auto_reply_precision": 0.5625,
+          "auto_replied": 32,
+          "review_recall": 0.5,
+          "needed_review": 28,
+          "routing_accuracy": 0.5167
+        },
+        {
+          "threshold": 0.65,
+          "auto_reply_precision": 0.5625,
+          "auto_replied": 32,
+          "review_recall": 0.5,
+          "needed_review": 28,
+          "routing_accuracy": 0.5167
+        },
+        {
+          "threshold": 0.7,
+          "auto_reply_precision": 0.5625,
+          "auto_replied": 32,
+          "review_recall": 0.5,
+          "needed_review": 28,
+          "routing_accuracy": 0.5167
+        },
+        {
+          "threshold": 0.75,
+          "auto_reply_precision": 0.5625,
+          "auto_replied": 32,
+          "review_recall": 0.5,
+          "needed_review": 28,
+          "routing_accuracy": 0.5167
+        },
+        {
+          "threshold": 0.8,
+          "auto_reply_precision": 0.6154,
+          "auto_replied": 26,
+          "review_recall": 0.6429,
+          "needed_review": 28,
+          "routing_accuracy": 0.5333
+        },
+        {
+          "threshold": 0.85,
+          "auto_reply_precision": 0.6087,
+          "auto_replied": 23,
+          "review_recall": 0.6786,
+          "needed_review": 28,
+          "routing_accuracy": 0.5167
+        },
+        {
+          "threshold": 0.9,
+          "auto_reply_precision": 0.5,
+          "auto_replied": 10,
+          "review_recall": 0.8214,
+          "needed_review": 28,
+          "routing_accuracy": 0.4333
+        },
+        {
+          "threshold": 0.95,
+          "auto_reply_precision": 0.0,
+          "auto_replied": 0,
+          "review_recall": 1.0,
+          "needed_review": 28,
+          "routing_accuracy": 0.4333
         }
       ]
     }

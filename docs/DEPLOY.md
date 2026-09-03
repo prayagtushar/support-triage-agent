@@ -42,6 +42,16 @@ model grading its own output exhibits self-preference bias, and the router
 consumes that score as truth. Keep `DRAFTER_PROVIDER=sarvam` and
 `JUDGE_PROVIDER=openrouter` split, or the container crash-loops on startup.
 
+**4. `DRAFTER_MAX_TOKENS` must be at least 16384 on the service.** The defaults
+in `app/config.py` are not what runs: `.env` locally and the Cloud Run env vars
+in production both override them, so changing the default alone changes nothing
+deployed. `sarvam-105b` reasons before answering and bills it as completion
+tokens, and a call that runs out mid-reasoning returns an empty draft rather
+than a short one. At 4096 that silently cost 23 of 60 golden drafts on
+2026-09-03. The ceiling is not a spend control: only generated tokens are
+billed, and a truncated call is billed in full for output you never receive.
+Confirm the deployed value with `GET /policy` rather than by reading the repo.
+
 ## Database
 
 Supabase project `support-triage` in `ap-south-1`, the same region as Cloud Run.

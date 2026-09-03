@@ -115,15 +115,60 @@ examples this project has. A free-text box would have produced comments instead.
 
 **It never hardcodes the policy.** Thresholds and composite weights come from `GET /policy`, so the notch on every meter and the arithmetic in every breakdown track the config actually in force. A dashboard that drew its threshold from a constant would start lying the first time the policy was retuned, which, given the ablation result below, is the next thing that should happen.
 
-**It says when the system is serving but not working.** `GET /status` reports the empty-retrieval rate over recent runs, and a banner appears when retrieval has stopped producing evidence. That check exists because of a real outage: the embedding key ran out of credit, every retrieval returned nothing, every ticket was correctly routed to a human by hard rule, and no conventional signal moved. Nothing failed. The system just quietly stopped knowing anything.
+**It says when the system is serving but not working.** `GET /status` reports the empty-retrieval and empty-draft rates over recent runs, and a banner names whichever component stopped. That check exists because of a real outage: the embedding key ran out of credit, every retrieval returned nothing, every ticket was correctly routed to a human by hard rule, and no conventional signal moved. Nothing failed. The system just quietly stopped knowing anything.
+
+It then happened a second time, in a different component, and the check did not catch it, because it was written to watch the failure that had already happened. When the drafter's reasoning outgrew its token budget it returned nothing on 23 of 60 golden tickets, and `/status` reported healthy in as many words: it computed an error rate and then decided on retrieval alone. The banner said "Retrieval is degraded" or said nothing, and there was no third thing it could say. Both rates now feed the decision and the banner names the component, because the lesson of the first outage was the general one and only the specific one had been implemented.
+
+## Desks
+
+More than one ticketing system runs on one deployment. The switcher in the header moves
+between them and [`/desks`](https://support-triage.prayagtushar.xyz/desks) compares them.
+
+| Desk | Corpus | Cases | Intents |
+|---|---|---|---|
+| Consumer e-commerce | real, Bitext-backed | 3,400 | billing, refund, account access, bug report, how to, shipping, feature request, other |
+| Tech support desk | **generated** | 436 | outage, account access, hardware, software bug, how to, performance, feature request, other |
+
+The point is what is *not* shared. Each desk carries its own resolved cases, its own
+intent taxonomy, its own intent definitions and its own worked examples, and **retrieval
+never crosses between them**. A laptop that will not boot answered from a refund policy
+is worse than no evidence at all, because the drafter cannot tell it is in the wrong
+business and the judge is grading groundedness rather than relevance to the desk.
+
+Three things this forced out of the code and into the database:
+
+- **The taxonomy.** `resolved_cases.intent` had a `CHECK` constraint naming eight
+  e-commerce intents. It is now a composite foreign key onto `domain_intents`, so a case
+  still cannot carry an intent its own desk does not define. The constraint did real work
+  and it keeps doing it, one level up.
+- **The classifier's vocabulary.** The intent definitions, the boundary rules and the
+  three worked examples were all about a shop. "Which payment methods do you accept is
+  about payment, so billing" is excellent guidance and useless to an IT desk. Each desk
+  writes its own, including its own Hinglish example. What survives in code is the part
+  that is about tickets rather than about a business: the urgency scale, the language
+  rule, and the instruction to classify the subject rather than the grammar.
+- **The output schema.** `Classification.intent` was a fixed `Literal`. It is now built
+  per desk, which keeps strict validation and puts that desk's legal intents into the
+  JSON schema the model is shown, so a wrong intent is corrected on the retry rather than
+  accepted.
+
+**The tech desk is generated and the interface says so, everywhere it matters.** Every
+case behind it was written by a model, so a draft there is machine text grounded in
+machine text and graded by a third machine. It demonstrates that the architecture is
+per-desk. It is not evidence that the agent performs on tech support, and the eval
+numbers in this README were measured on the e-commerce desk only. The switcher, the desk
+card and a banner above the queue all carry the provenance, because a full queue on a
+generated corpus looks exactly like a full queue on a real one.
 
 ## Evaluation
 
 Measured on golden v0 (60 hand-written tickets, 27% non-English, 5 adversarial). Reports are in `api/evals/reports/`, and the tables below are generated from the same export the dashboard reads, so the two cannot drift.
 
+> **These numbers are dated and do not currently reproduce.** They were measured on 2026-08-01 with `DRAFTER_MAX_TOKENS=4096`. On 2026-09-03 the same model under the same budget returned an empty draft on 23 of the 60 tickets, because its reasoning had grown past the ceiling. The budget is now 16384, which fixes the drafts, and the suite has **not** been re-run under it: the drafter's account ran out of credit mid-run. Treat every figure below as a measurement of a model on a day, not a property of this repository. The Voice section explains what happened and `docs/EVAL_CARD.md` caveat 7 says why this is a standing property rather than an incident.
+
 <!-- metrics:start -->
 
-Run `v2-threshold-090` on golden `v0`, 60 tickets, auto-reply threshold 0.9, measured 2026-08-01. Regenerate this block with `make readme-metrics`.
+Run `v4-ecom-budget16384` on golden `v0`, 60 tickets, auto-reply threshold 0.9, measured 2026-09-03. Regenerate this block with `make readme-metrics`.
 
 **Decisions the routing gets to make.** Small denominators, so intervals:
 
@@ -131,7 +176,7 @@ Run `v2-threshold-090` on golden `v0`, 60 tickets, auto-reply threshold 0.9, mea
 |---|---|---|---|
 | Auto-reply precision | **0.500** | 5/10 | 0.24–0.76 |
 | Review recall | 0.821 | 23/28 | 0.64–0.92 |
-| Routing accuracy | 0.417 | 60 | — |
+| Routing accuracy | 0.433 | 60 | — |
 
 **Classification, measured across every ticket.** Stable to three decimals:
 
@@ -141,10 +186,10 @@ Run `v2-threshold-090` on golden `v0`, 60 tickets, auto-reply threshold 0.9, mea
 | Intent macro F1 | 0.953 | 60 |
 | Intent, English | 0.977 | 44 |
 | Intent, Hinglish | 0.867 | 15 |
-| Urgency accuracy | 0.767 | 60 |
+| Urgency accuracy | 0.800 | 60 |
 | Language accuracy | 1.000 | 60 |
 
-**Cost and latency.** ₹0.050 a ticket · p50 21.8s · p95 48.1s · mean 24.2s. Triage is asynchronous, so p95 bounds how long a ticket waits before a human sees it in the queue, not how long a customer waits on a page.
+**Cost and latency.** ₹0.101 a ticket · p50 32.2s · p95 54.9s · mean 34.3s. Triage is asynchronous, so p95 bounds how long a ticket waits before a human sees it in the queue, not how long a customer waits on a page.
 
 **Against the policies it has to beat:**
 
@@ -159,24 +204,24 @@ Run `v2-threshold-090` on golden `v0`, 60 tickets, auto-reply threshold 0.9, mea
 
 | Bucket | n | Stated | Observed | Gap |
 |---|---|---|---|---|
-| 0.5–0.6 | 5 | 0.580 | 0.400 | −0.180 |
-| 0.6–0.7 | 6 | 0.637 | 0.500 | −0.137 |
-| 0.7–0.8 | 13 | 0.757 | 0.385 | −0.373 |
-| 0.8–0.9 | 25 | 0.856 | 0.360 | −0.496 |
-| 0.9–1.0 | 11 | 0.916 | 0.545 | −0.370 |
+| 0.0–0.1 | 1 | 0.000 | 0.000 | +0.000 |
+| 0.6–0.7 | 5 | 0.628 | 0.600 | −0.028 |
+| 0.7–0.8 | 12 | 0.769 | 0.417 | −0.352 |
+| 0.8–0.9 | 31 | 0.855 | 0.387 | −0.468 |
+| 0.9–1.0 | 11 | 0.917 | 0.545 | −0.371 |
 
 **Per intent:**
 
 | Intent | Precision | Recall | F1 | Support |
 |---|---|---|---|---|
-| billing | 1.000 | 0.875 | 0.933 | 8 |
-| refund | 1.000 | 1.000 | 1.000 | 7 |
 | account access | 0.900 | 1.000 | 0.947 | 9 |
+| billing | 1.000 | 0.875 | 0.933 | 8 |
 | bug report | 0.800 | 1.000 | 0.889 | 8 |
-| how to | 1.000 | 0.750 | 0.857 | 8 |
-| shipping | 1.000 | 1.000 | 1.000 | 7 |
 | feature request | 1.000 | 1.000 | 1.000 | 6 |
+| how to | 1.000 | 0.750 | 0.857 | 8 |
 | other | 1.000 | 1.000 | 1.000 | 7 |
+| refund | 1.000 | 1.000 | 1.000 | 7 |
+| shipping | 1.000 | 1.000 | 1.000 | 7 |
 
 <!-- metrics:end -->
 
@@ -207,6 +252,80 @@ Classification is strong: 0.950 intent accuracy, stable to three decimals across
 The judge earns its place. Three times during development the drafter invented something and the judge caught it precisely: an invented cancellation-link location, a claim to have checked a transaction the agent has no access to, and a refund timeline supported by nothing. Each time the composite fell and the router sent the ticket to a human instead of a customer.
 
 `make ablate` puts a number on that. It re-routes the stored eval runs under reweighted composites offline, with no API keys and no cost, and refuses to report anything until it has replayed all 60 recorded routes from the stored signals. The stable finding across both runs is one I did not expect: **weighting the judge at 1.0 and dropping the other two inputs beats the shipped 0.5/0.3/0.2 composite** (0.800 vs 0.778, and 0.667 vs 0.632). The classifier and retrieval terms are diluting the judge rather than supplementing it, which makes the "the weights were a guess" caveat above concrete rather than modest. Whether the judge is strictly *necessary* is still unsettled at n=60, because that arm flips sign between runs.
+
+## Voice
+
+The same agent, reached by speaking, at [`/voice`](https://support-triage.prayagtushar.xyz/voice).
+
+This exists because of one sentence in the latency line above: triage is asynchronous,
+so p95 bounds how long a ticket waits before a human sees it, not how long a customer
+waits on a page. Voice deletes the word asynchronous, and a design that is correct for a
+queue turns out to be wrong for a call.
+
+Three cuts are implemented as configuration switches so each can be measured separately:
+the judge moves off the critical path, the reply is spoken sentence by sentence while the
+model is still writing it, and the drafter is swapped. `make voice-bench` runs the golden
+set through every arm, serially, because the rate limiters are per process and running
+tickets concurrently would put the queueing inside the measurement.
+
+The fourth arm was not in the plan. It came out of the measurements:
+
+| Arm | Time to first audio, p50 | Spoke at all | n |
+|---|---|---|---|
+| `baseline`, the text pipeline with a microphone on it | 38.4s | **1 of 3** | 3 |
+| `fast_drafter` | **7.1s** | 3 of 3 | 3 |
+
+`sarvam-105b` reasons before it answers and bills that as completion tokens, which the
+config has always said. On the text path it was free. On a call the reasoning is emitted
+before any speakable token, so streaming cannot start early, and at a tight budget the
+reasoning eats the whole allowance and the reply comes back empty. The largest lever
+here is not streaming. It is not asking a reasoning model to write something a person is
+waiting to hear.
+
+That is also how the voice work found a live problem in the text pipeline. Run the
+drafter alone, on the original golden text, with no speech anywhere, over all 60 golden
+tickets:
+
+| `drafter_max_tokens` | Drafted | Produced nothing | Per usable draft |
+|---|---|---|---|
+| 4096, as shipped | 37 of 60 | **23 of 60** | ₹0.0958 |
+| 8192 | 60 of 60 | 0 | ₹0.0658 |
+
+The shipped budget sat on the boundary. Replies needing more reasoning than that returned
+empty, the router correctly sent them to a human, and nothing errored. It is the same
+shape as the outage in the dashboard section: nothing failed, the system quietly stopped
+producing drafts. The identical eval on 2026-08-01, same model and same budget, had zero
+empty drafts, so this is drift rather than a long-standing bug.
+
+Raising the ceiling is also the cheaper setting, which was not obvious. A truncated call
+is billed for the reasoning it threw away, and because a failed draft records no stats
+that spend never appeared in the cost figures. Total spend rises 11%, output rises 62%,
+and cost per usable draft falls 31%.
+
+Read that against the ₹0.101 per ticket above rather than as a contradiction of it. The
+31% is the drafter alone, both budgets measured on the same afternoon. The ₹0.101 is all
+three models and has roughly doubled since August, when the same eval on the same
+threshold cost ₹0.050 with zero empty drafts. Neither the budget nor this repository
+moved that: the drafter's reasoning grew, and the larger ceiling is what stops the growth
+from turning into silence. `drafter_max_tokens` is now **16384**: the ceiling
+itself bills nothing, only generated tokens do, so headroom is close to free and
+truncation is not. Set it in `.env` and in the Cloud Run environment, not just in
+`app/config.py`, because the defaults there are not what runs. The monitoring gap it
+exposed is fixed too, in the dashboard section above.
+
+The suite has not been re-measured under the new budget. The attempt ran out of Sarvam
+credit at ticket 44 of 60, so `make eval`, `make gate`, `make readme-metrics` and
+`make ui-evals` are outstanding and the published numbers above still describe 4096.
+
+Streaming is not free either. The JSON schema cannot be streamed, because nothing is
+speakable until the object closes and the object closing is the whole reply, so the
+streamed arms give up inline citations and the drafter's own safe-fallback signal. For a
+review screen built around citation markers that is the expensive part, and it is the
+trade the arms exist to price.
+
+Both numbers above are n=1 and the four-arm comparison has not been run yet.
+[`docs/VOICE.md`](docs/VOICE.md) has the full budget, what each cut costs, and what was
+deliberately left out.
 
 ## Data
 
@@ -301,16 +420,18 @@ The deployed corpus was regenerated during deployment rather than copied, and ge
 api/
   app/agent/       the LangGraph nodes, prompts and typed state
   app/retrieval/   hybrid search, RRF fusion
+  app/voice/       speech endpoints, one timed turn
+  app/domains.py   the desks, their taxonomies and provenance
   app/routers/     FastAPI surface
   app/evals/       golden-set runner, metrics, scoring
   migrations/      plain SQL, applied in order
   scripts/         corpus build, evals, exports, operational checks
 ui/
-  src/routes/      queues, review, evals, audit, submit, run it
+  src/routes/      queues, review, evals, audit, submit, voice, desks, run it
   src/components/  meters, badges, charts, the rail
   src/lib/         API client, policy, stats, formatting
 infra/             Docker Compose, Cloud Run deploy script, billing kill switch
-docs/              deployment runbook, failure analysis, eval card
+docs/              deployment runbook, failure analysis, eval card, voice
 ```
 
 ## Documentation
@@ -319,6 +440,8 @@ docs/              deployment runbook, failure analysis, eval card
   where each number stops applying.
 - [`docs/failure_analysis.md`](docs/failure_analysis.md) — every measured failure, per
   component: what happened, which part owns it, what changed, what deliberately did not.
+- [`docs/VOICE.md`](docs/VOICE.md) — the voice path: the latency budget, what each cut
+  bought, and what it cost in structure the reviewer used to have.
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — the runbook: access model, the two IAM grants behind
   the billing kill switch, and how to recover from a trip.
 

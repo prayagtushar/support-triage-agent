@@ -1,4 +1,4 @@
-.PHONY: help up down db-shell migrate run demo seed seed-local api ui test lint types check eval calibrate ablate coverage ui-evals readme-metrics degraded gate clean-state
+.PHONY: help up down db-shell migrate run demo seed seed-local api ui test lint types check eval calibrate ablate coverage ui-evals readme-metrics degraded gate clean-state voice-audio voice-bench domain-corpus
 
 COMPOSE := docker compose -f infra/docker-compose.yml
 
@@ -77,6 +77,16 @@ seed-local:  ## run the golden set through the pipeline into the local queues
 
 ablate:  ## does the judge earn its weight? offline, no keys, no cost
 	cd api && uv run python scripts/ablate_judge.py
+
+domain-corpus:  ## generate and embed a corpus for a generated desk: make domain-corpus D=tech
+	cd api && uv run python scripts/gen_domain_corpus.py --domain $(D)
+	cd api && uv run python scripts/embed_corpus.py
+
+voice-audio:  ## synthesise the golden set as speech, once; cached after that
+	cd api && uv run python scripts/voice_bench.py --audio-only
+
+voice-bench:  ## time to first audio, every arm. serial by design, so it takes ~45 min
+	cd api && uv run python scripts/voice_bench.py
 
 degraded:  ## report runs that finished but did not work
 	cd api && uv run python scripts/check_degraded.py
