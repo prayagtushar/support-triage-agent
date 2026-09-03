@@ -14,31 +14,26 @@ and takes eight to finish is a conversation. One that starts in eight is a dead 
 
 ## Status
 
-Implemented and running end to end. Two of the four arms have been measured on three
-golden tickets. The full 60-ticket comparison has not been run.
+Implemented and running end to end. **The four-arm comparison has been attempted twice
+and has never completed.** Both attempts ran out of speech credit partway through, and
+the quarantined run is in `api/evals/voice/invalid/` with its own note.
 
-Every number here was measured against the live providers. Sample sizes are stated
-throughout, because most of them are three or one, and three samples of a call to a
-hosted model is a direction, not a result.
+What survives is two arms on three golden tickets, measured while the account had credit:
 
-## What the caller hears, and when
+| Arm | What changes | TTFA p50 | Spoke at all | n |
+|---|---|---|---|---|
+| `baseline` | The text pipeline unchanged, with a microphone on it. Judge inline, reply spoken once every node has finished. | 38.4s | **1 of 3** | 3 |
+| `judge_async` | Cut A. The judge moves off the critical path. It still runs, still logs, still decides whether a human sees the turn. It stops standing between the question and the answer. | not measured | | |
+| `stream_draft` | Cut A + B. Each sentence is spoken while the model writes the next. | not measured | | |
+| `fast_drafter` | Cut A + B + C. The spoken reply is written by a non-reasoning model. | **7.1s** | 3 of 3 | 3 |
 
-Three arms exist as configuration switches so each cut can be read separately, plus a
-fourth that came out of the measurements below.
+Three samples is a direction, not a result, and the two middle arms have never been
+measured at all, so the individual contribution of moving the judge and of streaming
+sentences is still unknown. What the numbers below do support is the drafter finding,
+which was reproduced separately and does not depend on the benchmark.
 
-| Arm | What changes | TTFA p50 | TTFA p95 | Spoke at all | n |
-|---|---|---|---|---|---|
-| `baseline` | The text pipeline unchanged, with a microphone on it. Judge inline, reply spoken once every node has finished. | 38.4s | 38.4s | **1 of 3** | 3 |
-| `judge_async` | Cut A. The judge moves off the critical path. It still runs, still logs, still decides whether a human sees the turn. It stops standing between the question and the answer. | not run | | | |
-| `stream_draft` | Cut A + B. Each sentence is spoken while the model writes the next. | not run | | | |
-| `fast_drafter` | Cut A + B + C. The spoken reply is written by a non-reasoning model. | **7.1s** | 12.2s | 3 of 3 | 3 |
-
-Intent accuracy was 1.000 on both arms, so speech recognition is not breaking
-classification on this sample. Route agreement is not readable at n=3 and is not quoted.
-
-The baseline column that matters is not the latency. It is **1 of 3**. Two of the three
-tickets produced no reply at all, for the reason in the next section, and a turn with no
-reply has no time to first audio to report. The 38.4 seconds is a single ticket.
+Every number here was measured against live providers. Sample sizes are stated
+throughout because most of them are three or one.
 
 Run `make voice-bench` for all four arms over the full set. It is serial by design and
 takes about 45 minutes.
