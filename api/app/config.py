@@ -50,8 +50,18 @@ class Settings(BaseSettings):
     drafter_provider: Provider = "sarvam"
     drafter_model: str = "sarvam-105b"
     drafter_temperature: float = 0.3
-    # sarvam-105b reasons before answering and bills it as completion tokens
-    drafter_max_tokens: int = 4096
+    # sarvam-105b reasons before answering and bills it as completion tokens. That
+    # reasoning grew: 4096 held all 60 golden drafts on 2026-08-01 and held 37 of 60 on
+    # 2026-09-03, the other 23 returning empty after spending the whole budget thinking.
+    #
+    # The ceiling is not a spend control. A truncated call is billed for every token it
+    # reasoned with and returns nothing, so 4096 cost ₹0.0958 per usable draft against
+    # ₹0.0658 at 8192: the tight budget was the more expensive setting. Raising it only
+    # bills more where a reply now exists that did not before.
+    #
+    # 16384 rather than 8192 because the observed maximum at 8192 was 7215 tokens, and a
+    # ceiling 14% above the worst case seen is a ceiling that trips again next month.
+    drafter_max_tokens: int = 16384
 
     judge_provider: Provider = "openrouter"
     judge_model: str = "google/gemini-2.5-flash-lite"
@@ -92,6 +102,40 @@ class Settings(BaseSettings):
     composite_weight_classifier: float = Field(default=0.3, ge=0.0, le=1.0)
     composite_weight_retrieval: float = Field(default=0.2, ge=0.0, le=1.0)
 
+    # Voice. Sarvam's speech endpoints, reached with the same key as the chat model.
+    stt_model: str = "saaras:v3"
+    # The corpus is English and Hinglish, so let the provider decide rather than force one.
+    stt_language: str = "unknown"
+    tts_model: str = "bulbul:v3"
+    tts_speaker: str = "ritu"
+    tts_language: str = "en-IN"
+    tts_sample_rate: int = 22050
+    # bulbul:v3's per-request ceiling. A spoken reply never comes close.
+    tts_max_chars: int = 2500
+    voice_timeout_seconds: float = 30.0
+    # How much text must accumulate before a sentence is worth speaking. There is a real
+    # tension here and the number should be measured rather than argued: a short opener
+    # costs a whole TTS round trip for a moment of audio, and also gets a voice into the
+    # caller's ear sooner, which is the thing being optimised. Lower favours latency.
+    tts_min_sentence_chars: int = 40
+
+    # The latency cuts, as switches, so one benchmark can measure every arm and each
+    # cut can be read separately. All off is the honest baseline: the text pipeline,
+    # unchanged, with a microphone on it.
+    voice_judge_async: bool = False
+    voice_stream_draft: bool = False
+    voice_fast_drafter: bool = False
+
+    # Measured, not assumed. sarvam-105b reasons before it answers, and that reasoning
+    # is emitted before any speakable token, so streaming cannot start early: first
+    # visible word at 6.2s against 1.7s for a non-reasoning model of the same size.
+    # Worse, at a tight budget the reasoning consumes the whole allowance and the reply
+    # is empty, which on a call is silence rather than a truncation the reviewer sees.
+    # Excellent for a queue, wrong for a phone.
+    voice_drafter_provider: Provider = "openrouter"
+    voice_drafter_model: str = "meta-llama/llama-3.3-70b-instruct"
+    voice_drafter_max_tokens: int = 512
+
     langfuse_public_key: str = ""
     langfuse_secret_key: str = ""
     langfuse_host: str = "https://cloud.langfuse.com"
@@ -116,6 +160,15 @@ class Settings(BaseSettings):
         )
         if abs(weight_total - 1.0) > 1e-6:
             raise ValueError(f"composite weights must sum to 1.0 (got {weight_total})")
+
+        if self.voice_fast_drafter and self.voice_drafter_model == self.judge_model:
+            # Same rule as below, checked on the model rather than the provider: the
+            # voice drafter and the judge share a gateway, so the provider names match
+            # while the vendors behind them do not.
+            raise ValueError(
+                "voice_drafter_model must differ from judge_model: a model grading its "
+                f"own output exhibits self-preference bias (both are '{self.judge_model}')"
+            )
 
         if self.judge_provider == self.drafter_provider:
             raise ValueError(

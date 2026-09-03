@@ -55,7 +55,7 @@ def test_policy_names_a_different_vendor_for_judge_and_drafter():
 
 def _status_client(monkeypatch, health: dict[str, Any], last_24h: int = 3):
     async def fake_health(last: int) -> dict[str, Any]:
-        return health
+        return {"empty_draft": 0, **health}
 
     async def fake_count() -> int:
         return last_24h
@@ -106,6 +106,67 @@ def test_status_degrades_on_empty_retrieval_even_with_no_recorded_errors(monkeyp
 
     assert body["degraded"] is True
     assert body["error_rate"] == 0.0
+
+
+def test_status_flags_a_drafter_that_stopped_producing_drafts(monkeypatch):
+    """The failure that cost 23 of 60 golden drafts: retrieval fine, drafter silent.
+
+    Before this was counted, /status reported healthy and said so in as many words,
+    because it only ever looked at retrieval.
+    """
+    with _status_client(
+        monkeypatch,
+        {
+            "total": 60,
+            "with_errors": 23,
+            "empty_retrieval": 0,
+            "empty_draft": 23,
+            "routes": {"human_review": 51, "auto_reply": 9},
+        },
+    ) as c:
+        body = c.get("/status").json()
+
+    assert body["degraded"] is True
+    assert body["degraded_kind"] == "drafting"
+    assert body["empty_draft_rate"] == 0.3833
+    # Naming the wrong component sends a reader to the wrong place.
+    assert "draft" in body["reason"]
+    assert "retrieved nothing" not in body["reason"]
+
+
+def test_status_names_retrieval_when_both_are_empty(monkeypatch):
+    """A draft with no evidence is downstream of retrieval, so retrieval is the report."""
+    with _status_client(
+        monkeypatch,
+        {
+            "total": 10,
+            "with_errors": 10,
+            "empty_retrieval": 9,
+            "empty_draft": 9,
+            "routes": {"human_review": 10},
+        },
+    ) as c:
+        body = c.get("/status").json()
+
+    assert body["degraded_kind"] == "retrieval"
+
+
+def test_status_tolerates_the_occasional_undraftable_ticket(monkeypatch):
+    """One empty draft is a hard ticket, not an outage."""
+    with _status_client(
+        monkeypatch,
+        {
+            "total": 50,
+            "with_errors": 1,
+            "empty_retrieval": 0,
+            "empty_draft": 1,
+            "routes": {"human_review": 40, "auto_reply": 10},
+        },
+    ) as c:
+        body = c.get("/status").json()
+
+    assert body["degraded"] is False
+    assert body["degraded_kind"] is None
 
 
 def test_status_says_nothing_is_wrong_before_any_runs_exist(monkeypatch):

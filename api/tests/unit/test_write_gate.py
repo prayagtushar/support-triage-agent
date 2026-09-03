@@ -56,7 +56,7 @@ def client(monkeypatch):
     async def fake_visitor(ticket_id: str) -> str | None:
         return state["visitor"]
 
-    async def fake_process(ticket_id: str, payload: Any) -> None:
+    async def fake_process(ticket_id: str, payload: Any, domain_id: str = "ecom") -> None:
         return None
 
     monkeypatch.setattr(repo, "insert_ticket", fake_insert_ticket)

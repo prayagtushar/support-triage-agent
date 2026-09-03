@@ -44,7 +44,9 @@ def client(monkeypatch):
         state["reviews"].append(kwargs)
         return "33333333-3333-3333-3333-333333333333"
 
-    async def fake_list(status: str | None, limit: int, offset: int) -> list[dict[str, Any]]:
+    async def fake_list(
+        status: str | None, limit: int, offset: int, domain_id: str | None = None
+    ) -> list[dict[str, Any]]:
         return [{"id": TICKET_ID, "subject": "hi", "status": status or "received"}]
 
     async def fake_run(run_id: str) -> dict[str, Any] | None:
@@ -67,7 +69,7 @@ def client(monkeypatch):
     monkeypatch.setattr(repo, "count_tickets_last_24h", fake_count_today)
 
     # The pipeline is exercised in its own tests; here it must not run.
-    async def fake_process(ticket_id: str, payload: Any) -> None:
+    async def fake_process(ticket_id: str, payload: Any, domain_id: str = "ecom") -> None:
         state["background"].append(ticket_id)
 
     monkeypatch.setattr(tickets_router, "process_ticket", fake_process)

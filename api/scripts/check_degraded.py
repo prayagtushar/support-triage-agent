@@ -16,7 +16,7 @@ from app.db import connect
 # Enough runs to make a rate meaningful without scanning history.
 DEFAULT_WINDOW = 50
 
-# One empty retrieval is a hard query; a fifth of the window is a broken leg.
+# One empty retrieval or draft is a hard ticket; a fifth of the window is a broken leg.
 DEFAULT_MAX_ERROR_RATE = 0.2
 
 NODE_ERROR = re.compile(r"^(\w+):")
@@ -35,6 +35,7 @@ def main() -> int:
             """
             SELECT errors,
                    coalesce(jsonb_array_length(retrieval -> 'cases'), 0) AS cases,
+                   draft,
                    route
             FROM agent_runs
             ORDER BY created_at DESC
@@ -51,12 +52,15 @@ def main() -> int:
     total = len(rows)
     with_errors = [r for r in rows if r[0]]
     no_cases = [r for r in rows if r[1] == 0]
-    routes = Counter(r[2] or "none" for r in rows)
+    # A run that finished with no draft. The router sends it to a human and is right to,
+    # so the queue keeps moving and nothing downstream complains.
+    no_draft = [r for r in rows if not (r[2] or "").strip()]
+    routes = Counter(r[3] or "none" for r in rows)
 
     # Which node fails matters more than how many: "retrieve: 429" every run is a dead dep.
     by_node: Counter[str] = Counter()
     examples: dict[str, str] = {}
-    for errors, _cases, _route in with_errors:
+    for errors, _cases, _draft, _route in with_errors:
         for error in errors:
             match = NODE_ERROR.match(str(error))
             node = match.group(1) if match else "unknown"
@@ -65,9 +69,11 @@ def main() -> int:
 
     error_rate = len(with_errors) / total
     empty_rate = len(no_cases) / total
+    draft_rate = len(no_draft) / total
 
     print(f"  runs with node errors   {len(with_errors):3d}/{total}  ({error_rate:.1%})")
     print(f"  runs retrieving nothing {len(no_cases):3d}/{total}  ({empty_rate:.1%})")
+    print(f"  runs drafting nothing   {len(no_draft):3d}/{total}  ({draft_rate:.1%})")
     print(f"  routes                  {dict(routes)}")
 
     if by_node:
@@ -80,6 +86,8 @@ def main() -> int:
         failures.append(f"node error rate {error_rate:.1%} above {args.max_error_rate:.1%}")
     if empty_rate > args.max_error_rate:
         failures.append(f"empty-retrieval rate {empty_rate:.1%} above {args.max_error_rate:.1%}")
+    if draft_rate > args.max_error_rate:
+        failures.append(f"empty-draft rate {draft_rate:.1%} above {args.max_error_rate:.1%}")
 
     # One lane holding everything is the shape of a dead hard-rule input.
     if total >= 5 and len(routes) == 1:

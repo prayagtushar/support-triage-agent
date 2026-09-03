@@ -57,14 +57,25 @@ async def insert_ticket(
     channel: str,
     customer_meta: dict[str, Any],
     external_ref: str | None,
+    domain_id: str,
+    ticket_id: str | None = None,
 ) -> str:
+    """`ticket_id` lets a caller name the row in advance.
+
+    The text path inserts first and gets an id back. A voice turn cannot: the subject
+    is the transcript, which does not exist until the pipeline has already started, and
+    the checkpointer needs a stable thread id from the first node.
+    """
     row = await _fetch_one(
         """
-        INSERT INTO tickets (subject, body, channel, customer_meta, external_ref)
-        VALUES (%(subject)s, %(body)s, %(channel)s, %(meta)s, %(ref)s)
+        INSERT INTO tickets (id, domain_id, subject, body, channel, customer_meta, external_ref)
+        VALUES (coalesce(%(id)s::uuid, gen_random_uuid()), %(domain)s,
+                %(subject)s, %(body)s, %(channel)s, %(meta)s, %(ref)s)
         RETURNING id::text
         """,
         {
+            "id": ticket_id,
+            "domain": domain_id,
             "subject": subject,
             "body": body,
             "channel": channel,
@@ -80,6 +91,22 @@ async def update_ticket_status(ticket_id: str, status: str) -> None:
     await _execute(
         "UPDATE tickets SET status = %(status)s WHERE id = %(id)s::uuid",
         {"id": ticket_id, "status": status},
+    )
+
+
+async def domain_queue_counts() -> list[dict[str, Any]]:
+    """Per-desk volume and route mix. Backs the landing page: one card per desk."""
+    return await _fetch(
+        """
+        SELECT t.domain_id,
+               count(*) AS tickets,
+               count(*) FILTER (WHERE t.status = 'in_review')   AS in_review,
+               count(*) FILTER (WHERE t.status = 'auto_replied') AS auto_replied,
+               count(*) FILTER (WHERE t.status = 'escalated')    AS escalated,
+               max(t.created_at) AS newest
+        FROM tickets t GROUP BY t.domain_id
+        """,
+        {},
     )
 
 
@@ -109,12 +136,18 @@ async def last_run_at() -> str | None:
 
 
 async def recent_run_health(last: int) -> dict[str, Any]:
-    """Recent-run aggregate for /status. Empty retrieval is counted apart from raised errors."""
+    """Recent-run aggregate for /status.
+
+    Three failures that all finish successfully, counted apart because they have
+    different causes: raised errors, retrieval returning nothing, and the drafter
+    returning nothing. A run can be any of them and still look fine from outside.
+    """
     row = await _fetch_one(
         """
         WITH recent AS (
             SELECT errors,
                    coalesce(jsonb_array_length(retrieval -> 'cases'), 0) AS cases,
+                   draft,
                    route
             FROM agent_runs
             ORDER BY created_at DESC
@@ -123,7 +156,10 @@ async def recent_run_health(last: int) -> dict[str, Any]:
         totals AS (
             SELECT count(*) AS total,
                    count(*) FILTER (WHERE jsonb_array_length(errors) > 0) AS with_errors,
-                   count(*) FILTER (WHERE cases = 0) AS empty_retrieval
+                   count(*) FILTER (WHERE cases = 0) AS empty_retrieval,
+                   count(*) FILTER (
+                       WHERE draft IS NULL OR btrim(draft) = ''
+                   ) AS empty_draft
             FROM recent
         ),
         route_counts AS (
@@ -133,11 +169,22 @@ async def recent_run_health(last: int) -> dict[str, Any]:
                 FROM recent WHERE route IS NOT NULL GROUP BY route
             ) grouped
         )
-        SELECT total, with_errors, empty_retrieval, routes FROM totals, route_counts
+        SELECT total, with_errors, empty_retrieval, empty_draft, routes
+        FROM totals, route_counts
         """,
         {"limit": last},
     )
-    return dict(row) if row else {"total": 0, "with_errors": 0, "empty_retrieval": 0, "routes": {}}
+    return (
+        dict(row)
+        if row
+        else {
+            "total": 0,
+            "with_errors": 0,
+            "empty_retrieval": 0,
+            "empty_draft": 0,
+            "routes": {},
+        }
+    )
 
 
 async def insert_run(ticket_id: str, state: dict[str, Any], trace_id: str | None) -> str:
@@ -185,11 +232,11 @@ async def insert_run(ticket_id: str, state: dict[str, Any], trace_id: str | None
 
 
 async def list_tickets_by_status(
-    status: str | None, limit: int, offset: int
+    status: str | None, limit: int, offset: int, domain_id: str | None = None
 ) -> list[dict[str, Any]]:
     return await _fetch(
         """
-        SELECT t.id::text, t.subject, t.status, t.channel, t.created_at,
+        SELECT t.id::text, t.subject, t.status, t.channel, t.created_at, t.domain_id,
                r.id::text AS run_id, r.route, r.composite_confidence,
                r.classification->>'intent'   AS intent,
                r.classification->>'urgency'  AS urgency,
@@ -199,11 +246,12 @@ async def list_tickets_by_status(
             SELECT * FROM agent_runs a
             WHERE a.ticket_id = t.id ORDER BY a.created_at DESC LIMIT 1
         ) r ON TRUE
-        WHERE %(status)s::text IS NULL OR t.status = %(status)s
+        WHERE (%(status)s::text IS NULL OR t.status = %(status)s)
+          AND (%(domain)s::text IS NULL OR t.domain_id = %(domain)s)
         ORDER BY t.created_at DESC
         LIMIT %(limit)s OFFSET %(offset)s
         """,
-        {"status": status, "limit": limit, "offset": offset},
+        {"status": status, "limit": limit, "offset": offset, "domain": domain_id},
     )
 
 
@@ -211,6 +259,7 @@ async def get_ticket_detail(ticket_id: str) -> dict[str, Any] | None:
     return await _fetch_one(
         """
         SELECT t.id::text, t.subject, t.body, t.channel, t.status, t.customer_meta, t.created_at,
+               t.domain_id,
                r.id::text AS run_id, r.classification, r.retrieval, r.draft, r.draft_citations,
                r.judge_scores, r.composite_confidence, r.route, r.route_reason,
                r.errors, r.latency_ms, r.token_usage, r.langfuse_trace_id,
@@ -301,3 +350,51 @@ async def reject_reason_counts() -> dict[str, int]:
 async def queue_counts() -> dict[str, int]:
     rows = await _fetch("SELECT status, count(*) AS n FROM tickets GROUP BY status")
     return {str(r["status"]): int(r["n"]) for r in rows}
+
+
+async def list_domains() -> list[dict[str, Any]]:
+    """Every desk, with its taxonomy attached. One query: there are two of these."""
+    return await _fetch(
+        """
+        SELECT d.id, d.name, d.description, d.provenance,
+               d.classify_guidance, d.classify_examples,
+               coalesce(
+                   jsonb_agg(
+                       jsonb_build_object(
+                           'intent', di.intent,
+                           'label', di.label,
+                           'definition', di.definition
+                       ) ORDER BY di.intent
+                   ) FILTER (WHERE di.intent IS NOT NULL),
+                   '[]'::jsonb
+               ) AS intents
+        FROM domains d
+        LEFT JOIN domain_intents di ON di.domain_id = d.id
+        GROUP BY d.id, d.name, d.description, d.provenance,
+                 d.classify_guidance, d.classify_examples, d.sort_order
+        ORDER BY d.sort_order
+        """,
+        {},
+    )
+
+
+async def domain_case_counts() -> dict[str, dict[str, int]]:
+    """How much evidence each desk actually has. An empty desk must not look like a full one."""
+    rows = await _fetch(
+        """
+        SELECT domain_id,
+               count(*) AS cases,
+               count(embedding) AS embedded,
+               count(*) FILTER (WHERE source = 'synthetic') AS synthetic
+        FROM resolved_cases GROUP BY domain_id
+        """,
+        {},
+    )
+    return {
+        r["domain_id"]: {
+            "cases": int(r["cases"]),
+            "embedded": int(r["embedded"]),
+            "synthetic": int(r["synthetic"]),
+        }
+        for r in rows
+    }

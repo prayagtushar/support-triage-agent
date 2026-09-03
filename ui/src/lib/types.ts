@@ -61,6 +61,8 @@ export interface JudgeScores {
 
 export interface TicketDetail {
   id: string;
+  /** The desk this ticket belongs to, which is not necessarily the one being browsed. */
+  domain_id: string;
   subject: string;
   body: string;
   channel: string;
@@ -142,8 +144,11 @@ export interface Policy {
 export interface SystemStatus {
   runs: number;
   degraded: boolean;
+  /** Which component stopped working. Null when nothing has. */
+  degraded_kind?: "retrieval" | "drafting" | null;
   reason: string;
   empty_retrieval_rate?: number;
+  empty_draft_rate?: number;
   error_rate?: number;
   routes?: Record<string, number>;
   tickets_last_24h?: number;
@@ -159,4 +164,28 @@ export interface TicketProgress {
   classification?: Classification | null;
   retrieved_count?: number;
   errors?: string[];
+}
+
+export interface DomainSummary {
+  id: string;
+  name: string;
+  description: string;
+  /** "real" cases came from resolved support transcripts; "synthetic" ones were generated. */
+  provenance: "real" | "synthetic";
+  intents: string[];
+  intent_labels: Record<string, string>;
+  cases: number;
+  embedded: number;
+  synthetic_cases: number;
+  tickets: number;
+  in_review: number;
+  auto_replied: number;
+  escalated: number;
+  /** False when nothing is embedded: retrieval returns nothing and no draft can be grounded. */
+  ready: boolean;
+}
+
+export interface DomainList {
+  domains: DomainSummary[];
+  default: string;
 }

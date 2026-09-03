@@ -14,6 +14,7 @@ from app.config import settings
 from app.logging import configure_logging
 from app.routers.meta import router as meta_router
 from app.routers.tickets import router as tickets_router
+from app.routers.voice import router as voice_router
 
 log = structlog.get_logger()
 
@@ -43,6 +44,7 @@ app.add_middleware(
 
 app.include_router(tickets_router)
 app.include_router(meta_router)
+app.include_router(voice_router)
 
 
 # Google Frontend swallows /healthz on Cloud Run, so /livez is the probe that works.
