@@ -363,9 +363,8 @@ export default function TicketReview() {
             below={
               data.retrieval?.synthetic_only ? (
                 <p className="prose-human mt-2 rounded-[2px] border border-mustard/40 bg-mustard-bg p-2 text-xs leading-relaxed text-mustard">
-                  Every case cited here was generated, not resolved by a person. Two of the
-                  eight intents have no real cases in the corpus, so a draft for one of them is
-                  machine text grounded in machine text. Judge it accordingly.
+                  No person resolved any of the cases cited here. A model wrote them, so this
+                  draft rests on machine text. Weigh it accordingly.
                 </p>
               ) : undefined
             }
