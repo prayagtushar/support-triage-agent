@@ -5,9 +5,9 @@
 [![ci](https://github.com/prayagtushar/ai-ticket-triage/actions/workflows/ci.yml/badge.svg)](https://github.com/prayagtushar/ai-ticket-triage/actions/workflows/ci.yml)
 [![licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 [![python 3.13](https://img.shields.io/badge/python-3.13-3776ab.svg)](api/pyproject.toml)
-[![live demo](https://img.shields.io/badge/demo-live-0f6b63.svg)](https://support-triage.prayagtushar.xyz)
+[![live demo](https://img.shields.io/badge/demo-live-0f6b63.svg)](https://ai-ticket-triage.prayagtushar.xyz)
 
-**[Live review queue →](https://support-triage.prayagtushar.xyz)** No signup.
+**[Live review queue →](https://ai-ticket-triage.prayagtushar.xyz)** No signup.
 
 An LLM agent that triages inbound customer support tickets end to end. Each ticket is classified by intent and urgency, matched against similar resolved cases, answered with a grounded draft reply, scored by a second model, and then routed by deterministic code. Confident, well-grounded drafts go to an auto-reply queue. Everything else lands in a human review queue with the full context attached.
 
@@ -25,9 +25,9 @@ The review queue. Lanes are the left rail, because a lane is somewhere you work 
 
 ### Try it
 
-- **[Open the review queue →](https://support-triage.prayagtushar.xyz)** It opens on the least confident ticket in the lane, which is where the handoff is easiest to watch.
-- **[Send it your own ticket →](https://support-triage.prayagtushar.xyz/submit)** No account, no key. It runs the real pipeline, so give it about 40 seconds. Then approve, edit or reject the reply it drafted for you.
-- **[Read the evals →](https://support-triage.prayagtushar.xyz/evals)**
+- **[Open the review queue →](https://ai-ticket-triage.prayagtushar.xyz)** It opens on the least confident ticket in the lane, which is where the handoff is easiest to watch.
+- **[Send it your own ticket →](https://ai-ticket-triage.prayagtushar.xyz/submit)** No account, no key. It runs the real pipeline, so give it about 40 seconds. Then approve, edit or reject the reply it drafted for you.
+- **[Read the evals →](https://ai-ticket-triage.prayagtushar.xyz/evals)**
 
 Reading is open to everyone. Submitting a ticket or recording a review spends a pipeline run against three model providers, so those are capped.
 
@@ -130,7 +130,7 @@ It then happened a second time, in a different component, and the check did not 
 ## Desks
 
 More than one ticketing system runs on one deployment. The switcher in the header moves
-between them and [`/desks`](https://support-triage.prayagtushar.xyz/desks) compares them.
+between them and [`/desks`](https://ai-ticket-triage.prayagtushar.xyz/desks) compares them.
 
 | Desk | Corpus | Cases | Intents |
 |---|---|---|---|
@@ -263,7 +263,7 @@ The judge earns its place. Three times during development the drafter invented s
 
 ## Voice
 
-The same agent, reached by speaking, at [`/voice`](https://support-triage.prayagtushar.xyz/voice).
+The same agent, reached by speaking, at [`/voice`](https://ai-ticket-triage.prayagtushar.xyz/voice).
 
 This exists because of one sentence in the latency line above: triage is asynchronous,
 so p95 bounds how long a ticket waits before a human sees it, not how long a customer

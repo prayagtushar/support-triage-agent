@@ -15,10 +15,14 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # Defaulted, not remembered: --set-env-vars replaces the whole set, so omitting this broke CORS.
 #
+# Every origin the browser may load the dashboard from has to be listed. Renaming the
+# project added a domain and the queue went blank on it until this caught up, because a
+# missing origin fails at preflight and looks like the API is down.
+#
 # The list below is passed with gcloud's "^@^" custom-delimiter syntax, because the default
 # delimiter is a comma and this value is a JSON array of origins. Without it gcloud splits
 # the array mid-value and rejects the fragment as a malformed dict entry.
-DEFAULT_CORS_ORIGINS='["https://support-triage.prayagtushar.xyz","https://support-triage-sigma.vercel.app","http://localhost:5173"]'
+DEFAULT_CORS_ORIGINS='["https://ai-ticket-triage.prayagtushar.xyz","https://support-triage.prayagtushar.xyz","https://support-triage-sigma.vercel.app","http://localhost:5173"]'
 
 echo "Building ${IMAGE}..."
 gcloud builds submit "${REPO_ROOT}/api" \

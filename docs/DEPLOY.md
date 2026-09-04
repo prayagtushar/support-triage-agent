@@ -201,7 +201,7 @@ a static SPA is readable by anyone who opens devtools. There is no field for it 
 dashboard either. Claim it once by visiting:
 
 ```
-https://support-triage.prayagtushar.xyz/?key=<the-key>
+https://ai-ticket-triage.prayagtushar.xyz/?key=<the-key>
 ```
 
 which stores it and strips the parameter from the URL. `GET /tickets/{id}` returns a
