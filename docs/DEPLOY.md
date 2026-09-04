@@ -1,4 +1,4 @@
-# Deploying the Customer Support Triage Agent
+# Deploying AI Ticket Triage
 
 The deployed system is three pieces: a FastAPI container on Cloud Run, a static
 React build on Vercel, and Postgres with pgvector on Supabase.
@@ -272,7 +272,7 @@ gcloud pubsub topics publish billing-kill-switch --project=triage-agent-prayag \
 gcloud billing projects link triage-agent-prayag --billing-account=<account>
 ```
 
-support-triage-agent lives in **its own GCP project** so that cost is
+ai-ticket-triage lives in **its own GCP project** so that cost is
 attributable per app and this kill switch cannot take down anything else.
 
 Note the budget must be denominated in **INR**, the billing account's

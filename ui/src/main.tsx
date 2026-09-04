@@ -14,7 +14,6 @@ import { ToastProvider } from "./components/Toast";
 import { LANES } from "./lib/lanes";
 import { REPO_URL } from "./lib/links";
 import { useDomain, withDomain } from "./lib/domain";
-import { usePolicy } from "./lib/usePolicy";
 import Audit from "./routes/Audit";
 import Evals from "./routes/Evals";
 import Queues from "./routes/Queues";
@@ -28,17 +27,11 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
 });
 
-/** "a consumer online shopping service" reads as a label once the article is gone. */
-function withoutArticle(domain: string): string {
-  return domain.replace(/^(a|an|the)\s+/i, "");
-}
-
 function Shell({ children }: { children: React.ReactNode }) {
   // Reviewing a ticket is the one screen where someone is working rather than navigating,
   // and it already carries a sidebar of its own. It gets the full width.
   const focused = useLocation().pathname.startsWith("/tickets/");
-  const policy = usePolicy();
-  const { id: domainId, domain } = useDomain();
+  const { id: domainId } = useDomain();
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -54,13 +47,13 @@ function Shell({ children }: { children: React.ReactNode }) {
               <span className="h-4 w-[3px] bg-mustard-fill" />
               <span className="h-1.5 w-[3px] bg-rust-fill" />
             </span>
-            <span className="truncate text-sm font-semibold tracking-tight">support triage</span>
-            {(domain?.description ?? policy?.domain) && (
-              <span className="hidden text-xs text-ink-3 sm:inline">
-                <span aria-hidden>·</span>{" "}
-                {withoutArticle(domain?.description ?? policy?.domain ?? "")}
-              </span>
-            )}
+            <span className="truncate text-sm font-semibold tracking-tight">AI ticket triage</span>
+            {/* What the project does, not which desk is open. The desk is named by the
+                switcher two feet to the right; a first-time reader needs the other thing. */}
+            <span className="hidden text-xs text-ink-3 lg:inline">
+              <span aria-hidden>·</span> drafts a reply to every ticket and decides which
+              ones a human sees
+            </span>
           </Link>
 
           <span className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">

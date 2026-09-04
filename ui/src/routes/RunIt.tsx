@@ -10,7 +10,7 @@ const report = evals.report;
 const INR_PER_USD = 83;
 
 const SETUP = `git clone ${REPO_URL}
-cd support-triage-agent
+cd ai-ticket-triage
 cp api/.env.example api/.env   # three provider keys
 make demo                      # database, corpus, embeddings, seeded queues`;
 

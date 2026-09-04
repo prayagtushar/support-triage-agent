@@ -1,6 +1,8 @@
-# Customer Support Triage Agent
+# AI Ticket Triage
 
-[![ci](https://github.com/prayagtushar/support-triage-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/prayagtushar/support-triage-agent/actions/workflows/ci.yml)
+**Reads every support ticket, drafts a reply, and decides which ones a human has to see.**
+
+[![ci](https://github.com/prayagtushar/ai-ticket-triage/actions/workflows/ci.yml/badge.svg)](https://github.com/prayagtushar/ai-ticket-triage/actions/workflows/ci.yml)
 [![licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 [![python 3.13](https://img.shields.io/badge/python-3.13-3776ab.svg)](api/pyproject.toml)
 [![live demo](https://img.shields.io/badge/demo-live-0f6b63.svg)](https://support-triage.prayagtushar.xyz)
@@ -397,8 +399,8 @@ Every ticket body is sent to three third-party model providers. For this project
 ## Getting started
 
 ```bash
-git clone https://github.com/prayagtushar/support-triage-agent
-cd support-triage-agent
+git clone https://github.com/prayagtushar/ai-ticket-triage
+cd ai-ticket-triage
 cp api/.env.example api/.env   # three provider keys
 make demo                      # database, corpus, embeddings, seeded queues
 make run                       # http://localhost:5173
