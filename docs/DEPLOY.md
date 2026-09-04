@@ -7,7 +7,7 @@ React build on Vercel, and Postgres with pgvector on Supabase.
 |---|---|---|
 | API | Cloud Run `triage-api`, `asia-south1`, project `triage-agent-prayag` | ~₹0, inside the free tier |
 | Database | Supabase free project `support-triage`, `ap-south-1` | ₹0 |
-| Dashboard | Vercel static build, `support-triage.prayagtushar.xyz` | ₹0 |
+| Dashboard | Vercel static build, `ai-ticket-triage.prayagtushar.xyz` | ₹0 |
 | Secrets | Secret Manager, 6 secrets | ~₹20/mo |
 | Images | Artifact Registry, cleanup policy applied | ~₹0, under the 0.5 GB free tier |
 
@@ -218,9 +218,11 @@ export LANGFUSE_PUBLIC_KEY=pk-lf-...
 infra/deploy-api.sh              # builds and deploys, tag defaults to latest
 ```
 
-`CORS_ORIGINS` no longer needs exporting: both dashboard origins, the
-`support-triage.prayagtushar.xyz` domain and the `.vercel.app` host it is served
-from, are the default in `deploy-api.sh`. A new domain has to be added there, or
+`CORS_ORIGINS` no longer needs exporting: every dashboard origin is the default
+in `deploy-api.sh` — `ai-ticket-triage.prayagtushar.xyz`, the
+`support-triage.prayagtushar.xyz` domain it was renamed from and which is kept
+so old links keep working, the `.vercel.app` host it is served from, and
+localhost. A new domain has to be added there, or
 the browser blocks its requests at preflight. A domain that is live in Vercel
 but absent from that list looks exactly like an API outage from the console.
 It used to be listed here as something to remember,

@@ -1,5 +1,13 @@
 # The voice path
 
+Verified against `2484693` on 2026-09-05.
+
+> **It shipped.** `deploy-api.sh` sets `VOICE_ENABLED=true` with all three cuts on:
+> `VOICE_JUDGE_ASYNC`, `VOICE_STREAM_DRAFT`, `VOICE_FAST_DRAFTER`. Production runs the
+> `fast_drafter` arm, so the 7.1s figure below is the configuration that is live, not a
+> proposal. The drafter on the text path moved to `meta-llama/llama-3.3-70b-instruct` on
+> 2026-09-04 for the same reason and is now the same model on both paths.
+
 The text pipeline answers a ticket in about 22 seconds at p50 and 48 at p95. That is
 fine, and the README says why: triage is asynchronous, so p95 bounds how long a ticket
 waits before a human sees it, not how long anyone waits on a page.
