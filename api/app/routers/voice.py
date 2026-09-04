@@ -12,7 +12,7 @@ from app.domains import UnknownDomain
 from app.domains import default_id as default_domain
 from app.domains import get as get_domain
 from app.observability import flush
-from app.voice.turn import run_voice_turn
+from app.voice.turn import arm_name, run_voice_turn
 
 log = structlog.get_logger()
 router = APIRouter(tags=["voice"])
@@ -26,13 +26,10 @@ MAX_AUDIO_BYTES = 5 * 1024 * 1024
 async def voice_config() -> dict[str, Any]:
     """What the browser needs to know, and which arm is in force. Read-only."""
     return {
-        "arm": (
-            "stream_draft"
-            if settings.voice_stream_draft
-            else "judge_async"
-            if settings.voice_judge_async
-            else "baseline"
-        ),
+        # From the same function the turn uses. This was a second copy of the rule and
+        # it had gone stale: it never learned the fast_drafter arm, so the page named
+        # one arm while the pipeline ran another.
+        "arm": arm_name(),
         "stt_model": settings.stt_model,
         "tts_model": settings.tts_model,
         "tts_speaker": settings.tts_speaker,
@@ -99,8 +96,18 @@ async def voice_ws(socket: WebSocket, domain: str | None = None) -> None:
         log.info("voice_caller_left")
     except Exception as exc:
         log.exception("voice_turn_failed", error=str(exc))
+        # An empty speech account is a billing state, not a crash, and the raw
+        # HTTPStatusError repr told a visitor nothing they could act on. It is the one
+        # failure here that is expected to happen eventually, so it gets a sentence.
+        detail = str(exc)
+        message = (
+            "Speech credit has run out on this deployment. The measurements below are "
+            "what it did while it was funded."
+            if "402" in detail or "credit" in detail.lower()
+            else f"{type(exc).__name__}: {exc}"
+        )
         try:
-            await socket.send_json({"type": "error", "message": f"{type(exc).__name__}: {exc}"})
+            await socket.send_json({"type": "error", "message": message})
         except (WebSocketDisconnect, RuntimeError):
             pass
     finally:

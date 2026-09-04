@@ -53,7 +53,8 @@ class TurnTimings:
         return asdict(self)
 
 
-def _arm() -> str:
+def arm_name() -> str:
+    """Which set of latency cuts is in force. One definition, two readers."""
     if settings.voice_fast_drafter:
         return "fast_drafter"
     if settings.voice_stream_draft:
@@ -138,7 +139,7 @@ async def run_voice_turn(
 ) -> AsyncIterator[dict[str, Any]]:
     """Yields transcript, then audio as it is produced, then the finished turn."""
     t0 = time.monotonic()
-    timings = TurnTimings(arm=_arm())
+    timings = TurnTimings(arm=arm_name())
 
     def elapsed() -> int:
         return int((time.monotonic() - t0) * 1000)

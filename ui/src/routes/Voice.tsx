@@ -250,7 +250,7 @@ export default function Voice() {
         </div>
       )}
 
-      {live === false && (
+      {!done && (
         <section className="space-y-3">
           <h2 className="eyebrow">time to first audio</h2>
           <div className="overflow-x-auto">
