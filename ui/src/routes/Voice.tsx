@@ -3,6 +3,26 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 const WS_URL = `${BASE.replace(/^http/, "ws")}/voice/ws`;
 
+/**
+ * What the benchmark measured, so the page is worth reading whether or not speech is
+ * live. Three tickets per arm, against real providers, and the two middle arms were
+ * never completed. docs/VOICE.md carries the caveats in full.
+ */
+const ARMS: readonly { arm: string; what: string; ttfa: string; spoke: string }[] = [
+  {
+    arm: "baseline",
+    what: "The text pipeline with a microphone on it. Judge inline, reply spoken once every node has finished.",
+    ttfa: "38.4s",
+    spoke: "1 of 3",
+  },
+  {
+    arm: "fast_drafter",
+    what: "Judge off the critical path, sentences spoken as they are written, and a non-reasoning model writing the reply.",
+    ttfa: "7.1s",
+    spoke: "3 of 3",
+  },
+];
+
 type Timings = {
   arm: string;
   transcript_ms: number | null;
@@ -92,6 +112,16 @@ export default function Voice() {
   const [done, setDone] = useState<Done | null>(null);
   const [heard, setHeard] = useState<Heard>({ firstAudioMs: null, chunks: 0 });
   const [error, setError] = useState<string | null>(null);
+  // The API knows whether speech is funded and switched on. Asking it beats guessing,
+  // and beats asking someone for a microphone on the way to an error.
+  const [live, setLive] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch(`${BASE}/voice/config`)
+      .then((r) => r.json())
+      .then((c) => setLive(Boolean(c.enabled)))
+      .catch(() => setLive(false));
+  }, []);
 
   const recorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
@@ -191,18 +221,71 @@ export default function Voice() {
         </p>
       </header>
 
-      <div className="flex items-center gap-4">
-        <button
-          type="button"
-          onClick={recording ? stop : start}
-          className={`rounded-[2px] px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 ${
-            recording ? "bg-rust text-paper" : "bg-teal text-paper"
-          }`}
+      {live === false ? (
+        <div
+          role="status"
+          className="rounded-[2px] border border-mustard/40 bg-mustard-bg px-3 py-2 text-xs text-mustard"
         >
-          {recording ? "Stop" : "Start talking"}
-        </button>
-        <span className="text-sm text-ink-3">{status}</span>
-      </div>
+          <span className="font-medium">Speech is switched off on this deployment.</span>{" "}
+          <span className="prose-human">
+            Speech to text and text to speech are the only part of this system that runs on
+            a paid Indic speech account, and it has no credit. Rather than hand you a button
+            that asks for a microphone and then fails, here is what the benchmark measured
+            while the account was funded.
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={recording ? stop : start}
+            disabled={live === null}
+            className={`rounded-[2px] px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50 ${
+              recording ? "bg-rust text-paper" : "bg-teal text-paper"
+            }`}
+          >
+            {recording ? "Stop" : "Start talking"}
+          </button>
+          <span className="text-sm text-ink-3">{status}</span>
+        </div>
+      )}
+
+      {live === false && (
+        <section className="space-y-3">
+          <h2 className="eyebrow">time to first audio</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[34rem] text-left text-xs">
+              <thead className="text-ink-3">
+                <tr className="border-b border-rule">
+                  <th className="pb-1.5 font-normal">arm</th>
+                  <th className="pb-1.5 font-normal">what changes</th>
+                  <th className="pb-1.5 text-right font-normal">p50</th>
+                  <th className="pb-1.5 text-right font-normal">spoke at all</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ARMS.map((a) => (
+                  <tr key={a.arm} className="border-b border-rule align-top">
+                    <td className="py-2 pr-3 font-mono text-ink">{a.arm}</td>
+                    <td className="prose-human py-2 pr-3 text-ink-2">{a.what}</td>
+                    <td className="py-2 pl-3 text-right tabular-nums text-ink">{a.ttfa}</td>
+                    <td className="py-2 pl-3 text-right tabular-nums text-ink-2">{a.spoke}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="prose-human text-xs text-ink-3">
+            Three tickets per arm, so this is a direction rather than a result, and two
+            further arms were never completed. The finding that survives is the drafter:
+            a reasoning model spends its whole budget thinking before it emits a word
+            anyone can say, which on a call is silence. Swapping it for a non-reasoning
+            model is a config change, and it is most of the 38.4 to 7.1 second gap. The
+            measurements, including the ones that failed, are in{" "}
+            <code className="text-ink-2">docs/VOICE.md</code>.
+          </p>
+        </section>
+      )}
 
       {error && (
         <p className="rounded-[2px] border border-rust bg-paper-2 px-3 py-2 text-sm text-ink">

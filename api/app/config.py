@@ -108,6 +108,13 @@ class Settings(BaseSettings):
     composite_weight_retrieval: float = Field(default=0.2, ge=0.0, le=1.0)
 
     # Voice. Sarvam's speech endpoints, reached with the same key as the chat model.
+    # Speech runs on Sarvam and nothing else does. When that account has no credit the
+    # key is still present and still valid, so the endpoints answer 402 rather than
+    # failing to authenticate, and there is no way to detect it short of spending a
+    # call. This switch says so out loud instead: the page shows the measurements and
+    # explains itself, rather than offering a button that errors after asking for a
+    # microphone. Set VOICE_ENABLED=true once the account is funded.
+    voice_enabled: bool = True
     stt_model: str = "saaras:v3"
     # The corpus is English and Hinglish, so let the provider decide rather than force one.
     stt_language: str = "unknown"

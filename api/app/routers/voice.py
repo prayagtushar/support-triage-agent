@@ -38,7 +38,7 @@ async def voice_config() -> dict[str, Any]:
         "tts_speaker": settings.tts_speaker,
         "sample_rate": settings.tts_sample_rate,
         "max_audio_bytes": MAX_AUDIO_BYTES,
-        "enabled": bool(settings.sarvam_api_key),
+        "enabled": settings.voice_enabled and bool(settings.sarvam_api_key),
     }
 
 
@@ -51,6 +51,16 @@ async def voice_ws(socket: WebSocket, domain: str | None = None) -> None:
     triage, would hide exactly the interval being measured.
     """
     await socket.accept()
+
+    # Refused before the browser records anything, so nobody is asked for a microphone
+    # to reach an error. GET /voice/config says the same thing, and the page reads it.
+    if not (settings.voice_enabled and settings.sarvam_api_key):
+        await socket.send_json(
+            {"type": "error", "message": "Speech is switched off on this deployment."}
+        )
+        await socket.close()
+        return
+
     try:
         audio = await socket.receive_bytes()
     except WebSocketDisconnect:
