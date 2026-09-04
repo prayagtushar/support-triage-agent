@@ -10,7 +10,7 @@ import { ageTone, relativeAge } from "../lib/format";
 import type { Lane } from "../lib/lanes";
 import type { QueueRow } from "../lib/types";
 import { usePolicy } from "../lib/usePolicy";
-import { useDomain } from "../lib/domain";
+import { useDomain, useLanguage } from "../lib/domain";
 
 type Sort = "age" | "confidence" | "urgency";
 type Density = "comfortable" | "compact";
@@ -149,12 +149,13 @@ export default function Queues({ lane }: { lane: Lane }) {
   const rowPad = density === "compact" ? "py-1" : "py-2.5";
   const policy = usePolicy();
   const { id: domainId, domain } = useDomain();
+  const { lang, setLanguage } = useLanguage();
 
   const { data, error, isPending } = useQuery({
     // The desk is part of the key, so switching desks refetches rather than showing the
-    // previous desk's rows under the new desk's name.
-    queryKey: ["tickets", lane.status, domainId],
-    queryFn: () => listTickets(lane.status, domainId),
+    // previous desk's rows under the new desk's name. Same for the language filter.
+    queryKey: ["tickets", lane.status, domainId, lang],
+    queryFn: () => listTickets(lane.status, domainId, lang),
     enabled: Boolean(domainId),
     refetchInterval: 10_000,
   });
@@ -286,7 +287,26 @@ export default function Queues({ lane }: { lane: Lane }) {
       {error && <ErrorNote error={error} what="the queue" />}
       {isPending && <Skeleton />}
 
-      {rows && rows.length === 0 && (
+      {rows && rows.length === 0 && lang && (
+        <div className="rounded-[2px] border border-dashed border-rule-2 p-10 text-center">
+          <p className="text-sm text-ink-2">
+            Nothing in {lane.label} in {lang === "en" ? "English" : "Hindi"}.
+          </p>
+          <p className="prose-human mt-1 text-xs text-ink-3">
+            The lane may still have tickets in the other language.{" "}
+            <button
+              type="button"
+              onClick={() => setLanguage("")}
+              className="underline underline-offset-2 hover:text-ink-2"
+            >
+              Show every language
+            </button>
+            .
+          </p>
+        </div>
+      )}
+
+      {rows && rows.length === 0 && !lang && (
         <div className="rounded-[2px] border border-dashed border-rule-2 p-10 text-center">
           <p className="text-sm text-ink-2">Nothing in {lane.label}.</p>
           <p className="prose-human mt-1 text-xs text-ink-3">

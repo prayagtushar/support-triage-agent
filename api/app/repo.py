@@ -231,8 +231,21 @@ async def insert_run(ticket_id: str, state: dict[str, Any], trace_id: str | None
     return str(row["id"])
 
 
+# What a viewer means by a language, in the values the classifier actually returns.
+# "hi" covers Devanagari and romanised Hindi both: Hinglish is Hindi typed in Latin
+# script, and a reader who wants one wants the other.
+LANGUAGE_GROUPS: dict[str, tuple[str, ...]] = {
+    "en": ("en",),
+    "hi": ("hi", "hi-en"),
+}
+
+
 async def list_tickets_by_status(
-    status: str | None, limit: int, offset: int, domain_id: str | None = None
+    status: str | None,
+    limit: int,
+    offset: int,
+    domain_id: str | None = None,
+    languages: tuple[str, ...] | None = None,
 ) -> list[dict[str, Any]]:
     return await _fetch(
         """
@@ -248,10 +261,23 @@ async def list_tickets_by_status(
         ) r ON TRUE
         WHERE (%(status)s::text IS NULL OR t.status = %(status)s)
           AND (%(domain)s::text IS NULL OR t.domain_id = %(domain)s)
+          -- A ticket whose run has no classification has no language either. It is
+          -- excluded from a language filter rather than shown under every one, because
+          -- a row the filter cannot account for is worse than a missing row.
+          AND (
+              %(languages)s::text[] IS NULL
+              OR r.classification->>'language' = ANY(%(languages)s)
+          )
         ORDER BY t.created_at DESC
         LIMIT %(limit)s OFFSET %(offset)s
         """,
-        {"status": status, "limit": limit, "offset": offset, "domain": domain_id},
+        {
+            "status": status,
+            "limit": limit,
+            "offset": offset,
+            "domain": domain_id,
+            "languages": list(languages) if languages else None,
+        },
     )
 
 

@@ -10,7 +10,7 @@ import { ConfidenceMeter, ScoreTicks, scoreTone } from "../components/Meter";
 import { Pipeline } from "../components/Pipeline";
 import { getTicket, listTickets, submitReview } from "../lib/api";
 import { reviewToast, useToast } from "../components/Toast";
-import { useDomain, withDomain } from "../lib/domain";
+import { useDomain, useLanguage, withDomain } from "../lib/domain";
 import { timestamp } from "../lib/format";
 import type { RejectReason, ReviewPayload, TicketStatus } from "../lib/types";
 import { useHotkeys } from "../lib/useHotkeys";
@@ -94,9 +94,12 @@ export default function TicketReview() {
   // link can belong to another desk, and without this the lane silently mixed them, so
   // j/k walked from a refund into a laptop that would not charge. The desk is in the
   // query key too, or this cache entry collides with the queue's own list.
+  // The language filter is in here too: j/k should walk the list the reviewer is
+  // actually looking at, not a longer one they filtered away.
+  const { lang } = useLanguage();
   const lane = useQuery({
-    queryKey: ["tickets", data?.status as TicketStatus, data?.domain_id],
-    queryFn: () => listTickets(data!.status, data!.domain_id),
+    queryKey: ["tickets", data?.status as TicketStatus, data?.domain_id, lang],
+    queryFn: () => listTickets(data!.status, data!.domain_id, lang),
     enabled: Boolean(data?.status && data?.domain_id),
   });
 

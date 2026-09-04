@@ -45,8 +45,13 @@ def client(monkeypatch):
         return "33333333-3333-3333-3333-333333333333"
 
     async def fake_list(
-        status: str | None, limit: int, offset: int, domain_id: str | None = None
+        status: str | None,
+        limit: int,
+        offset: int,
+        domain_id: str | None = None,
+        languages: tuple[str, ...] | None = None,
     ) -> list[dict[str, Any]]:
+        state["languages"] = languages
         return [{"id": TICKET_ID, "subject": "hi", "status": status or "received"}]
 
     async def fake_run(run_id: str) -> dict[str, Any] | None:
@@ -172,6 +177,20 @@ def test_reviewing_a_ticket_with_no_run_is_409(client):
 def test_queue_listing_passes_the_status_filter_through(client):
     body = client.get("/tickets", params={"status": "in_review"}).json()
     assert body["tickets"][0]["status"] == "in_review"
+
+
+def test_queue_listing_groups_hinglish_under_hindi(client):
+    """Hinglish is Hindi typed in Latin script. A reader who wants one wants the other."""
+    client.get("/tickets", params={"lang": "hi"})
+    assert client.state["languages"] == ("hi", "hi-en")
+
+
+def test_queue_listing_shows_every_language_by_default_and_on_junk(client):
+    """A bad query string should not empty the queue, and English is not the default."""
+    for params in ({}, {"lang": "kl"}):
+        body = client.get("/tickets", params=params).json()
+        assert client.state["languages"] is None
+        assert body["language"] is None
 
 
 def test_queue_listing_rejects_an_absurd_limit(client):

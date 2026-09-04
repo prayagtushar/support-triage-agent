@@ -142,11 +142,25 @@ async def create_ticket(
 async def list_tickets(
     status: str | None = None,
     domain: str | None = None,
+    lang: str | None = None,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ) -> dict[str, Any]:
-    rows = await repo.list_tickets_by_status(status, limit, offset, domain)
-    return {"tickets": rows, "limit": limit, "offset": offset, "domain": domain}
+    """`lang` is "en" or "hi"; anything else, including absent, means every language.
+
+    The corpus is English and Hinglish, and a reader who cannot read one of them cannot
+    judge those rows. Filtering is a reading aid, so an unknown value shows everything
+    rather than erroring: a bad query string should not empty the queue.
+    """
+    languages = repo.LANGUAGE_GROUPS.get(lang or "")
+    rows = await repo.list_tickets_by_status(status, limit, offset, domain, languages)
+    return {
+        "tickets": rows,
+        "limit": limit,
+        "offset": offset,
+        "domain": domain,
+        "language": lang if languages else None,
+    }
 
 
 @router.get("/tickets/{ticket_id}")

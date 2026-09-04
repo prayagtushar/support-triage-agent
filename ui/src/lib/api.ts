@@ -54,10 +54,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
  * laptop that would not charge. A queue that quietly mixes desks is worse than an empty
  * one, because every row looks legitimate. Pass "" deliberately to span every desk.
  */
-export function listTickets(status: TicketStatus | undefined, domain: string) {
+export function listTickets(status: TicketStatus | undefined, domain: string, lang = "") {
   const query = new URLSearchParams();
   if (status) query.set("status", status);
   if (domain) query.set("domain", domain);
+  // Filtered server side, not in the component, so the rail's lane counts keep
+  // agreeing with the rows underneath them.
+  if (lang) query.set("lang", lang);
   const suffix = query.toString() ? `?${query}` : "";
   return request<{ tickets: QueueRow[] }>(`/tickets${suffix}`);
 }

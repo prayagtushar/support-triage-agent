@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 
 import { getStatus, listTickets } from "../lib/api";
 import { relativeAge } from "../lib/format";
-import { useDomain, withDomain } from "../lib/domain";
+import { useDomain, useLanguage, withDomain } from "../lib/domain";
 import { LANES } from "../lib/lanes";
 import { REPO_URL } from "../lib/links";
 
@@ -64,13 +64,15 @@ function Heartbeat() {
  */
 export default function Rail() {
   const { id: domainId } = useDomain();
+  const { lang } = useLanguage();
 
   const counts = useQueries({
     queries: LANES.map((lane) => ({
       // Scoped to the desk in view. A rail counting another desk's queue is worse than
-      // no count: it looks authoritative and sends someone to an empty lane.
-      queryKey: ["tickets", lane.status, domainId],
-      queryFn: () => listTickets(lane.status, domainId),
+      // no count: it looks authoritative and sends someone to an empty lane. The same
+      // applies to the language filter, so it is part of the key too.
+      queryKey: ["tickets", lane.status, domainId, lang],
+      queryFn: () => listTickets(lane.status, domainId, lang),
       refetchInterval: 10_000,
     })),
   });

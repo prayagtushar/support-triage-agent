@@ -85,6 +85,12 @@ computed for display.
 - **Queues.** One lane per route, each a URL of its own. Filter, and sort by age, urgency or
   confidence. Age is coloured against the response window for the ticket's priority, because
   in a queue age is a risk signal rather than a fact.
+- **Language.** The corpus is English and Hinglish, and the header filters the queue to
+  either or to both. It filters server side, from the language the classifier recorded, so
+  the rail's lane counts move with it rather than disagreeing with the rows underneath.
+  Hinglish and Devanagari are one choice, because Hinglish is Hindi typed in Latin script.
+  The default is both: someone who cannot read one of them cannot judge those drafts, which
+  makes this a reading aid rather than a claim about the desk.
 - **Review.** The draft, the judge's three sub-scores and reasoning, the retrieved cases with
   citation markers and similarity, the classifier's rationale, and the composite broken into
   its weighted parts. Below that, the pipeline as it actually ran: five nodes, real per-node

@@ -8,11 +8,12 @@ import Rail from "./components/Rail";
 import StatusBanner from "./components/StatusBanner";
 import CommandPalette from "./components/CommandPalette";
 import DomainSwitcher from "./components/DomainSwitcher";
+import LanguageFilter from "./components/LanguageFilter";
 import ThemeToggle from "./components/ThemeToggle";
 import { ToastProvider } from "./components/Toast";
 import { LANES } from "./lib/lanes";
 import { REPO_URL } from "./lib/links";
-import { useDomain } from "./lib/domain";
+import { useDomain, withDomain } from "./lib/domain";
 import { usePolicy } from "./lib/usePolicy";
 import Audit from "./routes/Audit";
 import Evals from "./routes/Evals";
@@ -37,14 +38,16 @@ function Shell({ children }: { children: React.ReactNode }) {
   // and it already carries a sidebar of its own. It gets the full width.
   const focused = useLocation().pathname.startsWith("/tickets/");
   const policy = usePolicy();
-  const { domain } = useDomain();
+  const { id: domainId, domain } = useDomain();
 
   return (
     <div className="min-h-screen bg-paper text-ink">
       <CommandPalette />
       <header className="border-b border-rule bg-paper-2">
-        <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 sm:gap-4 sm:px-6">
-          <Link to="/" className="flex min-w-0 items-baseline gap-2">
+        {/* Wraps rather than shrinks: with the language filter added, a phone had five
+            controls on one line and squeezed the wordmark down to the mark alone. */}
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-3 sm:gap-4 sm:px-6">
+          <Link to="/" className="flex min-w-0 shrink-0 items-baseline gap-2">
             {/* The mark is the routing decision in miniature: three lanes, one chosen. */}
             <span aria-hidden className="flex items-end gap-[2px]">
               <span className="h-2.5 w-[3px] bg-teal-fill" />
@@ -61,6 +64,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           </Link>
 
           <span className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+            <LanguageFilter />
             <DomainSwitcher />
             <Link
               to="/submit"
@@ -91,24 +95,30 @@ function Shell({ children }: { children: React.ReactNode }) {
               aria-label="Sections"
               className="-mx-4 mb-6 flex gap-4 overflow-x-auto border-b border-rule px-4 pb-2 text-sm lg:hidden"
             >
+              {/* Through withDomain like the rail's links, so the desk and the language
+                  filter survive a tap rather than being dropped out of the URL. */}
               {LANES.map((lane) => (
-                <Link key={lane.path} to={lane.path} className="whitespace-nowrap text-ink-2">
+                <Link
+                  key={lane.path}
+                  to={withDomain(lane.path, domainId)}
+                  className="whitespace-nowrap text-ink-2"
+                >
                   {lane.label}
                 </Link>
               ))}
-              <Link to="/audit" className="text-ink-2">
+              <Link to={withDomain("/audit", domainId)} className="text-ink-2">
                 audit
               </Link>
-              <Link to="/evals" className="text-ink-2">
+              <Link to={withDomain("/evals", domainId)} className="text-ink-2">
                 evals
               </Link>
-              <Link to="/desks" className="text-ink-2">
+              <Link to={withDomain("/desks", domainId)} className="text-ink-2">
                 desks
               </Link>
-              <Link to="/voice" className="text-ink-2">
+              <Link to={withDomain("/voice", domainId)} className="text-ink-2">
                 voice
               </Link>
-              <Link to="/run-it" className="whitespace-nowrap text-ink-2">
+              <Link to={withDomain("/run-it", domainId)} className="whitespace-nowrap text-ink-2">
                 run it
               </Link>
             </nav>
