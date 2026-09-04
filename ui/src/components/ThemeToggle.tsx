@@ -1,37 +1,68 @@
 import { useEffect, useState } from "react";
 
-type Theme = "system" | "light" | "dark";
+type Theme = "light" | "dark";
 const STORAGE = "triage-theme";
 
-function apply(theme: Theme) {
-  const root = document.documentElement;
-  if (theme === "system") root.removeAttribute("data-theme");
-  else root.setAttribute("data-theme", theme);
+function systemTheme(): Theme {
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-/** Light, dark, or follow the OS. "system" unsets the attribute so the OS keeps winning. */
+function stored(): Theme | null {
+  try {
+    const value = localStorage.getItem(STORAGE);
+    return value === "light" || value === "dark" ? value : null;
+  } catch {
+    // Private windows and blocked site data both throw. The OS still has an opinion.
+    return null;
+  }
+}
+
+/**
+ * Light or dark, nothing else.
+ *
+ * There used to be a third state called "auto" that a reader had to cycle through and
+ * could not interpret: the word named a policy while the other two named a colour. The
+ * automatic part is still here, it just stopped being a thing to click. The page opens
+ * wherever the operating system is and follows it until someone decides otherwise.
+ *
+ * The label is the theme you get by clicking, not the one you are in. A button reading
+ * "light" while the page is already light is a button with nothing to do.
+ */
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(STORAGE) as Theme | null) ?? "system",
-  );
+  const [theme, setTheme] = useState<Theme>(() => stored() ?? systemTheme());
+  const [chosen, setChosen] = useState(() => stored() !== null);
 
   useEffect(() => {
-    apply(theme);
-    if (theme === "system") localStorage.removeItem(STORAGE);
-    else localStorage.setItem(STORAGE, theme);
+    document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  const next: Record<Theme, Theme> = { system: "light", light: "dark", dark: "system" };
-  const label: Record<Theme, string> = { system: "auto", light: "light", dark: "dark" };
+  useEffect(() => {
+    if (chosen) return;
+    // Nobody has picked, so the OS is still in charge, including when it flips at sunset.
+    const query = window.matchMedia("(prefers-color-scheme: dark)");
+    const follow = () => setTheme(query.matches ? "dark" : "light");
+    query.addEventListener("change", follow);
+    return () => query.removeEventListener("change", follow);
+  }, [chosen]);
+
+  const other: Theme = theme === "dark" ? "light" : "dark";
 
   return (
     <button
-      onClick={() => setTheme(next[theme])}
+      onClick={() => {
+        setTheme(other);
+        setChosen(true);
+        try {
+          localStorage.setItem(STORAGE, other);
+        } catch {
+          /* the choice still holds for this visit */
+        }
+      }}
       className="rounded-[2px] border border-rule px-2 py-1 text-[11px] text-ink-2 transition-colors hover:border-rule-2 hover:text-ink"
-      title={`Theme: ${label[theme]}. Click to change.`}
-      aria-label={`Theme: ${label[theme]}. Click to change.`}
+      title={`Switch to ${other} mode`}
+      aria-label={`Switch to ${other} mode`}
     >
-      {label[theme]}
+      {other}
     </button>
   );
 }
