@@ -7,10 +7,7 @@ import type { DomainSummary } from "../lib/types";
 /**
  * Every desk side by side.
  *
- * The switcher moves you between desks; this says which one is worth opening. Volume and
- * waiting count are the operational read; provenance and case count are the epistemic
- * one, and both belong on the same card because a full queue on a generated corpus looks
- * exactly like a full queue on a real one.
+ * The switcher moves you between desks; this says which one is worth opening.
  */
 function Card({ desk, current }: { desk: DomainSummary; current: string }) {
   const lanes = [
@@ -27,23 +24,16 @@ function Card({ desk, current }: { desk: DomainSummary; current: string }) {
     >
       <header className="mb-3 flex flex-wrap items-baseline gap-2">
         <h2 className="text-sm font-semibold tracking-tight">{desk.name}</h2>
-        {desk.provenance === "synthetic" ? (
-          <span className="rounded-[1px] bg-mustard-bg px-1.5 py-px text-[10px] text-mustard">
-            generated corpus
-          </span>
-        ) : (
-          <span className="rounded-[1px] bg-teal-bg px-1.5 py-px text-[10px] text-teal">
-            real corpus
-          </span>
-        )}
         {!desk.ready && (
           <span className="rounded-[1px] bg-rust-bg px-1.5 py-px text-[10px] text-rust">
-            no evidence
+            no cases
           </span>
         )}
       </header>
 
-      <p className="prose-human mb-4 text-xs text-ink-2">Tickets are {desk.description}'s.</p>
+      <p className="prose-human mb-4 text-xs text-ink-2">
+        Support tickets for {desk.description}.
+      </p>
 
       <dl className="mb-4 grid grid-cols-3 gap-3 border-y border-rule py-3">
         {lanes.map((l) => (
@@ -59,16 +49,8 @@ function Card({ desk, current }: { desk: DomainSummary; current: string }) {
 
       <dl className="mb-4 space-y-1 text-[11px]">
         <div className="flex justify-between">
-          <dt className="text-ink-3">resolved cases</dt>
-          <dd className="tabular-nums text-ink-2">
-            {desk.cases.toLocaleString()}
-            {desk.cases > 0 && desk.synthetic_cases > 0 && (
-              <span className="text-ink-3">
-                {" "}
-                ({Math.round((desk.synthetic_cases / desk.cases) * 100)}% generated)
-              </span>
-            )}
-          </dd>
+          <dt className="text-ink-3">reference cases</dt>
+          <dd className="tabular-nums text-ink-2">{desk.cases.toLocaleString()}</dd>
         </div>
         <div className="flex justify-between">
           <dt className="text-ink-3">intents</dt>
@@ -103,10 +85,10 @@ export default function Desks() {
       <header className="space-y-2">
         <h1 className="text-lg font-semibold tracking-tight">Desks</h1>
         <p className="prose-human max-w-2xl text-sm text-ink-2">
-          One agent, one routing policy, one review queue, pointed at different businesses.
-          Each desk carries its own resolved cases, its own intent taxonomy and its own
-          worked examples, and retrieval never crosses between them: a laptop that will not
-          boot answered from a refund policy is worse than no evidence at all.
+          The same agent and the same routing rules, pointed at different businesses. Each
+          desk keeps its own reference cases and its own intents, and retrieval never crosses
+          between them. Answering a dead laptop out of a refund policy is worse than not
+          answering at all.
         </p>
       </header>
 

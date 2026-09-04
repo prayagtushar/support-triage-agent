@@ -6,9 +6,8 @@ import { useDomain, withDomain } from "../lib/domain";
 /**
  * Which desk you are looking at, always on screen.
  *
- * It is a button rather than a select because it carries more than a name: whether the
- * desk has any evidence behind it, and whether that evidence is real. A reviewer reading
- * a draft needs to know they are in the generated desk before they judge the citations.
+ * It is a button rather than a select because it carries more than a name: how much work
+ * is waiting on each desk, so switching is a decision rather than a guess.
  */
 export default function DomainSwitcher() {
   const { id, domain, domains, setDomain } = useDomain();
@@ -42,11 +41,6 @@ export default function DomainSwitcher() {
         className="flex max-w-[9rem] items-center gap-1.5 whitespace-nowrap rounded-[2px] border border-rule bg-paper px-2 py-1.5 text-xs transition-colors hover:border-rule-2 sm:max-w-none sm:gap-2 sm:px-2.5"
       >
         <span className="truncate font-medium text-ink">{domain?.name ?? "choose a desk"}</span>
-        {domain?.provenance === "synthetic" && (
-          <span className="hidden rounded-[1px] bg-mustard-bg px-1 py-px text-[10px] text-mustard sm:inline">
-            generated
-          </span>
-        )}
         <span aria-hidden className="text-ink-3">
           ▾
         </span>
@@ -71,19 +65,14 @@ export default function DomainSwitcher() {
             >
               <span className="flex items-center gap-2">
                 <span className="text-xs font-medium text-ink">{d.name}</span>
-                {d.provenance === "synthetic" && (
-                  <span className="rounded-[1px] bg-mustard-bg px-1 py-px text-[10px] text-mustard">
-                    generated
-                  </span>
-                )}
                 {!d.ready && (
                   <span className="rounded-[1px] bg-rust-bg px-1 py-px text-[10px] text-rust">
-                    no evidence
+                    no cases
                   </span>
                 )}
               </span>
               <span className="text-[11px] text-ink-3">
-                {d.cases.toLocaleString()} cases · {d.tickets} tickets · {d.in_review} waiting
+                {d.tickets} tickets · {d.in_review} awaiting review
               </span>
             </button>
           ))}

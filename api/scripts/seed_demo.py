@@ -1,6 +1,6 @@
 """Submit a spread of tickets through the real API so every queue has residents.
 
-uv run python scripts/seed_demo.py [--api http://localhost:8000]
+uv run python scripts/seed_demo.py [--api http://localhost:8000] [--domain ecom]
 """
 
 from __future__ import annotations
@@ -33,10 +33,32 @@ DEMO_IDS = [
     "g058",  # out of corpus, weak retrieval
 ]
 
+# Each desk names its own golden file and its own spread. A desk absent from here has no
+# demo queue, which is how the tech desk sat at zero tickets while its corpus was ready.
+DESKS: dict[str, tuple[str, list[str]]] = {
+    "ecom": ("v0", DEMO_IDS),
+    "tech": (
+        "tech_v0",
+        [
+            "t001",  # P1 outage
+            "t016",  # security report, should escalate
+            "t005",  # account access, the one the router gets wrong
+            "t008",  # Hinglish outage
+            "t021",  # Hinglish performance
+            "t007",  # how-to, answerable
+            "t019",  # how-to, answerable
+            "t006",  # feature request
+            "t024",  # too vague to answer
+            "t023",  # not a ticket at all
+        ],
+    ),
+}
+
 
 async def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--api", default="http://localhost:8000")
+    parser.add_argument("--domain", default="ecom", choices=sorted(DESKS))
     parser.add_argument("--concurrency", type=int, default=3)
     parser.add_argument(
         "--key",
@@ -49,8 +71,9 @@ async def main() -> int:
     )
     args = parser.parse_args()
 
-    by_id = {t.id: t for t in load_golden()}
-    tickets = [by_id[i] for i in DEMO_IDS if i in by_id]
+    version, wanted = DESKS[args.domain]
+    by_id = {t.id: t for t in load_golden(version)}
+    tickets = [by_id[i] for i in wanted if i in by_id]
 
     async with httpx.AsyncClient(timeout=30.0) as client:
         try:
@@ -69,13 +92,20 @@ async def main() -> int:
             async with semaphore:
                 response = await client.post(
                     f"{args.api}/tickets",
-                    json={"subject": t.subject, "body": t.body, "channel": "web"},
+                    json={
+                        "subject": t.subject,
+                        "body": t.body,
+                        "channel": "web",
+                        # Without this every ticket lands on the default desk, which is
+                        # why a second desk could never be seeded.
+                        "domain_id": args.domain,
+                    },
                     headers=headers,
                 )
                 status = "ok" if response.status_code == 202 else str(response.status_code)
                 print(f"  {t.id}  {status}  {t.subject[:52]}")
 
-        print(f"submitting {len(tickets)} tickets to {args.api}")
+        print(f"submitting {len(tickets)} tickets to {args.api} on the {args.domain} desk")
         await asyncio.gather(*(submit(t) for t in tickets))
 
     print("\nsubmitted. The pipeline runs in the background; give it a minute.")

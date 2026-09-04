@@ -74,7 +74,7 @@ export default function Evals() {
           Golden set <span className="tabular-nums">{report.golden}</span>,{" "}
           <span className="tabular-nums">{report.tickets}</span> hand-written tickets,
           auto-reply threshold <span className="tabular-nums">{threshold}</span>. These are
-          the numbers the design is accountable to, including the one it misses.
+          the numbers this design answers to, including the one it misses.
         </p>
         <p className="text-[11px] tabular-nums text-ink-3">
           run {report.label} · measured {new Date(report.timestamp).toISOString().slice(0, 10)} ·
@@ -87,15 +87,15 @@ export default function Evals() {
           </summary>
           <div className="prose-human mt-2 space-y-2 text-xs leading-relaxed text-ink-2">
             <p>
-              The lead metric misses its target, and it is at the top on purpose. This system
-              is a handoff: it decides which tickets a human sees, so the question is not how
-              often it is right but what it costs to be wrong. A bad auto-reply reaches a
+              The lead metric misses its target, and it sits at the top on purpose. What this
+              system decides is which tickets a human sees. So the question worth asking is
+              what being wrong costs, not how often it is right. A bad auto-reply reaches a
               customer. A ticket sent to a human for no reason costs a few minutes.
             </p>
             <p>
-              Precision here is measured over the tickets the agent chose to answer, which at
-              this threshold is about a sixth of the set. That denominator is small enough that
-              the interval printed under each number matters more than the number.
+              Precision counts only the tickets the agent chose to answer, about a sixth of
+              the set at this threshold. That denominator is small enough that the interval
+              under each number matters more than the number.
             </p>
           </div>
         </details>
@@ -104,8 +104,8 @@ export default function Evals() {
       <section className="space-y-3">
         <h2 className="eyebrow">risk metrics</h2>
         <p className="prose-human max-w-2xl text-xs text-ink-2">
-          These two lead because they encode the asymmetry. A false auto-reply reaches a
-          customer; a missed review is a silent failure. Routing accuracy alone hides both.
+          These two lead because the costs are lopsided. A false auto-reply reaches a
+          customer. A missed review fails silently. Routing accuracy hides both.
         </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Stat
@@ -115,7 +115,7 @@ export default function Evals() {
               formatInterval(report.auto_reply_precision_detail) ?? ""
             }`}
             tone="rust"
-            target="Target was 0.95. Not met — see below."
+            target="Target was 0.95. Not met. See below."
           />
           <Stat
             label="review recall"
@@ -274,7 +274,7 @@ export default function Evals() {
           <Stat
             label="language"
             value={report.language_accuracy.toFixed(3)}
-            target="Correct on all 60 — but only one ticket is Devanagari, so this says little about the script."
+            target="Correct on all 60. Only one ticket is Devanagari, so this says little about the script."
             tone="teal"
           />
         </div>
@@ -321,7 +321,7 @@ export default function Evals() {
       <section className="space-y-3">
         <h2 className="eyebrow">threshold sweep</h2>
         <p className="prose-human max-w-2xl text-xs text-ink-2">
-          Hard rules — P1, weak retrieval, safe fallback — are held fixed; only the composite
+          The hard rules stay fixed. P1, weak retrieval and safe fallback all still bite. Only the composite
           band moves. Raising the threshold buys safety and costs coverage, and shrinks the
           denominator that precision is measured on.
         </p>
@@ -407,7 +407,7 @@ export default function Evals() {
             The judge-only arm beats the shipped composite in both runs, which says the guess
             was worse than not guessing: the classifier and retrieval terms dilute the judge
             rather than supplement it. Whether the judge is strictly <em>necessary</em> is not
-            settled at this sample size — that arm changes sign between runs.
+            settled at this sample size, because that arm changes sign between runs.
           </p>
         </section>
       )}

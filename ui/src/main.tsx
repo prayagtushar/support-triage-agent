@@ -107,10 +107,10 @@ function Shell({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
               <Link to={withDomain("/audit", domainId)} className="text-ink-2">
-                audit
+                audit log
               </Link>
               <Link to={withDomain("/evals", domainId)} className="text-ink-2">
-                evals
+                evaluation
               </Link>
               <Link to={withDomain("/desks", domainId)} className="text-ink-2">
                 desks
@@ -119,7 +119,7 @@ function Shell({ children }: { children: React.ReactNode }) {
                 voice
               </Link>
               <Link to={withDomain("/run-it", domainId)} className="whitespace-nowrap text-ink-2">
-                run it
+                quickstart
               </Link>
             </nav>
           )}
@@ -131,11 +131,9 @@ function Shell({ children }: { children: React.ReactNode }) {
 
       <footer className="mx-auto max-w-7xl px-4 pb-10 pt-4 sm:px-6">
         <p className="prose-human max-w-3xl text-xs text-ink-3">
-          The tickets are {policy?.domain ?? "a consumer online shopping service"}'s, in
-          English and Hinglish. More than one desk runs here, each with its own corpus and
-          taxonomy. An LLM agent triages each one, a second model on a different
-          vendor grades the draft, and fixed policy decides who handles it. Everything here is
-          readable without an account.{" "}
+          An agent triages each ticket. A second model from another vendor grades its draft,
+          and fixed rules decide whether a human takes over. Several desks run here, each
+          with its own reference cases. No account needed.{" "}
           <a href={REPO_URL} target="_blank" rel="noreferrer" className="hover:text-ink">
             Source
           </a>

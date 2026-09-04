@@ -33,7 +33,7 @@ const REJECT_REASONS: { key: RejectReason; label: string; hint: string }[] = [
     label: "not answerable",
     hint: "No draft could be right; needs a human with access",
   },
-  { key: "other", label: "other", hint: "Something else — say what in the note" },
+  { key: "other", label: "other", hint: "Something else. Say what in the note" },
 ];
 
 const SHORTCUTS = [
@@ -272,7 +272,7 @@ export default function TicketReview() {
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Note — why you approved, edited, or rejected"
+              placeholder="Note: why you approved, edited, or rejected"
               disabled={settled || !mine}
               className="prose-human mt-2 w-full rounded-[2px] border border-rule bg-paper-2 p-2 text-sm disabled:opacity-60"
             />
@@ -283,8 +283,8 @@ export default function TicketReview() {
               </p>
             ) : !mine ? (
               <p className="prose-human mt-3 rounded-[2px] border border-rule bg-paper-2 p-3 text-sm text-ink-2">
-                This one is from the seeded corpus, so it stays where it is and the next
-                visitor finds a queue with something in it. {" "}
+                This is a demo ticket, so it stays put and the next visitor still finds a
+                queue with something in it. {" "}
                 <Link to="/submit" className="text-teal underline-offset-2 hover:underline">
                   Send your own ticket
                 </Link>{" "}
@@ -321,7 +321,7 @@ export default function TicketReview() {
                 <button
                   onClick={approve}
                   disabled={busy || edited}
-                  title={edited ? "The draft has been changed — use Save edit" : "a"}
+                  title={edited ? "You changed the draft. Use Save edit" : "a"}
                   className="rounded-[2px] bg-teal px-3 py-1.5 text-xs font-medium text-paper transition-opacity disabled:opacity-40"
                 >
                   Approve
@@ -346,7 +346,7 @@ export default function TicketReview() {
             )}
             {review.isError && (
               <div className="mt-2">
-                <ErrorNote error={review.error} what="that decision — it was not recorded" />
+                <ErrorNote error={review.error} what="that decision. It was not recorded" />
               </div>
             )}
           </Section>

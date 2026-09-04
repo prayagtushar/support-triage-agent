@@ -39,7 +39,7 @@ export default function Audit() {
   return (
     <div className="space-y-4">
       <header className="space-y-1">
-        <h1 className="text-lg font-semibold tracking-tight">Audit trail</h1>
+        <h1 className="text-lg font-semibold tracking-tight">Audit log</h1>
         <p className="prose-human max-w-2xl text-sm text-ink-2">
           Every human decision, with the confidence the agent reported at the moment it was
           made. Append-only.

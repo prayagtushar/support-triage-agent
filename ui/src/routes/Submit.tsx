@@ -43,7 +43,7 @@ function Stages({ progress }: { progress: TicketProgress | undefined }) {
   if (progress && !progress.progress_available) {
     return (
       <p className="prose-human text-sm text-ink-2">
-        Working on it. This takes about 40 seconds — the reply is written and then graded by a
+        Working on it. This takes about 40 seconds. One model writes the reply, then another grades it
         second model before anyone sees it.
       </p>
     );
@@ -97,7 +97,7 @@ function Stages({ progress }: { progress: TicketProgress | undefined }) {
             )}
             {isSkipped && (
               <span className="ml-auto text-xs text-ink-3">
-                skipped — nothing to work from
+                skipped, nothing to work from
               </span>
             )}
           </li>
@@ -141,7 +141,7 @@ export default function Submit() {
     return (
       <div className="max-w-2xl space-y-6">
         <h1 className="text-lg font-semibold tracking-tight">
-          {finished ? "Here's what happened" : "Thanks — we have your message"}
+          {finished ? "Here's what happened" : "Thanks, we have your message"}
         </h1>
 
         <div className="card p-4">
@@ -154,7 +154,7 @@ export default function Submit() {
               {result.data.route === "auto_reply"
                 ? "The agent was confident enough to answer this without a human."
                 : result.data.route === "escalate"
-                  ? "This one goes straight to a person — policy says it should not be answered automatically."
+                  ? "This one goes straight to a person. Policy says it should not be answered automatically."
                   : "A human will review the reply before you hear back."}
             </p>
 
@@ -201,7 +201,7 @@ export default function Submit() {
       <header className="space-y-2">
         <h1 className="text-lg font-semibold tracking-tight">Contact support</h1>
         <p className="prose-human text-sm text-ink-2">
-          Send a ticket the way a customer would — your own, ideally, rather than one of the
+          Send a ticket the way a customer would. Write your own rather than copying one of the
           examples. It runs through the real pipeline, so it takes about 40 seconds and you can
           watch each step.
         </p>
@@ -245,7 +245,7 @@ export default function Submit() {
               <option key={d.id} value={d.id}>
                 {d.name}
                 {d.provenance === "synthetic" ? " (generated corpus)" : ""}
-                {d.ready ? "" : " — no evidence"}
+                {d.ready ? "" : " (no cases)"}
               </option>
             ))}
           </select>
@@ -282,7 +282,7 @@ export default function Submit() {
         </label>
 
         {submit.isError && (
-          <ErrorNote error={submit.error} what="that ticket — it was not sent" />
+          <ErrorNote error={submit.error} what="that ticket. It was not sent" />
         )}
 
         <button

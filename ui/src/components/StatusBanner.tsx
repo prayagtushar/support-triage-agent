@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getStatus } from "../lib/api";
 
 /**
- * Says out loud when the system is serving but not working. Silent otherwise — the rail
+ * Says out loud when the system is serving but not working. Silent otherwise, because the rail
  * carries the heartbeat, so this stays an alert rather than becoming furniture.
  */
 export default function StatusBanner() {

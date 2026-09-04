@@ -47,20 +47,25 @@ class Settings(BaseSettings):
     classifier_temperature: float = 0.0
     classifier_max_tokens: int = 1024
 
-    drafter_provider: Provider = "sarvam"
-    drafter_model: str = "sarvam-105b"
+    # Was sarvam-105b, which is what every eval report in this repo was measured with.
+    # Moved off it on 2026-09-04 because the account ran out of credit and a drafter that
+    # returns 402 is a demo that fails for every visitor who submits a ticket. The
+    # measurements it produced stand; they are attributed to the model in each report.
+    #
+    # This is also the model the voice work picked on its own merits: sarvam-105b reasons
+    # before answering and bills it as completion tokens, so on a call it emits nothing
+    # speakable for six seconds. See docs/VOICE.md.
+    drafter_provider: Provider = "openrouter"
+    drafter_model: str = "meta-llama/llama-3.3-70b-instruct"
     drafter_temperature: float = 0.3
-    # sarvam-105b reasons before answering and bills it as completion tokens. That
-    # reasoning grew: 4096 held all 60 golden drafts on 2026-08-01 and held 37 of 60 on
-    # 2026-09-03, the other 23 returning empty after spending the whole budget thinking.
+    # Sized for sarvam-105b, which spent most of a budget this large on reasoning: 4096
+    # held all 60 golden drafts on 2026-08-01 and only 37 of 60 on 2026-09-03, the other
+    # 23 returning empty after spending the whole budget thinking. A truncated call is
+    # billed for the reasoning it discards, so the tight budget was the expensive one
+    # (₹0.0958 per usable draft against ₹0.0658 at 8192).
     #
-    # The ceiling is not a spend control. A truncated call is billed for every token it
-    # reasoned with and returns nothing, so 4096 cost ₹0.0958 per usable draft against
-    # ₹0.0658 at 8192: the tight budget was the more expensive setting. Raising it only
-    # bills more where a reply now exists that did not before.
-    #
-    # 16384 rather than 8192 because the observed maximum at 8192 was 7215 tokens, and a
-    # ceiling 14% above the worst case seen is a ceiling that trips again next month.
+    # It costs nothing to leave high for a non-reasoning drafter, which stops at its reply
+    # and bills only the tokens it generated.
     drafter_max_tokens: int = 16384
 
     judge_provider: Provider = "openrouter"
@@ -161,19 +166,21 @@ class Settings(BaseSettings):
         if abs(weight_total - 1.0) > 1e-6:
             raise ValueError(f"composite weights must sum to 1.0 (got {weight_total})")
 
+        # Checked on the model rather than the provider. The rule being enforced is that
+        # nothing grades its own output, and the thing that writes and the thing that
+        # grades are models, not gateways: Meta's llama and Google's gemini reached
+        # through one OpenRouter key are still two vendors. Checking the provider name
+        # instead used to reject that pair, which is a correct configuration.
         if self.voice_fast_drafter and self.voice_drafter_model == self.judge_model:
-            # Same rule as below, checked on the model rather than the provider: the
-            # voice drafter and the judge share a gateway, so the provider names match
-            # while the vendors behind them do not.
             raise ValueError(
                 "voice_drafter_model must differ from judge_model: a model grading its "
                 f"own output exhibits self-preference bias (both are '{self.judge_model}')"
             )
 
-        if self.judge_provider == self.drafter_provider:
+        if self.judge_model == self.drafter_model:
             raise ValueError(
-                "judge_provider must differ from drafter_provider: a model grading its "
-                f"own output exhibits self-preference bias (both are '{self.judge_provider}')"
+                "judge_model must differ from drafter_model: a model grading its "
+                f"own output exhibits self-preference bias (both are '{self.judge_model}')"
             )
         return self
 

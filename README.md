@@ -9,7 +9,7 @@
 
 An LLM agent that triages inbound customer support tickets end to end. Each ticket is classified by intent and urgency, matched against similar resolved cases, answered with a grounded draft reply, scored by a second model, and then routed by deterministic code. Confident, well-grounded drafts go to an auto-reply queue. Everything else lands in a human review queue with the full context attached.
 
-The tickets are a **consumer e-commerce mobile app's**: order tracking, refunds, double charges, account lockouts, app crashes and feature requests, in English and Hinglish. That domain is named because the eight intents only cohere under it — a pure retailer never gets a feature request, a pure SaaS product never ships a package — and because it was not chosen first. It was inherited from the corpus, which is a mistake worth reading about in the [eval card](docs/EVAL_CARD.md) before copying the taxonomy.
+The tickets are a **consumer e-commerce mobile app's**: order tracking, refunds, double charges, account lockouts, app crashes and feature requests, in English and Hinglish. That domain is named because the eight intents only cohere under it. A pure retailer never gets a feature request, and a pure SaaS product never ships a package. It is also named because it was not chosen first. It was inherited from the corpus, which is a mistake worth reading about in the [eval card](docs/EVAL_CARD.md) before copying the taxonomy.
 
 Ticket triage is one of the most widely deployed production uses of LLM agents, because the agent does not need to resolve every ticket. It needs to understand each ticket well enough to classify it, draft a response when the evidence supports one, and know when to hand off. This project treats that handoff as the feature: a deterministic routing policy, a human review queue, an audit trail, and an eval suite that measures whether the handoff decision is any good.
 
@@ -24,7 +24,7 @@ The review queue. Lanes are the left rail, because a lane is somewhere you work 
 ### Try it
 
 - **[Open the review queue →](https://support-triage.prayagtushar.xyz)** It opens on the least confident ticket in the lane, which is where the handoff is easiest to watch.
-- **[Send it your own ticket →](https://support-triage.prayagtushar.xyz/submit)** No account, no key. It runs the real pipeline, so give it about 40 seconds — then approve, edit or reject the reply it drafted for you.
+- **[Send it your own ticket →](https://support-triage.prayagtushar.xyz/submit)** No account, no key. It runs the real pipeline, so give it about 40 seconds. Then approve, edit or reject the reply it drafted for you.
 - **[Read the evals →](https://support-triage.prayagtushar.xyz/evals)**
 
 Reading is open to everyone. Submitting a ticket or recording a review spends a pipeline run against three model providers, so those are capped.
@@ -58,7 +58,7 @@ Key design decisions:
 
 - **The agent is a typed state machine, not a free-running loop.** Every node has a bounded job and its own failure handling. No node raises: failures become state, and the router turns them into a human_review route. A ticket that cannot be classified skips retrieval and drafting entirely, because spending drafter tokens on a ticket you could not classify is waste with extra risk.
 - **Routing is deterministic code over model-produced scores.** The LLM proposes; a threshold policy disposes. Thresholds live in configuration, so a policy change is a config change. The router is pure and has 19 unit tests covering every early exit, both threshold boundaries, and P1 beating a perfect composite.
-- **The judge runs on a different vendor from the drafter,** enforced at startup rather than by convention. `Settings` refuses to boot if they match. A model grading its own output exhibits self-preference bias, and the router consumes that score as truth.
+- **The judge runs on a different vendor from the drafter,** enforced at startup rather than by convention. `Settings` refuses to boot if they match. A model grading its own output exhibits self-preference bias, and the router consumes that score as truth. The check compares models, not providers, because a gateway is not a vendor: Meta's llama drafting and Google's gemini judging are two vendors even when one OpenRouter key reaches both.
 - **The domain is configuration, not an assumption.** `DOMAIN` is given to the classifier and the drafter, and reported by `GET /policy`. It was previously a phrase inside one prompt and absent from the drafter entirely, which made the single most load-bearing assumption in the system invisible and unchangeable.
 - **Retrieval reports the provenance of its evidence.** Two intents have no real cases behind them, so a draft can be machine text grounded in machine text. A result whose every case was generated is flagged `synthetic_only` and surfaced to the reviewer, rather than reading like any other citation. It does not change the route: that would move the policy these numbers were measured under.
 - **Retrieval reports its own weakness.** The weak signal is raw cosine similarity, not the fused score: fusion is relative to whatever came back, so it stays high even when everything returned is irrelevant. Similarity is absolute and can say "nothing here is close."
@@ -70,7 +70,7 @@ Key design decisions:
 | Orchestration | LangGraph, Postgres checkpointer |
 | API | FastAPI, Pydantic v2, psycopg3 |
 | Storage and retrieval | PostgreSQL + pgvector, hybrid vector + full-text with reciprocal rank fusion |
-| Models | Llama 3.3 70B (classify), Sarvam-105B (draft), Gemini 2.5 Flash Lite (judge), all behind one OpenAI-compatible client. Embeddings are `text-embedding-3-small` at 1536 dims via OpenRouter. The corpus was originally embedded with `gemini-embedding-001`, and moving between them means re-embedding every row, because vectors from different models are not comparable |
+| Models | Llama 3.3 70B (classify and draft), Gemini 2.5 Flash Lite (judge), all behind one OpenAI-compatible client. The drafter was Sarvam-105B until 2026-09-04, which is the model every eval number below was measured with. Embeddings are `text-embedding-3-small` at 1536 dims via OpenRouter. The corpus was originally embedded with `gemini-embedding-001`, and moving between them means re-embedding every row, because vectors from different models are not comparable |
 | Observability | Langfuse traces, structlog JSON logs |
 | Evaluation | 60-ticket golden set, threshold sweep, reliability diagram, regression gate |
 | Dashboard | Vite, React 19, TanStack Query, Tailwind v4, Geist Mono. Charts are hand-drawn SVG: two plots of a dozen points each, where a charting library would have outweighed the code it replaced |
@@ -97,8 +97,8 @@ computed for display.
   latency drawn in proportion, and the model, provider and rupee cost of each. A ticket that
   failed classification shows retrieve, draft and score as *skipped*, because declining to
   spend drafter tokens on an unclassifiable ticket is a design decision worth seeing.
-  Driveable from the keyboard — `a`, `e`, `r` to act, `j`/`k` through the lane, `?` for the
-  list — and acting advances to the next ticket, because clearing a queue is the job.
+  Driveable from the keyboard. `a`, `e`, `r` act, `j`/`k` move through the lane, `?` lists
+  them. Acting advances to the next ticket, because clearing a queue is the job.
 - **Evals.** The measurement page, leading with the metric that misses its target rather than
   burying it. Threshold sweep and reliability diagram as plots, every proportion carrying its
   denominator and a Wilson interval, and a baseline table so the routing numbers can be read
@@ -113,8 +113,8 @@ computed for display.
 
 Three things the dashboard does deliberately:
 
-**A rejected draft has to say why.** Rejecting asks for a reason from a fixed taxonomy —
-hallucinated, wrong intent, wrong tone, missing info, not answerable — and an edit stores the
+**A rejected draft has to say why.** Rejecting asks for a reason from a fixed taxonomy of
+hallucinated, wrong intent, wrong tone, missing info and not answerable. An edit stores the
 drafter's original next to what the human sent. The golden set is 60 tickets and every
 headline metric is limited by that, so the review queue is the cheapest source of new labelled
 examples this project has. A free-text box would have produced comments instead.
@@ -170,7 +170,7 @@ generated corpus looks exactly like a full queue on a real one.
 
 Measured on golden v0 (60 hand-written tickets, 27% non-English, 5 adversarial). Reports are in `api/evals/reports/`, and the tables below are generated from the same export the dashboard reads, so the two cannot drift.
 
-> **These numbers are dated and do not currently reproduce.** They were measured on 2026-08-01 with `DRAFTER_MAX_TOKENS=4096`. On 2026-09-03 the same model under the same budget returned an empty draft on 23 of the 60 tickets, because its reasoning had grown past the ceiling. The budget is now 16384, which fixes the drafts, and the suite has **not** been re-run under it: the drafter's account ran out of credit mid-run. Treat every figure below as a measurement of a model on a day, not a property of this repository. The Voice section explains what happened and `docs/EVAL_CARD.md` caveat 7 says why this is a standing property rather than an incident.
+> **These numbers are dated and the deployment no longer runs the model that produced them.** They were measured on 2026-08-01 with `sarvam-105b` at `DRAFTER_MAX_TOKENS=4096`. On 2026-09-03 the same model under the same budget returned an empty draft on 23 of the 60 tickets, because its reasoning had outgrown the ceiling. Raising the budget to 16384 fixed the drafts, and the suite was never re-run under it, because the Sarvam account ran out of credit mid-run and stayed out. On 2026-09-04 the drafter moved to `meta-llama/llama-3.3-70b-instruct`, which is what the live site runs and what `GET /policy` reports. A drafter returning 402 is a demo that fails for every visitor who submits a ticket. So the figures below describe `sarvam-105b` on a day in August. They are not a property of this repository and they are not what the deployment does now. The Voice section covers the model drift and `docs/EVAL_CARD.md` caveat 7 explains why this is a standing condition rather than a one-off.
 
 <!-- metrics:start -->
 
@@ -241,7 +241,7 @@ Run `v4-ecom-budget16384` on golden `v0`, 60 tickets, auto-reply threshold 0.9, 
 
 `make coverage` works out the size instead of guessing at a round one. The precision denominator is not how many tickets are labelled `auto_reply`. It is how many the system chooses to send, which at this threshold is 17% of the set. Resolving precision to ±0.05 therefore needs a denominator of 20, so **~120 tickets, not 100**. Note the direction of that interaction: raising the threshold for safety shrinks the denominator, so the headline metric gets noisier exactly as the policy gets more conservative.
 
-The review queue is where those tickets come from cheapest. Rejecting a draft requires picking a reason from a fixed taxonomy — hallucinated, wrong intent, wrong tone, missing info, not answerable — so every review a human does adds a labelled example rather than a comment.
+The review queue is where those tickets come from cheapest. Rejecting a draft requires picking a reason from a fixed taxonomy of hallucinated, wrong intent, wrong tone, missing info and not answerable, so every review a human does adds a labelled example rather than a comment.
 
 **3. The composite confidence is overconfident in every bucket.**
 
@@ -404,7 +404,7 @@ make demo                      # database, corpus, embeddings, seeded queues
 make run                       # http://localhost:5173
 ```
 
-`make demo` builds the corpus once — about ₹3 in embeddings and a few minutes. After that
+`make demo` builds the corpus once, about ₹3 in embeddings and a few minutes. After that
 `make run` is the only command: it starts Postgres, applies any pending migrations, and runs
 the API and the dashboard together. Ctrl-C stops both.
 
@@ -454,7 +454,7 @@ The API runs on Cloud Run, the dashboard on Vercel, and Postgres on Supabase, al
 
 **Reading is public.** The queues, each ticket's draft, the judge's reasoning and scores, the retrieved cases and the audit log are all browsable without an account, because that is the part worth looking at.
 
-**Submitting is open.** No key and no per-visitor throttle: someone putting their own ticket through the pipeline is the point of a public demo, and gating that gates the only thing worth trying. The ceiling is the server-side cap of 50 tickets per rolling 24 hours, which is where it belongs — a key can leak, and a leaked key with no cap behind it is a bill.
+**Submitting is open.** No key and no per-visitor throttle: someone putting their own ticket through the pipeline is the point of a public demo, and gating that gates the only thing worth trying. The ceiling is the server-side cap of 50 tickets per rolling 24 hours, which is where it belongs. A key can leak, and a leaked key with no cap behind it is a bill.
 
 **Reviewing is limited to the ticket you sent.** Approving and rejecting costs nothing, but it is append-only to the audit trail and it empties the review lane, so one visitor could leave the next with nothing to look at. The browser generates a random id, keeps it in `localStorage` and sends it as `X-Visitor`; a ticket is reviewable by whoever sent it. That is ownership, not identity, and no IP is stored. `X-Demo-Key` still overrides it for maintenance; there is no field for it in the dashboard, and the key is claimed once by visiting `/?key=<the-key>`, which stores it and strips the parameter back out of the URL.
 
@@ -491,13 +491,13 @@ docs/              deployment runbook, failure analysis, eval card, voice
 
 ## Documentation
 
-- [`docs/EVAL_CARD.md`](docs/EVAL_CARD.md) — what the system is for, what it is not for, and
+- [`docs/EVAL_CARD.md`](docs/EVAL_CARD.md), what the system is for, what it is not for, and
   where each number stops applying.
-- [`docs/failure_analysis.md`](docs/failure_analysis.md) — every measured failure, per
+- [`docs/failure_analysis.md`](docs/failure_analysis.md), every measured failure, per
   component: what happened, which part owns it, what changed, what deliberately did not.
-- [`docs/VOICE.md`](docs/VOICE.md) — the voice path: the latency budget, what each cut
+- [`docs/VOICE.md`](docs/VOICE.md), the voice path. The latency budget, what each cut
   bought, and what it cost in structure the reviewer used to have.
-- [`docs/DEPLOY.md`](docs/DEPLOY.md) — the runbook: access model, the two IAM grants behind
+- [`docs/DEPLOY.md`](docs/DEPLOY.md), the runbook. Access model, the two IAM grants behind
   the billing kill switch, and how to recover from a trip.
 
 ## Licence

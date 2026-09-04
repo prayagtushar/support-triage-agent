@@ -1,6 +1,6 @@
 /**
  * Wilson score interval. The normal approximation is wrong at the sample sizes this
- * project reports — auto-reply precision is measured on about ten tickets — and a
+ * project reports. Auto-reply precision rests on about ten tickets, and a
  * proportion quoted to three decimals without one invites the reader to believe it.
  */
 export function wilson(successes: number, n: number, z = 1.96): [number, number] {

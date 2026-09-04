@@ -182,11 +182,11 @@ export default function Voice() {
   return (
     <div className="max-w-3xl space-y-8">
       <header className="space-y-2">
-        <h1 className="text-lg font-semibold tracking-tight">Say it instead</h1>
+        <h1 className="text-lg font-semibold tracking-tight">Voice</h1>
         <p className="prose-human text-sm text-ink-2">
-          The same agent, the same corpus, the same routing policy, reached by speaking. The
-          text pipeline answers a ticket in about 22 seconds, which is fine for a queue and
-          unusable on a call. What is measured below is the gap between you finishing your
+          The same agent and the same routing rules, reached by speaking instead of typing.
+          The text pipeline takes about 22 seconds to answer. That is fine for a queue and
+          hopeless on a call. What I measure below is the gap between you finishing your
           sentence and hearing the first word back.
         </p>
       </header>

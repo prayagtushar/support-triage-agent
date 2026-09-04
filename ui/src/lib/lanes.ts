@@ -14,14 +14,14 @@ export const LANES = [
     path: "/escalated",
     status: "escalated" as TicketStatus,
     label: "escalated",
-    hint: "Policy or low confidence says a human should own this, not just approve a draft.",
+    hint: "A human owns this one. A rule or a low score took it out of the agent's hands.",
     dot: "bg-rust-fill",
   },
   {
     path: "/auto-replied",
     status: "auto_replied" as TicketStatus,
     label: "auto-replied",
-    hint: "Confident and grounded enough to answer without a human.",
+    hint: "The draft cleared the threshold and went out on its own.",
     dot: "bg-teal-fill",
   },
 ] as const;

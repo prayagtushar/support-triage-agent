@@ -49,11 +49,9 @@ const INTRO_KEY = "triage-intro-dismissed";
 function Intro({
   startAt,
   domain,
-  intents,
 }: {
   startAt: string | undefined;
   domain: string | undefined;
-  intents: string[];
 }) {
   const [hidden, setHidden] = useState(() => {
     try {
@@ -69,23 +67,17 @@ function Intro({
     <div className="mb-6 rounded-[2px] border border-rule bg-paper-2 p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="prose-human max-w-2xl space-y-2 text-sm text-ink-2">
+          {/* Short, because a visitor gives this a couple of seconds. The long version
+              of this copy was read by nobody. It lives in the README now. */}
           <p>
-            These are the tickets of {domain ?? "a consumer online shopping service"}
-            {/* Drawn from the desk rather than listed in prose. The old copy named orders
-                and refunds, which stopped being true the moment a second desk existed. */}
-            {intents.length > 0 && <> — {intents.join(", ")}</>} — in English and Hinglish.
-            The desk is a row in the database, not an assumption baked into a prompt, because
-            “my order has not arrived” means something different to a retailer and a bank, and
-            each desk carries its own cases, its own intents and its own worked examples. Each
-            ticket was classified, matched against resolved cases from this desk only, answered
-            with a drafted reply and graded by a second model on a different vendor. Fixed
-            policy then put it in one of three lanes. Nothing below was written for display: it
-            is what the pipeline recorded.
+            Support tickets for {domain ?? "a consumer online shopping service"}, in English
+            and Hinglish. An agent reads each one, finds cases this desk has already
+            resolved, and writes a reply. A second model from another vendor grades that
+            reply. Fixed rules pick the lane.
           </p>
           <p>
-            The bar in the confidence column has a notch on it. That notch is the threshold
-            above which the agent is allowed to answer without a human, so each row shows both
-            a score and the distance that score sat from the decision it drove.
+            Every confidence bar has a notch on it. That is the score a draft has to clear
+            to go out without a human reading it first.
           </p>
         </div>
         <button
@@ -186,11 +178,7 @@ export default function Queues({ lane }: { lane: Lane }) {
   return (
     <div>
       {lane.status === "in_review" && (
-        <Intro
-          startAt={startAt}
-          domain={domain?.description ?? policy?.domain}
-          intents={(domain?.intents ?? []).map((i) => domain?.intent_labels[i] ?? i)}
-        />
+        <Intro startAt={startAt} domain={domain?.description ?? policy?.domain} />
       )}
 
       {domain && !domain.ready && (
@@ -198,28 +186,13 @@ export default function Queues({ lane }: { lane: Lane }) {
           role="status"
           className="mb-6 rounded-[2px] border border-rust/40 bg-rust-bg px-3 py-2 text-xs text-rust"
         >
-          <span className="font-medium">{domain.name} has no evidence behind it.</span>{" "}
+          <span className="font-medium">{domain.name} has no reference cases loaded.</span>{" "}
           <span className="prose-human">
-            No resolved cases are embedded for this desk, so retrieval returns nothing and
-            every draft would be ungrounded. Tickets sent here are routed to a human by
-            hard rule, which is correct, and tells you nothing about the agent.
+            Retrieval finds nothing, so a rule sends every ticket here to a human.
           </span>
         </div>
       )}
 
-      {domain?.provenance === "synthetic" && domain.ready && (
-        <div
-          role="status"
-          className="mb-6 rounded-[2px] border border-mustard/40 bg-mustard-bg px-3 py-2 text-xs text-mustard"
-        >
-          <span className="font-medium">Generated desk.</span>{" "}
-          <span className="prose-human">
-            Every case behind {domain.name} was written by a model, so drafts here are
-            machine text grounded in machine text and graded by a third machine. It shows
-            the routing works per desk. It is not evidence of quality on this domain.
-          </span>
-        </div>
-      )}
 
       <header className="mb-4 space-y-1">
         <h1 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
@@ -293,7 +266,7 @@ export default function Queues({ lane }: { lane: Lane }) {
             Nothing in {lane.label} in {lang === "en" ? "English" : "Hindi"}.
           </p>
           <p className="prose-human mt-1 text-xs text-ink-3">
-            The lane may still have tickets in the other language.{" "}
+            There may still be tickets here in the other language.{" "}
             <button
               type="button"
               onClick={() => setLanguage("")}
@@ -311,15 +284,15 @@ export default function Queues({ lane }: { lane: Lane }) {
           <p className="text-sm text-ink-2">Nothing in {lane.label}.</p>
           <p className="prose-human mt-1 text-xs text-ink-3">
             {lane.status === "auto_replied"
-              ? "The agent only answers without a human when the draft is grounded and scores above the threshold. On this corpus that is rare, and measured on the evals page."
-              : "Send a ticket and it will appear here once the pipeline finishes."}
+              ? "The agent answers on its own only when a draft clears the threshold. That is rare here. The evaluation page has the numbers."
+              : "Send a ticket and it will show up here once the pipeline finishes."}
           </p>
         </div>
       )}
 
       {rows && rows.length > 0 && visible.length === 0 && (
         <p className="prose-human py-8 text-center text-sm text-ink-2">
-          Nothing in this lane matches “{query}”.
+          Nothing in this lane matches "{query}".
         </p>
       )}
 
@@ -402,9 +375,9 @@ export default function Queues({ lane }: { lane: Lane }) {
           {policy && (
             <p className="prose-human mt-4 max-w-2xl text-xs text-ink-3">
               The notch on each bar is the {policy.thresholds.auto_reply} auto-reply threshold.
-              Bars reaching it were eligible to answer without a human. Age turns amber once a
-              ticket is past the response window for its priority, which most of the seeded
-              corpus is.
+              A bar that reaches it was eligible to answer without a human. Age turns amber
+              once a ticket runs past the response window for its priority, which most of
+              these have.
             </p>
           )}
         </>

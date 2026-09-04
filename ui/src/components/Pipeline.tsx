@@ -93,7 +93,7 @@ export function Pipeline({
               ) : null}
 
               <span className="prose-human ml-auto text-right text-ink-3">
-                {skipped ? "not run — nothing to work from" : WHAT_IT_DID[node]}
+                {skipped ? "not run, nothing to work from" : WHAT_IT_DID[node]}
               </span>
             </li>
           );

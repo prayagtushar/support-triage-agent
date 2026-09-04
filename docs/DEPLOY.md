@@ -196,7 +196,7 @@ stores it in `customer_meta` at submit and compares on review. It is ownership, 
 identity, and no IP is recorded anywhere.
 
 `X-Demo-Key` overrides that and reviews anything. The key lives in Secret Manager as
-`triage-demo-write-key` and is **not** baked into the Vercel build — a key compiled into
+`triage-demo-write-key` and is **not** baked into the Vercel build. A key compiled into
 a static SPA is readable by anyone who opens devtools. There is no field for it in the
 dashboard either. Claim it once by visiting:
 
@@ -221,7 +221,7 @@ infra/deploy-api.sh              # builds and deploys, tag defaults to latest
 `CORS_ORIGINS` no longer needs exporting: both dashboard origins, the
 `support-triage.prayagtushar.xyz` domain and the `.vercel.app` host it is served
 from, are the default in `deploy-api.sh`. A new domain has to be added there, or
-the browser blocks its requests at preflight — a domain that is live in Vercel
+the browser blocks its requests at preflight. A domain that is live in Vercel
 but absent from that list looks exactly like an API outage from the console.
 It used to be listed here as something to remember,
 and on 2026-08-10 a deploy that forgot it narrowed production to a localhost

@@ -91,11 +91,11 @@ function Calculator() {
       </dl>
 
       <p className="prose-human max-w-2xl text-xs leading-relaxed text-ink-2">
-        This corpus is a consumer e-commerce app's — orders, refunds, billing, account access,
+        This corpus belongs to a consumer e-commerce app. Orders, refunds, billing, account access,
         with app bug reports and feature requests on top. The deflection figure assumes your
         tickets behave like it, and they will not.
         It also assumes every auto-reply is a good one, which on the measured numbers is true{" "}
-        {(report.auto_reply_precision * 100).toFixed(0)}% of the time — below the 95% this system
+        {(report.auto_reply_precision * 100).toFixed(0)}% of the time, below the 95% this system
         was designed against. Treat the spend column as reliable and the other two as an upper
         bound until you have run your own tickets through it.
       </p>
@@ -126,7 +126,7 @@ export default function RunIt() {
   return (
     <div className="max-w-3xl space-y-10">
       <header className="space-y-2">
-        <h1 className="text-lg font-semibold tracking-tight">Run this on your own tickets</h1>
+        <h1 className="text-lg font-semibold tracking-tight">Quickstart</h1>
         <p className="prose-human text-sm text-ink-2">
           Everything here is MIT licensed and runs on the free tier of three services. What
           follows is what it costs, where it sits in an existing support stack, and what you
@@ -169,10 +169,10 @@ export default function RunIt() {
             public corpus, or the drafter will cite someone else's answers at your customers.
           </Step>
           <Step n={2} title="Retune the thresholds against your own data">
-            The numbers below were fitted to this corpus. The eval suite —{" "}
+            The numbers below were fitted to this corpus. The eval suite,{" "}
             <code className="text-ink-2">make eval</code>,{" "}
             <code className="text-ink-2">make calibrate</code>,{" "}
-            <code className="text-ink-2">make ablate</code> — is the part worth keeping.
+            <code className="text-ink-2">make ablate</code>, is the part worth keeping.
           </Step>
           <Step n={3} title="Redact before egress if your tickets are real">
             Every ticket body is sent to three third-party providers. This corpus is public and

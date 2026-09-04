@@ -91,28 +91,28 @@ export default function Rail() {
         ))}
         <NavLink
           to={withDomain("/audit", domainId)} className={itemClass}>
-          audit
+          audit log
         </NavLink>
       </Group>
 
       <div className="mt-auto" />
 
-      <Group label="is it any good?">
+      <Group label="the project">
         <NavLink
           to={withDomain("/evals", domainId)} className={itemClass}>
-          evals
+          evaluation
         </NavLink>
         <NavLink
           to={withDomain("/desks", domainId)} className={itemClass}>
-          all desks
+          desks
         </NavLink>
         <NavLink
           to={withDomain("/voice", domainId)} className={itemClass}>
-          say it instead
+          voice
         </NavLink>
         <NavLink
           to={withDomain("/run-it", domainId)} className={itemClass}>
-          run it yourself
+          quickstart
         </NavLink>
         <a
           href={REPO_URL}

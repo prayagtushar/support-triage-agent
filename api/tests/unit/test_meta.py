@@ -43,11 +43,22 @@ def test_policy_weights_sum_to_one():
     assert sum(weights.values()) == pytest.approx(1.0)
 
 
+def _vendor(model: str) -> str:
+    """Who actually trained it, which is not always who serves it.
+
+    A gateway puts its own name first: "openrouter/google/gemini-2.5-flash-lite" is
+    Google's model reached through OpenRouter. Where the provider is the vendor there is
+    no middle segment, as in "sarvam/sarvam-105b".
+    """
+    parts = model.split("/")
+    return parts[1] if len(parts) > 2 else parts[0]
+
+
 def test_policy_names_a_different_vendor_for_judge_and_drafter():
-    """Cross-vendor judging is the invariant Settings refuses to boot without."""
+    """Nothing grades its own output. Settings refuses to boot without this."""
     with TestClient(app) as c:
         models = c.get("/policy").json()["models"]
-    assert models["judge"].split("/")[0] != models["drafter"].split("/")[0]
+    assert _vendor(models["judge"]) != _vendor(models["drafter"])
 
 
 # --- /status ---------------------------------------------------------------
